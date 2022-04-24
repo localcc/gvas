@@ -2,7 +2,7 @@ use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::error::Error;
+use crate::{error::Error, Guid};
 
 
 pub trait CursorExt {

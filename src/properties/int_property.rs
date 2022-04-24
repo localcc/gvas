@@ -18,7 +18,7 @@ macro_rules! check_size {
 macro_rules! impl_int_property {
     ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
         pub struct $name {
-            value: $ty
+            pub value: $ty
         }
 
         impl $name {
@@ -49,7 +49,7 @@ macro_rules! impl_int_property {
 }
 
 pub struct Int8Property {
-    value: i8
+    pub value: i8
 }
 
 impl Int8Property {
@@ -78,8 +78,8 @@ impl PropertyTrait for Int8Property {
 }
 
 pub struct ByteProperty {
-    name: String,
-    value: u8
+    pub name: String,
+    pub value: u8
 }
 
 impl ByteProperty {
@@ -111,7 +111,7 @@ impl PropertyTrait for ByteProperty {
 }
 
 pub struct BoolProperty {
-    value: bool
+    pub value: bool
 }
 
 impl BoolProperty {
