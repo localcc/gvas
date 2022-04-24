@@ -58,4 +58,5 @@ fn read_file() {
     verify_property!(properties, "long_test", Int64Property, i64::MIN + 1);
     verify_property!(properties, "f_property", FloatProperty, 3.14159);
     verify_property!(properties, "d_property", DoubleProperty, 3.14159265358979);
+    verify_property!(properties, "str_property", StrProperty, "Hello world");
 }

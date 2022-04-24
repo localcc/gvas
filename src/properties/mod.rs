@@ -4,9 +4,10 @@ use enum_dispatch::enum_dispatch;
 
 use crate::{error::{Error, DeserializeError}, cursor_ext::CursorExt};
 
-use self::int_property::{Int8Property, ByteProperty, Int16Property, UInt16Property, IntProperty, UInt32Property, Int64Property, UInt64Property, FloatProperty, DoubleProperty, BoolProperty};
+use self::{int_property::{Int8Property, ByteProperty, Int16Property, UInt16Property, IntProperty, UInt32Property, Int64Property, UInt64Property, FloatProperty, DoubleProperty, BoolProperty}, str_property::StrProperty};
 
 pub mod int_property;
+pub mod str_property;
 
 #[enum_dispatch]
 pub trait PropertyTrait {
@@ -26,6 +27,7 @@ pub enum Property {
     FloatProperty,
     DoubleProperty,
     BoolProperty,
+    StrProperty,
 }
 
 impl Property {
@@ -44,6 +46,7 @@ impl Property {
             "FloatProperty" => Ok(FloatProperty::read(cursor)?.into()),
             "DoubleProperty" => Ok(DoubleProperty::read(cursor)?.into()),
             "BoolProperty" => Ok(BoolProperty::read(cursor)?.into()),
+            "StrProperty" => Ok(StrProperty::read(cursor)?.into()),
             _ => Err(DeserializeError::UnknownProperty(value_type).into())
         }
     }
