@@ -32,4 +32,9 @@ impl PropertyTrait for StrProperty {
         cursor.write_string(&self.value)?;
         Ok(())
     }
+
+    fn get_length(&self) -> i64 {
+        self.value.len() as i64 + 1 + 4
+    }
+
 }

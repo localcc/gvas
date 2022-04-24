@@ -1,20 +1,32 @@
-use std::{path::Path, fs::File, io::{Read, Cursor}};
+use std::{
+    fs::File,
+    io::{Cursor, Read},
+    path::Path,
+};
 
-use gvas::{GvasFile, properties::{Property}};
+use gvas::{properties::Property, GvasFile};
+
+macro_rules! get_or_panic {
+    ($map:ident, $property_name:expr, $property_class:ident) => {
+        match $map.get(&String::from($property_name)) {
+            Some(e) => match e {
+                Property::$property_class(e) => e,
+                _ => panic!("Property {} doesn't match expected type", $property_name),
+            },
+            None => panic!("Property {} not found", $property_name),
+        }
+    };
+}
 
 macro_rules! verify_property {
     ($map:ident, $property_name:expr, $property_class:ident, $value:expr) => {
-        match $map.get(&String::from($property_name)) {
-            Some(e) => {
-                match e {
-                    Property::$property_class(e) => match e.value == $value {
-                        false => panic!("Property {} value doesn't match, expected {} got {}", $property_name, $value, e.value),
-                        true => {}
-                    },
-                    _ => panic!("Property {} doesn't match expected type", $property_name)
-                }
-            },
-            None => panic!("Property {} not found", $property_name)
+        let e = get_or_panic!($map, $property_name, $property_class);
+        match e.value == $value {
+            false => panic!(
+                "Property {} value doesn't match, expected {} got {}",
+                $property_name, $value, e.value
+            ),
+            true => {}
         };
     };
 }
@@ -25,29 +37,27 @@ fn read_file() {
     let mut file = File::open(&path).expect("Failed to open test asset");
 
     let mut data = Vec::new();
-    file.read_to_end(&mut data).expect("Failed to read test asset");
+    file.read_to_end(&mut data)
+        .expect("Failed to read test asset");
 
     let mut cursor = Cursor::new(data);
-    
+
     let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
     let properties = &file.properties;
 
-    match properties.get(&String::from("u8_test")) {
-        Some(e) => match e {
-            Property::ByteProperty(e) => {
-                match e.name == "None" {
-                    false => panic!("Property ByteProperty name doesn't match, expected {} got {}", "None", e.name),
-                    true => {}
-                };
-                match e.value == 129 {
-                    false => panic!("Property ByteProperty value doesn't match, expected {} got {}", 129, e.value),
-                    true => {}
-                }
-            },
-            _ => panic!("Property u8_test doesn't match expected type")
-            }   
-        None => panic!("Property u8_test not found")
-    };
+    let byte_property = get_or_panic!(properties, "u8_test", ByteProperty);
+    if byte_property.name != "None" {
+        panic!(
+            "Property u8_test name doesn't match, expected None got {}",
+            byte_property.name
+        );
+    }
+    if byte_property.value != 129 {
+        panic!(
+            "Property u8_test value doesn't match, expected 129 got {}",
+            byte_property.value
+        );
+    }
 
     verify_property!(properties, "i8_test", Int8Property, -123);
     verify_property!(properties, "ushort_test", UInt16Property, 65530);
@@ -59,4 +69,27 @@ fn read_file() {
     verify_property!(properties, "f_property", FloatProperty, 3.14159);
     verify_property!(properties, "d_property", DoubleProperty, 3.14159265358979);
     verify_property!(properties, "str_property", StrProperty, "Hello world");
+
+    let struct_property = get_or_panic!(properties, "struct_property", StructProperty);
+    if struct_property.name != "CustomStruct" {
+        panic!(
+            "Property struct_property name doesn't match, expected CustomStruct got {}",
+            struct_property.name
+        );
+    }
+    let struct_property_properties = &struct_property.properties;
+    verify_property!(
+        struct_property_properties,
+        "test_field",
+        UInt64Property,
+        12345
+    );
+
+    let date_time_property = get_or_panic!(properties, "date_time_property", DateTimeProperty);
+    if date_time_property.ticks != 0x8DA2614007956E0 {
+        panic!(
+            "Property date_time_property ticks doesn't match, expected 0x8DA2614007956E0 got {:#x}",
+            date_time_property.ticks
+        );
+    }
 }

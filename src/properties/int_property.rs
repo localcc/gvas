@@ -44,6 +44,10 @@ macro_rules! impl_int_property {
                 cursor.$write_method::<LittleEndian>(self.value)?;
                 Ok(())
             }
+
+            fn get_length(&self) -> i64 {
+                $size
+            }
         }
     };
 }
@@ -74,6 +78,10 @@ impl PropertyTrait for Int8Property {
         cursor.write(&[0u8; 1])?;
         cursor.write_i8(self.value)?;
         Ok(())
+    }
+
+    fn get_length(&self) ->i64 {
+        1
     }
 }
 
@@ -108,6 +116,11 @@ impl PropertyTrait for ByteProperty {
         cursor.write_u8(self.value)?;
         Ok(())
     }
+
+    fn get_length(&self) -> i64 {
+        1
+    }
+
 }
 
 pub struct BoolProperty {
@@ -138,6 +151,11 @@ impl PropertyTrait for BoolProperty {
         })?;
         Ok(())
     }
+
+    fn get_length(&self) -> i64 {
+        0
+    }
+
 }
 
 impl_int_property!(Int16Property, i16, read_i16, write_i16, 2);
