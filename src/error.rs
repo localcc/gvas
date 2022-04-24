@@ -2,7 +2,7 @@ use std::{fmt::Display, io, string::FromUtf8Error};
 
 #[derive(Debug)]
 pub enum DeserializeError {
-    InvalidValueSize(i64, i64),
+    InvalidValueSize(u64, u64),
     UnknownProperty(String),
 }
 
@@ -19,8 +19,22 @@ impl Display for DeserializeError {
 }
 
 #[derive(Debug)]
+pub enum SerializeError {
+    InvalidValue(String),
+}
+
+impl Display for SerializeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SerializeError::InvalidValue(ref msg) => write!(f, "Invaid value {}", msg),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum ErrorCode {
     Deserialize(DeserializeError),
+    Serialize(SerializeError),
     Io(io::Error),
     Utf8(FromUtf8Error),
     None,
@@ -30,6 +44,7 @@ impl Display for ErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ErrorCode::Deserialize(ref e) => Display::fmt(e, f),
+            ErrorCode::Serialize(ref e) => Display::fmt(e, f),
             ErrorCode::Io(ref e) => Display::fmt(e, f),
             ErrorCode::Utf8(ref e) => Display::fmt(e, f),
             ErrorCode::None => write!(f, "unk"),
@@ -54,6 +69,14 @@ impl From<DeserializeError> for Error {
     fn from(e: DeserializeError) -> Self {
         Error {
             code: ErrorCode::Deserialize(e),
+        }
+    }
+}
+
+impl From<SerializeError> for Error {
+    fn from(e: SerializeError) -> Self {
+        Error {
+            code: ErrorCode::Serialize(e),
         }
     }
 }

@@ -105,7 +105,8 @@ impl GvasFile {
         let mut properties = HashMap::new();
         let mut property_name = cursor.read_string()?;
         while property_name != "None" {
-            let property = Property::new(cursor)?;
+            let property_type = cursor.read_string()?;
+            let property = Property::new(cursor, &property_type, true)?;
             properties.insert(property_name, property);
             property_name = cursor.read_string()?;
         }

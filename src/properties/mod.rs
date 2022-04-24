@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::io::{Cursor, Read};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use enum_dispatch::enum_dispatch;
@@ -15,16 +15,17 @@ use self::{
     },
     str_property::StrProperty,
     struct_property::{DateTimeProperty, StructProperty},
+    array_property::ArrayProperty
 };
 
 pub mod int_property;
 pub mod str_property;
 pub mod struct_property;
+pub mod array_property;
 
 #[enum_dispatch]
 pub trait PropertyTrait {
-    fn get_length(&self) -> i64;
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error>;
+    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error>;
 }
 
 #[enum_dispatch(PropertyTrait)]
@@ -43,34 +44,42 @@ pub enum Property {
     StrProperty,
     StructProperty,
     DateTimeProperty,
+    ArrayProperty,
 }
 
 impl Property {
-    pub fn new(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
-        let value_type = cursor.read_string()?;
-
+    pub fn new(cursor: &mut Cursor<Vec<u8>>, value_type: &String, include_header: bool) -> Result<Self, Error> {
         match value_type.as_str() {
-            "Int8Property" => Ok(Int8Property::read(cursor)?.into()),
-            "ByteProperty" => Ok(ByteProperty::read(cursor)?.into()),
-            "Int16Property" => Ok(Int16Property::read(cursor)?.into()),
-            "UInt16Property" => Ok(UInt16Property::read(cursor)?.into()),
-            "IntProperty" => Ok(IntProperty::read(cursor)?.into()),
-            "UInt32Property" => Ok(UInt32Property::read(cursor)?.into()),
-            "Int64Property" => Ok(Int64Property::read(cursor)?.into()),
-            "UInt64Property" => Ok(UInt64Property::read(cursor)?.into()),
-            "FloatProperty" => Ok(FloatProperty::read(cursor)?.into()),
-            "DoubleProperty" => Ok(DoubleProperty::read(cursor)?.into()),
-            "BoolProperty" => Ok(BoolProperty::read(cursor)?.into()),
-            "StrProperty" => Ok(StrProperty::read(cursor)?.into()),
+            "Int8Property" => Ok(Int8Property::read(cursor, include_header)?.into()),
+            "ByteProperty" => Ok(ByteProperty::read(cursor, include_header)?.into()),
+            "Int16Property" => Ok(Int16Property::read(cursor, include_header)?.into()),
+            "UInt16Property" => Ok(UInt16Property::read(cursor, include_header)?.into()),
+            "IntProperty" => Ok(IntProperty::read(cursor, include_header)?.into()),
+            "UInt32Property" => Ok(UInt32Property::read(cursor, include_header)?.into()),
+            "Int64Property" => Ok(Int64Property::read(cursor, include_header)?.into()),
+            "UInt64Property" => Ok(UInt64Property::read(cursor, include_header)?.into()),
+            "FloatProperty" => Ok(FloatProperty::read(cursor, include_header)?.into()),
+            "DoubleProperty" => Ok(DoubleProperty::read(cursor, include_header)?.into()),
+            "BoolProperty" => Ok(BoolProperty::read(cursor, include_header)?.into()),
+            "StrProperty" => Ok(StrProperty::read(cursor, include_header)?.into()),
             "StructProperty" => {
-                let _struct_len = cursor.read_i64::<LittleEndian>()?;
-                let struct_name = cursor.read_string()?;
-                match struct_name.as_str() {
-                    "DateTime" => Ok(DateTimeProperty::read(cursor)?.into()),
-                    _ => Ok(StructProperty::read(struct_name, cursor)?.into()),
+                if !include_header {
+                    panic!("include_header false should not be set on StructProperty");
                 }
-            }
-            _ => Err(DeserializeError::UnknownProperty(value_type).into()),
+
+                let _struct_len = cursor.read_u64::<LittleEndian>()?;
+                let struct_name = cursor.read_string()?;
+                let mut guid = [0u8; 16];
+                cursor.read_exact(&mut guid)?;
+                cursor.read_exact(&mut [0u8; 1])?;
+                
+                match struct_name.as_str() {
+                    "DateTime" => Ok(DateTimeProperty::read(cursor, guid)?.into()),
+                    _ => Ok(StructProperty::read(cursor, struct_name, guid)?.into()),
+                }
+            },
+            "ArrayProperty" => Ok(ArrayProperty::read(cursor)?.into()),
+            _ => Err(DeserializeError::UnknownProperty(value_type.clone()).into()),
         }
     }
 }

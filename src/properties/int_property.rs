@@ -4,14 +4,14 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{DeserializeError, Error},
+    error::{DeserializeError, Error, SerializeError},
 };
 
 use super::PropertyTrait;
 
 macro_rules! check_size {
     ($cursor:ident, $expected:literal) => {
-        let value_size = $cursor.read_i64::<LittleEndian>()?;
+        let value_size = $cursor.read_u64::<LittleEndian>()?;
         if value_size != $expected {
             return Err(DeserializeError::InvalidValueSize($expected, value_size).into());
         }
@@ -29,25 +29,29 @@ macro_rules! impl_int_property {
                 $name { value }
             }
 
-            pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
-                check_size!(cursor, $size);
-                cursor.read_exact(&mut [0u8; 1])?;
-
-                let value = cursor.$read_method::<LittleEndian>()?;
-                Ok(Self { value })
+            pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+                if include_header {
+                    check_size!(cursor, $size);
+                    cursor.read_exact(&mut [0u8; 1])?;
+                }
+                Ok(Self {
+                    value: cursor.$read_method::<LittleEndian>()?,
+                })
             }
         }
 
         impl PropertyTrait for $name {
-            fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
-                cursor.write_i64::<LittleEndian>($size)?;
-                cursor.write(&[0u8; 1])?;
+            fn write(
+                &self,
+                cursor: &mut Cursor<Vec<u8>>,
+                include_header: bool,
+            ) -> Result<(), Error> {
+                if include_header {
+                    cursor.write_i64::<LittleEndian>($size)?;
+                    cursor.write(&[0u8; 1])?;
+                }
                 cursor.$write_method::<LittleEndian>(self.value)?;
                 Ok(())
-            }
-
-            fn get_length(&self) -> i64 {
-                $size
             }
         }
     };
@@ -62,59 +66,66 @@ impl Int8Property {
         Int8Property { value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
-        check_size!(cursor, 1);
-        cursor.read_exact(&mut [0u8; 1])?;
-
-        let value = cursor.read_i8()?;
-        Ok(Int8Property { value })
+    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+        if include_header {
+            check_size!(cursor, 1);
+            cursor.read_exact(&mut [0u8; 1])?;
+        }
+        Ok(Int8Property {
+            value: cursor.read_i8()?,
+        })
     }
 }
 
 impl PropertyTrait for Int8Property {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
-        cursor.write_i64::<LittleEndian>(1)?;
-        cursor.write(&[0u8; 1])?;
+    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+        if include_header {
+            cursor.write_i64::<LittleEndian>(1)?;
+            cursor.write(&[0u8; 1])?;
+        }
         cursor.write_i8(self.value)?;
         Ok(())
-    }
-
-    fn get_length(&self) -> i64 {
-        1
     }
 }
 
 pub struct ByteProperty {
-    pub name: String,
+    pub name: Option<String>,
     pub value: u8,
 }
 
 impl ByteProperty {
-    pub fn new(name: String, value: u8) -> Self {
+    pub fn new(name: Option<String>, value: u8) -> Self {
         ByteProperty { name, value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
-        check_size!(cursor, 1);
-        let name = cursor.read_string()?;
-        cursor.read_exact(&mut [0u8; 1])?;
-
-        let value = cursor.read_u8()?;
-        Ok(ByteProperty { name, value })
+    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+        let mut name = None;
+        if include_header {
+            check_size!(cursor, 1);
+            name = Some(cursor.read_string()?);
+            cursor.read_exact(&mut [0u8; 1])?;
+        }
+        Ok(ByteProperty {
+            name,
+            value: cursor.read_u8()?,
+        })
     }
 }
 
 impl PropertyTrait for ByteProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
-        cursor.write_i64::<LittleEndian>(1)?;
-        cursor.write_string(&self.name)?;
-        cursor.write(&[0u8; 1])?;
+    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+        if include_header {
+            cursor.write_i64::<LittleEndian>(1)?;
+            cursor.write_string(
+                self.name.as_ref().ok_or::<Error>(
+                    SerializeError::InvalidValue(String::from("self.name None expected Some(...)"))
+                        .into(),
+                )?,
+            )?;
+            cursor.write(&[0u8; 1])?;
+        }
         cursor.write_u8(self.value)?;
         Ok(())
-    }
-
-    fn get_length(&self) -> i64 {
-        1
     }
 }
 
@@ -127,26 +138,25 @@ impl BoolProperty {
         BoolProperty { value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
-        check_size!(cursor, 0);
-
+    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+        if include_header {
+            check_size!(cursor, 0);
+        }
         let val = cursor.read_i16::<LittleEndian>()?;
         Ok(BoolProperty { value: val > 0 })
     }
 }
 
 impl PropertyTrait for BoolProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
-        cursor.write_i64::<LittleEndian>(0)?;
+    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+        if include_header {
+            cursor.write_i64::<LittleEndian>(0)?;
+        }
         cursor.write_i16::<LittleEndian>(match self.value {
             true => 1,
             false => 0,
         })?;
         Ok(())
-    }
-
-    fn get_length(&self) -> i64 {
-        0
     }
 }
 

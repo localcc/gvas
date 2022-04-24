@@ -46,9 +46,9 @@ fn read_file() {
     let properties = &file.properties;
 
     let byte_property = get_or_panic!(properties, "u8_test", ByteProperty);
-    if byte_property.name != "None" {
+    if byte_property.name.as_ref().unwrap() != "None" {
         panic!(
-            "Property u8_test name doesn't match, expected None got {}",
+            "Property u8_test name doesn't match, expected None got {:?}",
             byte_property.name
         );
     }
@@ -86,10 +86,48 @@ fn read_file() {
     );
 
     let date_time_property = get_or_panic!(properties, "date_time_property", DateTimeProperty);
-    if date_time_property.ticks != 0x8DA2614007956E0 {
+    if date_time_property.ticks != 0x8DA2624F3F62720 {
         panic!(
-            "Property date_time_property ticks doesn't match, expected 0x8DA2614007956E0 got {:#x}",
+            "Property date_time_property ticks doesn't match, expected 0x8DA2624F3F62720 got {:#x}",
             date_time_property.ticks
         );
+    }
+
+    let array_of_structs = get_or_panic!(properties, "array_of_structs", ArrayProperty);
+    for property in &array_of_structs.properties {
+        match property {
+            Property::StructProperty(e) => {
+                let properties = &e.properties;
+                verify_property!(properties, "test_field", UInt64Property, 10);
+            }
+            _ => panic!("array_of_structs elements are not StructProperty"),
+        }
+    }
+
+    let array_of_ints = get_or_panic!(properties, "array_of_ints", ArrayProperty);
+    for property in &array_of_ints.properties {
+        match property {
+            Property::IntProperty(e) => {
+                if e.value != 12 {
+                    panic!(
+                        "Property value value doesn't match, expected 12 got {}",
+                        e.value
+                    );
+                }
+            }
+            _ => panic!("array_of_ints elements are not IntProperty"),
+        }
+    }
+
+    let array_of_strings = get_or_panic!(properties, "array_of_strings", ArrayProperty);
+    for property in &array_of_strings.properties {
+        match property {
+            Property::StrProperty(e) => {
+                if &e.value != "Hello world from array" {
+                    panic!("Property value value doesn't match, expected \"Hello world from array\" got {}", e.value);
+                }
+            }
+            _ => panic!("array_of_strings elements are not StrProperty"),
+        }
     }
 }
