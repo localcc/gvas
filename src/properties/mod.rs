@@ -3,9 +3,19 @@ use std::io::Cursor;
 use byteorder::{LittleEndian, ReadBytesExt};
 use enum_dispatch::enum_dispatch;
 
-use crate::{error::{Error, DeserializeError}, cursor_ext::CursorExt};
+use crate::{
+    cursor_ext::CursorExt,
+    error::{DeserializeError, Error},
+};
 
-use self::{int_property::{Int8Property, ByteProperty, Int16Property, UInt16Property, IntProperty, UInt32Property, Int64Property, UInt64Property, FloatProperty, DoubleProperty, BoolProperty}, str_property::StrProperty, struct_property::{StructProperty, DateTimeProperty}};
+use self::{
+    int_property::{
+        BoolProperty, ByteProperty, DoubleProperty, FloatProperty, Int16Property, Int64Property,
+        Int8Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
+    },
+    str_property::StrProperty,
+    struct_property::{DateTimeProperty, StructProperty},
+};
 
 pub mod int_property;
 pub mod str_property;
@@ -38,7 +48,7 @@ pub enum Property {
 impl Property {
     pub fn new(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
         let value_type = cursor.read_string()?;
-        
+
         match value_type.as_str() {
             "Int8Property" => Ok(Int8Property::read(cursor)?.into()),
             "ByteProperty" => Ok(ByteProperty::read(cursor)?.into()),
@@ -57,10 +67,10 @@ impl Property {
                 let struct_name = cursor.read_string()?;
                 match struct_name.as_str() {
                     "DateTime" => Ok(DateTimeProperty::read(cursor)?.into()),
-                    _ => Ok(StructProperty::read(struct_name, cursor)?.into())
+                    _ => Ok(StructProperty::read(struct_name, cursor)?.into()),
                 }
-            },
-            _ => Err(DeserializeError::UnknownProperty(value_type).into())
+            }
+            _ => Err(DeserializeError::UnknownProperty(value_type).into()),
         }
     }
 }

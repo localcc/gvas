@@ -4,7 +4,6 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{error::Error, Guid};
 
-
 pub trait CursorExt {
     fn read_string(&mut self) -> Result<String, Error>;
     fn write_string(&mut self, v: &String) -> Result<(), Error>;

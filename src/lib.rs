@@ -2,7 +2,11 @@ mod cursor_ext;
 pub mod error;
 pub mod properties;
 
-use std::{fmt::Debug, io::{Cursor, Read}, collections::HashMap};
+use std::{
+    collections::HashMap,
+    fmt::Debug,
+    io::{Cursor, Read},
+};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use cursor_ext::CursorExt;
@@ -14,7 +18,7 @@ pub struct FEngineVersion {
     pub minor: u16,
     pub patch: u16,
     pub change_list: u32,
-    pub branch: String
+    pub branch: String,
 }
 
 impl FEngineVersion {
@@ -29,7 +33,7 @@ impl FEngineVersion {
             minor,
             patch,
             change_list,
-            branch
+            branch,
         })
     }
 }
@@ -38,7 +42,7 @@ pub type Guid = [u8; 16];
 
 pub struct FCustomVersion {
     pub key: Guid,
-    pub version: i32
+    pub version: i32,
 }
 
 impl FCustomVersion {
@@ -46,11 +50,8 @@ impl FCustomVersion {
         let mut guid = [0u8; 16];
         cursor.read_exact(&mut guid)?;
         let version = cursor.read_i32::<LittleEndian>()?;
-        
-        Ok(FCustomVersion {
-            key: guid,
-            version
-        })
+
+        Ok(FCustomVersion { key: guid, version })
     }
 }
 
@@ -61,7 +62,7 @@ pub struct GvasHeader {
     pub engine_version: FEngineVersion,
     pub custom_version_format: i32,
     pub custom_versions: Vec<FCustomVersion>,
-    pub save_game_class_name: String
+    pub save_game_class_name: String,
 }
 
 impl GvasHeader {
@@ -87,21 +88,21 @@ impl GvasHeader {
             engine_version,
             custom_version_format,
             custom_versions,
-            save_game_class_name
+            save_game_class_name,
         })
     }
 }
 
 pub struct GvasFile {
     pub header: GvasHeader,
-    pub properties: HashMap<String, Property>
+    pub properties: HashMap<String, Property>,
 }
 
 impl GvasFile {
     pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
         let header = GvasHeader::read(cursor)?;
 
-        let mut properties = HashMap::new(); 
+        let mut properties = HashMap::new();
         let mut property_name = cursor.read_string()?;
         while property_name != "None" {
             let property = Property::new(cursor)?;
@@ -109,9 +110,6 @@ impl GvasFile {
             property_name = cursor.read_string()?;
         }
 
-        Ok(GvasFile {
-            header,
-            properties
-        })
+        Ok(GvasFile { header, properties })
     }
 }

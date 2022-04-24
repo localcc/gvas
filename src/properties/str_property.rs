@@ -36,5 +36,4 @@ impl PropertyTrait for StrProperty {
     fn get_length(&self) -> i64 {
         self.value.len() as i64 + 1 + 4
     }
-
 }

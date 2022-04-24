@@ -2,7 +2,10 @@ use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{error::{DeserializeError, Error}, cursor_ext::CursorExt};
+use crate::{
+    cursor_ext::CursorExt,
+    error::{DeserializeError, Error},
+};
 
 use super::PropertyTrait;
 
@@ -18,7 +21,7 @@ macro_rules! check_size {
 macro_rules! impl_int_property {
     ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
         pub struct $name {
-            pub value: $ty
+            pub value: $ty,
         }
 
         impl $name {
@@ -29,11 +32,9 @@ macro_rules! impl_int_property {
             pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
                 check_size!(cursor, $size);
                 cursor.read_exact(&mut [0u8; 1])?;
-                
+
                 let value = cursor.$read_method::<LittleEndian>()?;
-                Ok(Self {
-                    value
-                })
+                Ok(Self { value })
             }
         }
 
@@ -53,7 +54,7 @@ macro_rules! impl_int_property {
 }
 
 pub struct Int8Property {
-    pub value: i8
+    pub value: i8,
 }
 
 impl Int8Property {
@@ -64,11 +65,9 @@ impl Int8Property {
     pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
         check_size!(cursor, 1);
         cursor.read_exact(&mut [0u8; 1])?;
-        
+
         let value = cursor.read_i8()?;
-        Ok(Int8Property {
-            value
-        })
+        Ok(Int8Property { value })
     }
 }
 
@@ -80,14 +79,14 @@ impl PropertyTrait for Int8Property {
         Ok(())
     }
 
-    fn get_length(&self) ->i64 {
+    fn get_length(&self) -> i64 {
         1
     }
 }
 
 pub struct ByteProperty {
     pub name: String,
-    pub value: u8
+    pub value: u8,
 }
 
 impl ByteProperty {
@@ -95,16 +94,13 @@ impl ByteProperty {
         ByteProperty { name, value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {    
+    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
         check_size!(cursor, 1);
         let name = cursor.read_string()?;
         cursor.read_exact(&mut [0u8; 1])?;
 
         let value = cursor.read_u8()?;
-        Ok(ByteProperty {
-            name,
-            value
-        })
+        Ok(ByteProperty { name, value })
     }
 }
 
@@ -120,11 +116,10 @@ impl PropertyTrait for ByteProperty {
     fn get_length(&self) -> i64 {
         1
     }
-
 }
 
 pub struct BoolProperty {
-    pub value: bool
+    pub value: bool,
 }
 
 impl BoolProperty {
@@ -136,9 +131,7 @@ impl BoolProperty {
         check_size!(cursor, 0);
 
         let val = cursor.read_i16::<LittleEndian>()?;
-        Ok(BoolProperty {
-            value: val > 0
-        })
+        Ok(BoolProperty { value: val > 0 })
     }
 }
 
@@ -147,7 +140,7 @@ impl PropertyTrait for BoolProperty {
         cursor.write_i64::<LittleEndian>(0)?;
         cursor.write_i16::<LittleEndian>(match self.value {
             true => 1,
-            false => 0
+            false => 0,
         })?;
         Ok(())
     }
@@ -155,7 +148,6 @@ impl PropertyTrait for BoolProperty {
     fn get_length(&self) -> i64 {
         0
     }
-
 }
 
 impl_int_property!(Int16Property, i16, read_i16, write_i16, 2);
