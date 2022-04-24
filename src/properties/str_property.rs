@@ -1,4 +1,4 @@
-use std::io::{Cursor, Read};
+use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -28,10 +28,12 @@ impl StrProperty {
 impl PropertyTrait for StrProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
+            cursor.write_string(&String::from("StrProperty"))?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size
             cursor.write_i64::<LittleEndian>(property_length as i64)?;
+            cursor.write(&[0u8; 1]);
         }
-        
+
         cursor.write_string(&self.value)?;
         Ok(())
     }

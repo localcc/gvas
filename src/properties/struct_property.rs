@@ -52,6 +52,7 @@ impl PropertyTrait for StructProperty {
         let mut begin = 0;
         let mut write_begin = 0;
         if include_header {
+            cursor.write_string(&String::from("StructProperty"))?;
             begin = cursor.position();
             cursor.write_u64::<LittleEndian>(0)?;
             cursor.write_string(&self.name)?;
@@ -91,6 +92,7 @@ impl DateTimeProperty {
 impl PropertyTrait for DateTimeProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
+            cursor.write_string(&String::from("StructProperty"))?;
             cursor.write_u64::<LittleEndian>(8)?;
             cursor.write_string(&String::from("DateTime"))?;
             cursor.write(&self.guid)?;

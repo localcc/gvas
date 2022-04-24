@@ -47,6 +47,7 @@ macro_rules! impl_int_property {
                 include_header: bool,
             ) -> Result<(), Error> {
                 if include_header {
+                    cursor.write_string(&String::from(stringify!($name)))?;
                     cursor.write_i64::<LittleEndian>($size)?;
                     cursor.write(&[0u8; 1])?;
                 }
@@ -80,6 +81,7 @@ impl Int8Property {
 impl PropertyTrait for Int8Property {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
+            cursor.write_string(&String::from("Int8Property"))?;
             cursor.write_i64::<LittleEndian>(1)?;
             cursor.write(&[0u8; 1])?;
         }
@@ -115,6 +117,7 @@ impl ByteProperty {
 impl PropertyTrait for ByteProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
+            cursor.write_string(&String::from("ByteProperty"))?;
             cursor.write_i64::<LittleEndian>(1)?;
             cursor.write_string(
                 self.name.as_ref().ok_or::<Error>(
@@ -150,6 +153,7 @@ impl BoolProperty {
 impl PropertyTrait for BoolProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
+            cursor.write_string(&String::from("BoolProperty"))?;
             cursor.write_i64::<LittleEndian>(0)?;
         }
         cursor.write_i16::<LittleEndian>(match self.value {

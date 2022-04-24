@@ -77,11 +77,9 @@ impl PropertyTrait for ArrayProperty {
         }
 
         if self.properties.len() == 0 {
-            return Err(SerializeError::InvalidValue(String::from(
-                "Cannot serialize empty array properties",
-            ))
-            .into());
+            return Ok(())
         }
+        cursor.write_string(&String::from("ArrayProperty"))?;
 
         let begin = cursor.position();
         cursor.write_u64::<LittleEndian>(0)?;

@@ -5,13 +5,13 @@ pub mod properties;
 use std::{
     collections::HashMap,
     fmt::Debug,
-    io::{Cursor, Read},
+    io::{Cursor, Read, Write},
 };
 
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use cursor_ext::CursorExt;
 use error::Error;
-use properties::Property;
+use properties::{Property, PropertyTrait};
 
 pub struct FEngineVersion {
     pub major: u16,
@@ -36,6 +36,15 @@ impl FEngineVersion {
             branch,
         })
     }
+
+    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+        cursor.write_u16::<LittleEndian>(self.major)?;
+        cursor.write_u16::<LittleEndian>(self.minor)?;
+        cursor.write_u16::<LittleEndian>(self.patch)?;
+        cursor.write_u32::<LittleEndian>(self.change_list)?;
+        cursor.write_string(&self.branch)?;
+        Ok(())
+    }
 }
 
 pub type Guid = [u8; 16];
@@ -52,6 +61,12 @@ impl FCustomVersion {
         let version = cursor.read_i32::<LittleEndian>()?;
 
         Ok(FCustomVersion { key: guid, version })
+    }
+
+    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+        cursor.write(&self.key)?;
+        cursor.write_i32::<LittleEndian>(self.version)?;
+        Ok(())
     }
 }
 
@@ -91,6 +106,22 @@ impl GvasHeader {
             save_game_class_name,
         })
     }
+
+    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+        cursor.write_i32::<LittleEndian>(self.file_type_tag)?;
+        cursor.write_i32::<LittleEndian>(self.save_game_file_version)?;
+        cursor.write_i32::<LittleEndian>(self.package_file_ue4_version)?;
+        self.engine_version.write(cursor)?;
+        cursor.write_i32::<LittleEndian>(self.custom_version_format)?;
+        cursor.write_i32::<LittleEndian>(self.custom_versions.len() as i32)?;
+
+        for custom_version in &self.custom_versions {
+            custom_version.write(cursor)?;
+        }
+
+        cursor.write_string(&self.save_game_class_name)?;
+        Ok(())
+    }
 }
 
 pub struct GvasFile {
@@ -112,5 +143,17 @@ impl GvasFile {
         }
 
         Ok(GvasFile { header, properties })
+    }
+
+    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+        self.header.write(cursor)?;
+
+        for (name, property) in &self.properties {
+            cursor.write_string(name)?;
+            property.write(cursor, true)?;
+        }
+        cursor.write_string(&String::from("None"))?;
+        cursor.write_i32::<LittleEndian>(0)?; // padding
+        Ok(())
     }
 }
