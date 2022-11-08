@@ -6,6 +6,7 @@ use crate::{cursor_ext::CursorExt, error::Error};
 
 use super::PropertyTrait;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StrProperty {
     pub value: String,
 }
@@ -31,7 +32,7 @@ impl PropertyTrait for StrProperty {
             cursor.write_string(&String::from("StrProperty"))?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size
             cursor.write_i64::<LittleEndian>(property_length as i64)?;
-            cursor.write(&[0u8; 1]);
+            let _ = cursor.write(&[0u8; 1])?;
         }
 
         cursor.write_string(&self.value)?;

@@ -13,7 +13,6 @@ impl Display for DeserializeError {
                 write!(f, "Invalid value size, expected {} got {}", expected, got)
             }
             DeserializeError::UnknownProperty(ref name) => write!(f, "Unknown property {}", name),
-            _ => write!(f, "unk"),
         }
     }
 }

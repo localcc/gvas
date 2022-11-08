@@ -1,4 +1,4 @@
-use std::io::{Cursor, Read, Write, Seek, SeekFrom};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -9,6 +9,7 @@ use crate::{
 
 use super::{struct_property::StructProperty, Property, PropertyTrait};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct ArrayProperty {
     pub property_type: String,
     field_name: Option<String>,
@@ -76,8 +77,8 @@ impl PropertyTrait for ArrayProperty {
             panic!("Nested arrays not supported");
         }
 
-        if self.properties.len() == 0 {
-            return Ok(())
+        if self.properties.is_empty() {
+            return Ok(());
         }
         cursor.write_string(&String::from("ArrayProperty"))?;
 
@@ -85,7 +86,7 @@ impl PropertyTrait for ArrayProperty {
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.property_type)?;
-        cursor.write(&[0u8; 1])?;
+        let _ = cursor.write(&[0u8; 1])?;
         let begin_write = cursor.position();
 
         cursor.write_i32::<LittleEndian>(self.properties.len() as i32)?;
@@ -101,21 +102,18 @@ impl PropertyTrait for ArrayProperty {
                 };
                 let struct_property = struct_property?;
 
-                cursor.write_string(
-                    self.field_name.as_ref().ok_or::<Error>(
-                        SerializeError::InvalidValue(String::from(
-                            "Array type is StructProperty but field_name is None",
-                        ))
-                        .into(),
-                    )?,
-                )?;
+                cursor.write_string(self.field_name.as_ref().ok_or_else(|| {
+                    SerializeError::InvalidValue(String::from(
+                        "Array type is StructProperty but field_name is None",
+                    ))
+                })?)?;
                 cursor.write_string(&self.property_type)?;
 
                 let begin_without_name = cursor.position();
                 cursor.write_u64::<LittleEndian>(0)?;
                 cursor.write_string(&struct_property.name)?;
-                cursor.write(&struct_property.guid)?;
-                cursor.write(&[0u8; 1])?;
+                let _ = cursor.write(&struct_property.guid)?;
+                let _ = cursor.write(&[0u8; 1])?;
 
                 for property in &self.properties {
                     let res: Result<(), Error> = match property {
@@ -141,7 +139,7 @@ impl PropertyTrait for ArrayProperty {
                 }
             }
         }
-        
+
         let end_write = cursor.position();
         cursor.seek(SeekFrom::Start(begin))?;
         cursor.write_u64::<LittleEndian>(end_write - begin_write)?;

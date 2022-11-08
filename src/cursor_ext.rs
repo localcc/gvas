@@ -2,11 +2,11 @@ use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{error::Error, Guid};
+use crate::error::Error;
 
 pub trait CursorExt {
     fn read_string(&mut self) -> Result<String, Error>;
-    fn write_string(&mut self, v: &String) -> Result<(), Error>;
+    fn write_string(&mut self, v: &str) -> Result<(), Error>;
 }
 
 impl CursorExt for Cursor<Vec<u8>> {
@@ -19,11 +19,11 @@ impl CursorExt for Cursor<Vec<u8>> {
         Ok(String::from_utf8(bytes)?)
     }
 
-    fn write_string(&mut self, v: &String) -> Result<(), Error> {
+    fn write_string(&mut self, v: &str) -> Result<(), Error> {
         let len = v.len() + 1;
         self.write_i32::<LittleEndian>(len as i32)?;
-        self.write(v.as_bytes())?;
-        self.write(&[0u8; 1])?;
+        let _ = self.write(v.as_bytes())?;
+        let _ = self.write(&[0u8; 1])?;
         Ok(())
     }
 }

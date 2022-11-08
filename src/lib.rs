@@ -4,7 +4,7 @@ pub mod properties;
 
 use std::{
     collections::HashMap,
-    fmt::Debug,
+    fmt::{Debug, Display},
     io::{Cursor, Read, Write},
 };
 
@@ -13,12 +13,23 @@ use cursor_ext::CursorExt;
 use error::Error;
 use properties::{Property, PropertyTrait};
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FEngineVersion {
     pub major: u16,
     pub minor: u16,
     pub patch: u16,
     pub change_list: u32,
     pub branch: String,
+}
+
+impl Display for FEngineVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}.{}.{}-{}+++{}",
+            self.major, self.minor, self.patch, self.change_list, self.branch
+        )
+    }
 }
 
 impl FEngineVersion {
@@ -49,6 +60,7 @@ impl FEngineVersion {
 
 pub type Guid = [u8; 16];
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FCustomVersion {
     pub key: Guid,
     pub version: i32,
@@ -64,12 +76,13 @@ impl FCustomVersion {
     }
 
     pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
-        cursor.write(&self.key)?;
+        let _ = cursor.write(&self.key)?;
         cursor.write_i32::<LittleEndian>(self.version)?;
         Ok(())
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct GvasHeader {
     pub file_type_tag: i32,
     pub save_game_file_version: i32,
@@ -124,6 +137,7 @@ impl GvasHeader {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct GvasFile {
     pub header: GvasHeader,
     pub properties: HashMap<String, Property>,

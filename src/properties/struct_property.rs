@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{Cursor, Read, Write, SeekFrom, Seek},
+    io::{Cursor, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -9,12 +9,14 @@ use crate::{cursor_ext::CursorExt, error::Error, Guid};
 
 use super::{Property, PropertyTrait};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct StructProperty {
     pub name: String,
     pub guid: Guid,
     pub properties: HashMap<String, Property>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DateTimeProperty {
     pub guid: Guid,
     pub ticks: u64,
@@ -29,7 +31,11 @@ impl StructProperty {
         }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>, name: String, guid: [u8; 16]) -> Result<StructProperty, Error> {
+    pub fn read(
+        cursor: &mut Cursor<Vec<u8>>,
+        name: String,
+        guid: [u8; 16],
+    ) -> Result<StructProperty, Error> {
         let mut properties = HashMap::new();
         let mut key_name = cursor.read_string()?;
         while &key_name != "None" {
@@ -56,8 +62,8 @@ impl PropertyTrait for StructProperty {
             begin = cursor.position();
             cursor.write_u64::<LittleEndian>(0)?;
             cursor.write_string(&self.name)?;
-            cursor.write(&self.guid)?;
-            cursor.write(&[0u8; 1])?;
+            let _ = cursor.write(&self.guid)?;
+            let _ = cursor.write(&[0u8; 1])?;
             write_begin = cursor.position();
         }
 
@@ -95,8 +101,8 @@ impl PropertyTrait for DateTimeProperty {
             cursor.write_string(&String::from("StructProperty"))?;
             cursor.write_u64::<LittleEndian>(8)?;
             cursor.write_string(&String::from("DateTime"))?;
-            cursor.write(&self.guid)?;
-            cursor.write(&[0u8; 1])?;
+            let _ = cursor.write(&self.guid)?;
+            let _ = cursor.write(&[0u8; 1])?;
         }
 
         cursor.write_u64::<LittleEndian>(self.ticks)?;
