@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{Cursor, Read, Write},
+    io::{Cursor, Read},
     path::Path,
 };
 
@@ -151,7 +151,8 @@ fn write_file() {
     verify_file_data(&file);
 
     let mut writer = Cursor::new(Vec::new());
-    file.write(&mut writer).expect("Failed to serialize gvas file");
+    file.write(&mut writer)
+        .expect("Failed to serialize gvas file");
 
     let mut reader = Cursor::new(writer.get_ref().to_owned());
     let file = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
