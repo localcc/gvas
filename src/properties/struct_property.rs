@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Debug,
     hash::Hash,
     io::{Cursor, Read, Seek, SeekFrom, Write},
 };
@@ -29,7 +30,7 @@ macro_rules! write_flat_property {
     };
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct StructProperty {
     pub type_name: String,
     pub guid: Guid,
@@ -403,6 +404,33 @@ impl From<Guid> for StructProperty {
                 ("D".to_string(), UInt32Property::new(d).into()),
             ]),
         )
+    }
+}
+
+impl Debug for StructProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut debug_struct = f.debug_struct("StructProperty");
+
+        debug_struct.field("type_name", &self.type_name);
+        debug_struct.field("guid", &self.guid);
+
+        if let Some(vector) = self.get_vector() {
+            debug_struct.field("vector", &vector);
+        } else if let Some(rotator) = self.get_rotator() {
+            debug_struct.field("rotator", &rotator);
+        } else if let Some(quat) = self.get_quat() {
+            debug_struct.field("quat", &quat);
+        } else if let Some(date_time) = self.get_date_time() {
+            debug_struct.field("date_time", &date_time);
+        } else if let Some(int_point) = self.get_int_point() {
+            debug_struct.field("int_point", &int_point);
+        } else if let Some(guid) = self.get_guid() {
+            debug_struct.field("guid", &guid);
+        } else {
+            debug_struct.field("properties", &self.properties);
+        }
+
+        debug_struct.finish()
     }
 }
 

@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Guid(pub [u8; 16]);
 
 impl Guid {
@@ -51,6 +51,13 @@ impl Guid {
     }
 }
 
+impl Debug for Guid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let guid = self.to_string();
+        f.debug_tuple("Guid").field(&guid).finish()
+    }
+}
+
 impl Display for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:02X}", self.0[0])?;
@@ -81,7 +88,6 @@ impl Display for Guid {
         write!(f, "{:02X}", self.0[13])?;
         write!(f, "{:02X}", self.0[14])?;
         write!(f, "{:02X}", self.0[15])?;
-
         Ok(())
     }
 }
