@@ -1,6 +1,8 @@
 mod cursor_ext;
 pub mod error;
 pub mod properties;
+pub(crate) mod scoped_stack_entry;
+pub mod types;
 
 use std::{
     collections::HashMap,
@@ -58,11 +60,9 @@ impl FEngineVersion {
     }
 }
 
-pub type Guid = [u8; 16];
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FCustomVersion {
-    pub key: Guid,
+    pub key: [u8; 16],
     pub version: i32,
 }
 
@@ -145,13 +145,32 @@ pub struct GvasFile {
 
 impl GvasFile {
     pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+        let hints = HashMap::new();
+        Self::read_with_hints(cursor, &hints)
+    }
+
+    pub fn read_with_hints(
+        cursor: &mut Cursor<Vec<u8>>,
+        hints: &HashMap<String, String>,
+    ) -> Result<Self, Error> {
         let header = GvasHeader::read(cursor)?;
 
         let mut properties = HashMap::new();
         let mut property_name = cursor.read_string()?;
         while property_name != "None" {
             let property_type = cursor.read_string()?;
-            let property = Property::new(cursor, &property_type, true)?;
+
+            let mut properties_stack = Vec::new();
+            properties_stack.push(property_name.clone());
+
+            let property = Property::new(
+                cursor,
+                hints,
+                &mut properties_stack,
+                &property_type,
+                true,
+                None,
+            )?;
             properties.insert(property_name, property);
             property_name = cursor.read_string()?;
         }

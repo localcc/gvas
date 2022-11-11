@@ -1,6 +1,7 @@
 use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use ordered_float::OrderedFloat;
 
 use crate::{
     cursor_ext::CursorExt,
@@ -20,7 +21,7 @@ macro_rules! check_size {
 
 macro_rules! impl_int_property {
     ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
-        #[derive(Debug, Clone, PartialEq, Eq)]
+        #[derive(Debug, Clone, PartialEq, Eq, Hash)]
         pub struct $name {
             pub value: $ty,
         }
@@ -59,7 +60,7 @@ macro_rules! impl_int_property {
     };
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Int8Property {
     pub value: i8,
 }
@@ -92,7 +93,7 @@ impl PropertyTrait for Int8Property {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ByteProperty {
     pub name: Option<String>,
     pub value: u8,
@@ -132,7 +133,7 @@ impl PropertyTrait for ByteProperty {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BoolProperty {
     pub value: bool,
 }
@@ -145,8 +146,9 @@ impl BoolProperty {
     pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 0);
+            cursor.read_exact(&mut [0u8; 1])?;
         }
-        let val = cursor.read_i16::<LittleEndian>()?;
+        let val = cursor.read_u8()?;
         Ok(BoolProperty { value: val > 0 })
     }
 }
@@ -156,8 +158,9 @@ impl PropertyTrait for BoolProperty {
         if include_header {
             cursor.write_string(&String::from("BoolProperty"))?;
             cursor.write_i64::<LittleEndian>(0)?;
+            cursor.write_all(&[0u8; 1])?;
         }
-        cursor.write_i16::<LittleEndian>(match self.value {
+        cursor.write_u8(match self.value {
             true => 1,
             false => 0,
         })?;
@@ -165,14 +168,16 @@ impl PropertyTrait for BoolProperty {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FloatProperty {
-    pub value: f32,
+    pub value: OrderedFloat<f32>,
 }
 
 impl FloatProperty {
     pub fn new(value: f32) -> Self {
-        FloatProperty { value }
+        FloatProperty {
+            value: OrderedFloat(value),
+        }
     }
 
     pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
@@ -181,7 +186,7 @@ impl FloatProperty {
             cursor.read_exact(&mut [0u8; 1])?;
         }
         Ok(Self {
-            value: cursor.read_f32::<LittleEndian>()?,
+            value: OrderedFloat(cursor.read_f32::<LittleEndian>()?),
         })
     }
 }
@@ -193,19 +198,21 @@ impl PropertyTrait for FloatProperty {
             cursor.write_i64::<LittleEndian>(4)?;
             let _ = cursor.write(&[0u8; 1])?;
         }
-        cursor.write_f32::<LittleEndian>(self.value)?;
+        cursor.write_f32::<LittleEndian>(self.value.0)?;
         Ok(())
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DoubleProperty {
-    pub value: f64,
+    pub value: OrderedFloat<f64>,
 }
 
 impl DoubleProperty {
     pub fn new(value: f64) -> Self {
-        DoubleProperty { value }
+        DoubleProperty {
+            value: OrderedFloat(value),
+        }
     }
 
     pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
@@ -214,7 +221,7 @@ impl DoubleProperty {
             cursor.read_exact(&mut [0u8; 1])?;
         }
         Ok(Self {
-            value: cursor.read_f64::<LittleEndian>()?,
+            value: OrderedFloat(cursor.read_f64::<LittleEndian>()?),
         })
     }
 }
@@ -226,7 +233,7 @@ impl PropertyTrait for DoubleProperty {
             cursor.write_i64::<LittleEndian>(8)?;
             let _ = cursor.write(&[0u8; 1])?;
         }
-        cursor.write_f64::<LittleEndian>(self.value)?;
+        cursor.write_f64::<LittleEndian>(self.value.0)?;
         Ok(())
     }
 }

@@ -4,10 +4,9 @@ use std::{
     path::Path,
 };
 
-use gvas::{properties::Property, GvasFile};
-
+#[macro_export]
 macro_rules! get_or_panic {
-    ($map:ident, $property_name:expr, $property_class:ident) => {
+    ($map:expr, $property_name:expr, $property_class:ident) => {
         match $map.get(&String::from($property_name)) {
             Some(e) => match e {
                 Property::$property_class(e) => e,
@@ -18,8 +17,9 @@ macro_rules! get_or_panic {
     };
 }
 
+#[macro_export]
 macro_rules! verify_property {
-    ($map:ident, $property_name:expr, $property_class:ident, $value:expr) => {
+    ($map:expr, $property_name:expr, $property_class:ident, $value:expr) => {
         let e = get_or_panic!($map, $property_name, $property_class);
         match e.value == $value {
             false => panic!(
@@ -30,6 +30,8 @@ macro_rules! verify_property {
         };
     };
 }
+
+use gvas::{properties::Property, GvasFile};
 
 fn verify_file_data(file: &GvasFile) {
     let properties = &file.properties;
@@ -60,10 +62,10 @@ fn verify_file_data(file: &GvasFile) {
     verify_property!(properties, "str_property", StrProperty, "Hello world");
 
     let struct_property = get_or_panic!(properties, "struct_property", StructProperty);
-    if struct_property.name != "CustomStruct" {
+    if struct_property.type_name != "CustomStruct" {
         panic!(
             "Property struct_property name doesn't match, expected CustomStruct got {}",
-            struct_property.name
+            struct_property.type_name
         );
     }
     let struct_property_properties = &struct_property.properties;
@@ -74,13 +76,14 @@ fn verify_file_data(file: &GvasFile) {
         12345
     );
 
-    let date_time_property = get_or_panic!(properties, "date_time_property", DateTimeProperty);
-    if date_time_property.ticks != 0x8DA2624F3F62720 {
-        panic!(
-            "Property date_time_property ticks doesn't match, expected 0x8DA2624F3F62720 got {:#x}",
-            date_time_property.ticks
-        );
-    }
+    let date_time_property = get_or_panic!(properties, "date_time_property", StructProperty);
+
+    verify_property!(
+        date_time_property.properties,
+        "Ticks",
+        UInt64Property,
+        0x8DA2624F3F62720u64
+    );
 
     let array_of_structs = get_or_panic!(properties, "array_of_structs", ArrayProperty);
     for property in &array_of_structs.properties {

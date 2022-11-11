@@ -6,7 +6,7 @@ use crate::{cursor_ext::CursorExt, error::Error};
 
 use super::PropertyTrait;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StrProperty {
     pub value: String,
 }

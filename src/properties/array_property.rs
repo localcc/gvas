@@ -1,4 +1,7 @@
-use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use std::{
+    collections::HashMap,
+    io::{Cursor, Read, Seek, SeekFrom, Write},
+};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -9,11 +12,19 @@ use crate::{
 
 use super::{struct_property::StructProperty, Property, PropertyTrait};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct ArrayStructInfo {
+    type_name: String,
+    field_name: String,
+    guid: [u8; 16],
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ArrayProperty {
     pub property_type: String,
-    field_name: Option<String>,
     pub properties: Vec<Property>,
+
+    array_struct_info: Option<ArrayStructInfo>,
 }
 
 impl ArrayProperty {
@@ -22,26 +33,39 @@ impl ArrayProperty {
         field_name: Option<String>,
         properties: Vec<Property>,
     ) -> Self {
+        let array_struct_info = field_name.map(|field_name| ArrayStructInfo {
+            field_name,
+            type_name: "".to_string(),
+            guid: [0u8; 16],
+        });
+
         ArrayProperty {
             property_type,
-            field_name,
             properties,
+
+            array_struct_info,
         }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
-        let _length = cursor.read_u64::<LittleEndian>()?;
+    pub fn read(
+        cursor: &mut Cursor<Vec<u8>>,
+        hints: &HashMap<String, String>,
+        properties_stack: &mut Vec<String>,
+    ) -> Result<Self, Error> {
+        let length = cursor.read_u64::<LittleEndian>()?;
 
         let property_type = cursor.read_string()?;
         cursor.read_exact(&mut [0u8; 1])?;
 
         let properties_len = cursor.read_i32::<LittleEndian>()? as usize;
         let mut properties: Vec<Property> = Vec::with_capacity(properties_len);
-        let mut field_name = None;
+
+        let mut array_struct_info = None;
 
         match property_type.as_str() {
             "StructProperty" => {
-                field_name = Some(cursor.read_string()?);
+                let field_name = cursor.read_string()?;
+
                 let _dup_property_type = cursor.read_string()?;
                 let _length_without_struct_name = cursor.read_u64::<LittleEndian>()?;
 
@@ -51,22 +75,42 @@ impl ArrayProperty {
                 cursor.read_exact(&mut [0u8; 1])?;
 
                 for _ in 0..properties_len {
-                    let struct_property =
-                        StructProperty::read(cursor, struct_name.clone(), struct_guid)?;
-                    properties.push(struct_property.into());
+                    properties.push(
+                        StructProperty::read_with_type_name(
+                            cursor,
+                            hints,
+                            properties_stack,
+                            &struct_name,
+                        )?
+                        .into(),
+                    );
                 }
+
+                array_struct_info = Some(ArrayStructInfo {
+                    type_name: struct_name,
+                    field_name,
+                    guid: struct_guid,
+                });
             }
             _ => {
                 for _ in 0..properties_len {
-                    properties.push(Property::new(cursor, &property_type, false)?)
+                    properties.push(Property::new(
+                        cursor,
+                        hints,
+                        properties_stack,
+                        &property_type,
+                        false,
+                        Some((length - 4) / properties_len as u64 + length),
+                    )?)
                 }
             }
         };
 
         Ok(ArrayProperty {
             property_type,
-            field_name,
             properties,
+
+            array_struct_info,
         })
     }
 }
@@ -74,12 +118,9 @@ impl ArrayProperty {
 impl PropertyTrait for ArrayProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            panic!("Nested arrays not supported");
+            panic!("Nested arrays not supported"); // fixme: throw error
         }
 
-        if self.properties.is_empty() {
-            return Ok(());
-        }
         cursor.write_string(&String::from("ArrayProperty"))?;
 
         let begin = cursor.position();
@@ -93,26 +134,19 @@ impl PropertyTrait for ArrayProperty {
 
         match self.property_type.as_str() {
             "StructProperty" => {
-                let struct_property: Result<&StructProperty, Error> = match &self.properties[0] {
-                    Property::StructProperty(e) => Ok(e),
-                    _ => Err(SerializeError::InvalidValue(String::from(
-                        "Array property_type doesn't match property inside array",
-                    ))
-                    .into()),
-                };
-                let struct_property = struct_property?;
+                let array_struct_info = self.array_struct_info.as_ref().ok_or_else(|| {
+                    SerializeError::InvalidValue(
+                        "Array type is StructProperty but array_struct_info is None".to_string(),
+                    )
+                })?;
 
-                cursor.write_string(self.field_name.as_ref().ok_or_else(|| {
-                    SerializeError::InvalidValue(String::from(
-                        "Array type is StructProperty but field_name is None",
-                    ))
-                })?)?;
+                cursor.write_string(&array_struct_info.field_name)?;
                 cursor.write_string(&self.property_type)?;
 
                 let begin_without_name = cursor.position();
                 cursor.write_u64::<LittleEndian>(0)?;
-                cursor.write_string(&struct_property.name)?;
-                let _ = cursor.write(&struct_property.guid)?;
+                cursor.write_string(&array_struct_info.type_name)?;
+                let _ = cursor.write(&array_struct_info.guid)?;
                 let _ = cursor.write(&[0u8; 1])?;
 
                 for property in &self.properties {
