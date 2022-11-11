@@ -4,6 +4,12 @@ use std::fmt::{Debug, Display};
 pub struct Guid(pub [u8; 16]);
 
 impl Guid {
+    /// Create new instance of Guid struct from a [0u8; 16] byte array
+    pub fn new(guid: [u8; 16]) -> Self {
+        Guid(guid)
+    }
+
+    /// Create new instance of Guid struct from 4 u32 values
     pub fn from_4_ints(a: u32, b: u32, c: u32, d: u32) -> Self {
         Guid([
             (a & 0xff) as u8,
@@ -25,11 +31,8 @@ impl Guid {
         ])
     }
 
-    pub fn new(guid: [u8; 16]) -> Self {
-        Guid(guid)
-    }
-
-    pub fn to_4_ints(&self) -> (u32, u32, u32, u32) {
+    /// Convert Guid struct into 4 u32 values
+    pub fn into_4_ints(&self) -> (u32, u32, u32, u32) {
         let a = self.0[0] as u32
             | ((self.0[1] as u32) << 8)
             | ((self.0[2] as u32) << 16)

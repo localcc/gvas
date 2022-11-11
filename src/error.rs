@@ -4,12 +4,15 @@ use std::{
     string::{FromUtf16Error, FromUtf8Error},
 };
 
+/// Gets thrown when there is a deserialization error
 #[derive(Debug)]
 pub enum DeserializeError {
+    /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
     InvalidValueSize(u64, u64),
+    /// If a string has invalid size
     InvalidString(i32),
+    /// If a hint is missing.
     MissingHint(String, String, u64),
-    UnknownProperty(String),
 }
 
 impl Display for DeserializeError {
@@ -28,14 +31,16 @@ impl Display for DeserializeError {
                     struct_name, struct_path, position
                 )
             }
-            DeserializeError::UnknownProperty(ref name) => write!(f, "Unknown property {}", name),
         }
     }
 }
 
+/// Gets thrown when there is a serialization error
 #[derive(Debug)]
 pub enum SerializeError {
+    /// A value was invalid
     InvalidValue(String),
+    /// Struct is missing a field, e.g. struct with type_name `Vector` doesn't have an `X` property
     StructMissingField(String, String),
 }
 

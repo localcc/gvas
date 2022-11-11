@@ -6,6 +6,7 @@ use crate::{cursor_ext::CursorExt, error::Error};
 
 use super::PropertyTrait;
 
+/// This struct is read when a property is unknown to the deserializer
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UnknownProperty {
     property_name: String,
@@ -17,7 +18,7 @@ impl UnknownProperty {
         UnknownProperty { property_name, raw }
     }
 
-    pub fn read_with_length(
+    pub(crate) fn read_with_length(
         cursor: &mut Cursor<Vec<u8>>,
         property_name: String,
         length: u64,
@@ -31,7 +32,7 @@ impl UnknownProperty {
         })
     }
 
-    pub fn read_with_header(
+    pub(crate) fn read_with_header(
         cursor: &mut Cursor<Vec<u8>>,
         property_name: String,
     ) -> Result<Self, Error> {

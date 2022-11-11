@@ -31,7 +31,10 @@ macro_rules! impl_int_property {
                 $name { value }
             }
 
-            pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+            pub(crate) fn read(
+                cursor: &mut Cursor<Vec<u8>>,
+                include_header: bool,
+            ) -> Result<Self, Error> {
                 if include_header {
                     check_size!(cursor, $size);
                     cursor.read_exact(&mut [0u8; 1])?;
@@ -70,7 +73,7 @@ impl Int8Property {
         Int8Property { value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 1);
             cursor.read_exact(&mut [0u8; 1])?;
@@ -104,7 +107,7 @@ impl ByteProperty {
         ByteProperty { name, value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         let mut name = None;
         if include_header {
             check_size!(cursor, 1);
@@ -143,7 +146,7 @@ impl BoolProperty {
         BoolProperty { value }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 0);
             cursor.read_exact(&mut [0u8; 1])?;
@@ -180,7 +183,7 @@ impl FloatProperty {
         }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 4);
             cursor.read_exact(&mut [0u8; 1])?;
@@ -215,7 +218,7 @@ impl DoubleProperty {
         }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 8);
             cursor.read_exact(&mut [0u8; 1])?;

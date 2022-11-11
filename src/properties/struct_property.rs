@@ -140,7 +140,7 @@ impl StructProperty {
         })
     }
 
-    pub fn read_with_header(
+    pub(crate) fn read_with_header(
         cursor: &mut Cursor<Vec<u8>>,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
@@ -148,7 +148,7 @@ impl StructProperty {
         Self::read(cursor, hints, properties_stack, true, None)
     }
 
-    pub fn read_with_type_name(
+    pub(crate) fn read_with_type_name(
         cursor: &mut Cursor<Vec<u8>>,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
@@ -393,7 +393,7 @@ impl From<IntPoint> for StructProperty {
 
 impl From<Guid> for StructProperty {
     fn from(guid: Guid) -> Self {
-        let (a, b, c, d) = guid.to_4_ints();
+        let (a, b, c, d) = guid.into_4_ints();
         Self::new(
             "Guid".to_string(),
             Guid([0u8; 16]),
@@ -425,7 +425,7 @@ impl Debug for StructProperty {
         } else if let Some(int_point) = self.get_int_point() {
             debug_struct.field("int_point", &int_point);
         } else if let Some(guid) = self.get_guid() {
-            debug_struct.field("guid", &guid);
+            debug_struct.field("value", &guid);
         } else {
             debug_struct.field("properties", &self.properties);
         }

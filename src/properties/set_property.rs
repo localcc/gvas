@@ -25,7 +25,7 @@ impl SetProperty {
         }
     }
 
-    pub fn read(
+    pub(crate) fn read(
         cursor: &mut Cursor<Vec<u8>>,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,

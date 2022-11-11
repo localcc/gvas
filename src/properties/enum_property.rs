@@ -22,7 +22,7 @@ impl EnumProperty {
         }
     }
 
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
         let _length = cursor.read_u64::<LittleEndian>()?;
 
         let read_enum_type = cursor.read_string()?;
