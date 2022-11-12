@@ -246,10 +246,10 @@ impl StructProperty {
             return None;
         }
 
-        let a = cast!(Property, UInt32Property, self.properties.get("A")?)?.value;
-        let b = cast!(Property, UInt32Property, self.properties.get("B")?)?.value;
-        let c = cast!(Property, UInt32Property, self.properties.get("C")?)?.value;
-        let d = cast!(Property, UInt32Property, self.properties.get("D")?)?.value;
+        let a = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("A")?)?.value); // ue4 saves GUID in BigEndian format
+        let b = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("B")?)?.value);
+        let c = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("C")?)?.value);
+        let d = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("D")?)?.value);
 
         Some(Guid::from_4_ints(a, b, c, d))
     }
