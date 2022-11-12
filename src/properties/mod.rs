@@ -42,7 +42,7 @@ macro_rules! cast {
 }
 
 #[enum_dispatch]
-pub(crate) trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
+pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error>;
 }
 
