@@ -398,10 +398,23 @@ impl From<Guid> for StructProperty {
             "Guid".to_string(),
             Guid([0u8; 16]),
             HashMap::from([
-                ("A".to_string(), UInt32Property::new(a).into()),
-                ("B".to_string(), UInt32Property::new(b).into()),
-                ("C".to_string(), UInt32Property::new(c).into()),
-                ("D".to_string(), UInt32Property::new(d).into()),
+                // swapping back from BigEndian to LittleEndian
+                (
+                    "A".to_string(),
+                    UInt32Property::new(u32::swap_bytes(a)).into(),
+                ),
+                (
+                    "B".to_string(),
+                    UInt32Property::new(u32::swap_bytes(b)).into(),
+                ),
+                (
+                    "C".to_string(),
+                    UInt32Property::new(u32::swap_bytes(c)).into(),
+                ),
+                (
+                    "D".to_string(),
+                    UInt32Property::new(u32::swap_bytes(d)).into(),
+                ),
             ]),
         )
     }
