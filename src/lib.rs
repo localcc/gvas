@@ -4,7 +4,7 @@
 //!
 //! # Examples
 //!
-//! ```no_run
+//! ```no_run,ignore
 //! use std::{
 //!     fs::File,
 //!     io::{Cursor, Read},
@@ -28,7 +28,7 @@
 //! This means that a library parsing the file must know the type beforehand. That's why you need hints.
 //!
 //! The error usually looks like this:
-//! ```rust
+//! ```no_run,ignore
 //! MissingHint(
 //!         "StructProperty" /* property type */,
 //!         "UnLockedMissionParameters.MapProperty.Key.StructProperty" /* property path */,
@@ -41,7 +41,7 @@
 //!
 //!  [`DeserializeError::MissingHint`]: error/enum.DeserializeError.html#variant.MissingHint
 //!
-//! ```no_run
+//! ```no_run,ignore
 //! use std::{
 //!     fs::File,
 //!     io::{Cursor, Read},
@@ -210,7 +210,7 @@ impl GvasHeader {
     ///
     /// # Examples
     ///
-    /// ```no_run
+    /// ```no_run,ignore
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -255,7 +255,7 @@ impl GvasHeader {
     /// Write GvasHeader to a binary file
     ///
     /// # Examples
-    /// ```no_run
+    /// ```no_run,ignore
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -310,7 +310,7 @@ impl GvasFile {
     ///
     /// # Examples
     ///
-    /// ```no_run
+    /// ```no_run,ignore
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -343,7 +343,7 @@ impl GvasFile {
     ///
     /// # Examples
     ///
-    /// ```no_run
+    /// ```no_run,ignore
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -402,7 +402,7 @@ impl GvasFile {
     ///
     /// # Examples
     ///
-    /// ```no_run
+    /// ```no_run,ignore
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
