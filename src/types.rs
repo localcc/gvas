@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::{fmt::{Debug, Display}, str::FromStr, error::Error};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Guid(pub [u8; 16]);
@@ -92,5 +92,52 @@ impl Display for Guid {
         write!(f, "{:02X}", self.0[14])?;
         write!(f, "{:02X}", self.0[15])?;
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct ParseGuidError;
+
+impl Display for ParseGuidError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "invalid GUID syntax")
+    }
+}
+
+impl Error for ParseGuidError {
+}
+
+impl FromStr for Guid {
+    type Err = ParseGuidError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let cleaned = s.replace('-', "");
+        if cleaned.len() != 32 {
+            Err(ParseGuidError)?;
+        }
+        let mut guid = Guid(Default::default());
+        for i in 0..16 {
+            guid.0[i] = u8::from_str_radix(&cleaned[i*2..i*2+2], 16).map_err(|_| ParseGuidError)?;
+        }
+        Ok(guid)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for Guid {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        serializer.collect_str(self)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for Guid {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: serde::Deserializer<'de>
+    {
+        let s = String::deserialize(deserializer)?;
+        Guid::from_str(&s).map_err(serde::de::Error::custom)
     }
 }

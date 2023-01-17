@@ -31,6 +31,7 @@ macro_rules! write_flat_property {
 }
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StructProperty {
     pub type_name: String,
     pub guid: Guid,

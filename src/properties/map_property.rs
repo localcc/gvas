@@ -11,6 +11,7 @@ use crate::{cursor_ext::CursorExt, error::Error, scoped_stack_entry::ScopedStack
 use super::{Property, PropertyTrait};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MapProperty {
     pub key_type: String,
     pub value_type: String,

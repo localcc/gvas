@@ -22,6 +22,7 @@ macro_rules! check_size {
 macro_rules! impl_int_property {
     ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
         #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub struct $name {
             pub value: $ty,
         }
@@ -64,6 +65,7 @@ macro_rules! impl_int_property {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Int8Property {
     pub value: i8,
 }
@@ -97,6 +99,7 @@ impl PropertyTrait for Int8Property {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ByteProperty {
     pub name: Option<String>,
     pub value: u8,
@@ -137,6 +140,7 @@ impl PropertyTrait for ByteProperty {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BoolProperty {
     pub value: bool,
 }
@@ -172,6 +176,7 @@ impl PropertyTrait for BoolProperty {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FloatProperty {
     pub value: OrderedFloat<f32>,
 }
@@ -207,6 +212,7 @@ impl PropertyTrait for FloatProperty {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DoubleProperty {
     pub value: OrderedFloat<f64>,
 }

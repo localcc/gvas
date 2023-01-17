@@ -47,6 +47,7 @@ pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
 }
 
 #[enum_dispatch(PropertyTrait)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
 pub enum Property {
     Int8Property,
     ByteProperty,

@@ -13,6 +13,7 @@ use crate::{
 use super::{struct_property::StructProperty, Property, PropertyTrait};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 struct ArrayStructInfo {
     type_name: String,
     field_name: String,
@@ -20,6 +21,7 @@ struct ArrayStructInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ArrayProperty {
     pub property_type: String,
     pub properties: Vec<Property>,
