@@ -31,7 +31,7 @@ macro_rules! write_flat_property {
 }
 
 #[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
 pub struct StructProperty {
     pub type_name: String,
     pub guid: Guid,
@@ -462,5 +462,26 @@ impl Hash for StructProperty {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.type_name.hash(state);
         self.guid.hash(state);
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for StructProperty {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        #[derive(serde::Serialize)]
+        struct StructPropertyWithResolvedValue<'a> {
+            #[serde(flatten)]
+            struct_property: &'a StructProperty,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            value: Option<Guid>
+        }
+
+        StructPropertyWithResolvedValue {
+            struct_property: self,
+            value: self.get_guid()
+        }.serialize(serializer)
     }
 }
