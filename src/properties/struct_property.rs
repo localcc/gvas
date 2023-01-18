@@ -472,16 +472,21 @@ impl serde::Serialize for StructProperty {
         S: serde::Serializer,
     {
         #[derive(serde::Serialize)]
-        struct StructPropertyWithResolvedValue<'a> {
-            #[serde(flatten)]
-            struct_property: &'a StructProperty,
+        struct StructProperty<'a> {
+            type_name: &'a String,
+            guid: &'a Guid,
+            properties: &'a HashMap<String, Property>,
+
             #[serde(skip_serializing_if = "Option::is_none")]
-            value: Option<Guid>
+            value: Option<Guid>,
         }
 
-        StructPropertyWithResolvedValue {
-            struct_property: self,
-            value: self.get_guid()
-        }.serialize(serializer)
+        StructProperty {
+            type_name: &self.type_name,
+            guid: &self.guid,
+            properties: &self.properties,
+            value: self.get_guid(),
+        }
+        .serialize(serializer)
     }
 }

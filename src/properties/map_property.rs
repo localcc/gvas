@@ -16,7 +16,7 @@ pub struct MapProperty {
     pub key_type: String,
     pub value_type: String,
     pub allocation_flags: u32,
-    #[cfg_attr(feature = "serde", serde(with = "value_serde"))]
+    #[cfg_attr(feature = "serde", serde(with = "serde_value_impl"))]
     pub value: HashMap<Property, Property>,
 }
 
@@ -125,7 +125,7 @@ impl Hash for MapProperty {
 }
 
 #[cfg(feature = "serde")]
-mod value_serde {
+mod serde_value_impl {
     use std::collections::HashMap;
 
     use serde::de::Deserializer;
@@ -135,7 +135,7 @@ mod value_serde {
     use super::Property;
 
     #[derive(Serialize, Deserialize)]
-    struct KVPair<T> {
+    struct Entry<T> {
         key: T,
         value: T,
     }
@@ -144,7 +144,7 @@ mod value_serde {
     where
         S: Serializer,
     {
-        serializer.collect_seq(map.iter().map(|x| KVPair {
+        serializer.collect_seq(map.iter().map(|x| Entry {
             key: x.0,
             value: x.1,
         }))
@@ -154,7 +154,7 @@ mod value_serde {
     where
         D: Deserializer<'de>,
     {
-        Ok(Vec::<KVPair<Property>>::deserialize(deserializer)?
+        Ok(Vec::<Entry<Property>>::deserialize(deserializer)?
             .into_iter()
             .map(|x| (x.key, x.value))
             .collect())
