@@ -7,8 +7,13 @@ This crate was written to parse UE4 gvas save files.
 To use this crate add it as a dependency to your `Cargo.toml`
 
 ```toml
-gvas = "0.2.2"
+gvas = "0.3.0"
 ```
+
+# Serde
+
+This crate supports serde deserialization and serialization.
+To use it enable the `serde` feature.
 
 # Examples
 
