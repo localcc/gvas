@@ -10,6 +10,7 @@ use crate::{cursor_ext::CursorExt, error::Error};
 use super::{Property, PropertyTrait};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SetProperty {
     pub property_type: String,
     pub allocation_flags: u32,

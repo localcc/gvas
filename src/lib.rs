@@ -81,6 +81,7 @@ use types::Guid;
 
 /// Stores UE4 version in which the GVAS file was saved
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FEngineVersion {
     pub major: u16,
     pub minor: u16,
@@ -139,6 +140,7 @@ impl FEngineVersion {
 
 /// Stores CustomVersions serialized by UE4
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FCustomVersion {
     pub key: Guid,
     pub version: i32,
@@ -171,6 +173,7 @@ impl FCustomVersion {
 
 /// Stores information about GVAS file, engine version, etc.
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasHeader {
     pub file_type_tag: i32,
     pub save_game_file_version: i32,
@@ -292,6 +295,7 @@ impl GvasHeader {
 
 /// Main UE4 save file struct
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
     pub header: GvasHeader,
     pub properties: HashMap<String, Property>,

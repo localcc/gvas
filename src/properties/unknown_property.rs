@@ -8,6 +8,7 @@ use super::PropertyTrait;
 
 /// This struct is read when a property is unknown to the deserializer
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UnknownProperty {
     property_name: String,
     raw: Vec<u8>,

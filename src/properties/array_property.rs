@@ -7,19 +7,21 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError},
+    error::{Error, SerializeError}, types::Guid,
 };
 
 use super::{struct_property::StructProperty, Property, PropertyTrait};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 struct ArrayStructInfo {
     type_name: String,
     field_name: String,
-    guid: [u8; 16],
+    guid: Guid,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ArrayProperty {
     pub property_type: String,
     pub properties: Vec<Property>,
@@ -36,7 +38,7 @@ impl ArrayProperty {
         let array_struct_info = field_name.map(|field_name| ArrayStructInfo {
             field_name,
             type_name: "".to_string(),
-            guid: [0u8; 16],
+            guid: Guid([0u8; 16]),
         });
 
         ArrayProperty {
@@ -89,7 +91,7 @@ impl ArrayProperty {
                 array_struct_info = Some(ArrayStructInfo {
                     type_name: struct_name,
                     field_name,
-                    guid: struct_guid,
+                    guid: Guid(struct_guid),
                 });
             }
             _ => {
@@ -146,7 +148,7 @@ impl PropertyTrait for ArrayProperty {
                 let begin_without_name = cursor.position();
                 cursor.write_u64::<LittleEndian>(0)?;
                 cursor.write_string(&array_struct_info.type_name)?;
-                let _ = cursor.write(&array_struct_info.guid)?;
+                let _ = cursor.write(&array_struct_info.guid.0)?;
                 let _ = cursor.write(&[0u8; 1])?;
 
                 for property in &self.properties {

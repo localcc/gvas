@@ -11,10 +11,12 @@ use crate::{cursor_ext::CursorExt, error::Error, scoped_stack_entry::ScopedStack
 use super::{Property, PropertyTrait};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MapProperty {
     pub key_type: String,
     pub value_type: String,
     pub allocation_flags: u32,
+    #[cfg_attr(feature = "serde", serde(with = "serde_value_impl"))]
     pub value: HashMap<Property, Property>,
 }
 
@@ -119,5 +121,42 @@ impl Hash for MapProperty {
         self.key_type.hash(state);
         self.value_type.hash(state);
         self.allocation_flags.hash(state);
+    }
+}
+
+#[cfg(feature = "serde")]
+mod serde_value_impl {
+    use std::collections::HashMap;
+
+    use serde::de::Deserializer;
+    use serde::ser::Serializer;
+    use serde::{Deserialize, Serialize};
+
+    use super::Property;
+
+    #[derive(Serialize, Deserialize)]
+    struct Entry<T> {
+        key: T,
+        value: T,
+    }
+
+    pub fn serialize<S>(map: &HashMap<Property, Property>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.collect_seq(map.iter().map(|x| Entry {
+            key: x.0,
+            value: x.1,
+        }))
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<HashMap<Property, Property>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Vec::<Entry<Property>>::deserialize(deserializer)?
+            .into_iter()
+            .map(|x| (x.key, x.value))
+            .collect())
     }
 }

@@ -7,6 +7,7 @@ use crate::{cursor_ext::CursorExt, error::Error};
 use super::PropertyTrait;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnumProperty {
     enum_type: String,
     value: String,
