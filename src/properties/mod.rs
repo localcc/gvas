@@ -18,6 +18,7 @@ use self::{
     set_property::SetProperty,
     str_property::StrProperty,
     struct_property::StructProperty,
+    text_property::TextProperty,
     unknown_property::UnknownProperty,
 };
 
@@ -29,6 +30,7 @@ pub mod set_property;
 pub mod str_property;
 pub mod struct_property;
 pub mod struct_types;
+pub mod text_property;
 pub mod unknown_property;
 
 #[macro_export]
@@ -62,6 +64,7 @@ pub enum Property {
     BoolProperty,
     EnumProperty,
     StrProperty,
+    TextProperty,
     StructProperty,
     ArrayProperty,
     SetProperty,
@@ -94,6 +97,7 @@ impl Property {
             "BoolProperty" => Ok(BoolProperty::read(cursor, include_header)?.into()),
             "EnumProperty" => Ok(EnumProperty::read(cursor)?.into()),
             "StrProperty" => Ok(StrProperty::read(cursor, include_header)?.into()),
+            "TextProperty" => Ok(TextProperty::read(cursor, include_header)?.into()),
             "StructProperty" => {
                 if !include_header {
                     let struct_path = properties_stack.join(".");
@@ -193,6 +197,7 @@ inner_traits!(
     BoolProperty,
     EnumProperty,
     StrProperty,
+    TextProperty,
     StructProperty,
     ArrayProperty,
     SetProperty,
