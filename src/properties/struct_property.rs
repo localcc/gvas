@@ -252,7 +252,7 @@ impl StructProperty {
         let c = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("C")?)?.value);
         let d = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("D")?)?.value);
 
-        Some(Guid::from_4_ints(a, b, c, d))
+        Some(Guid::from((a, b, c, d)))
     }
 }
 
@@ -394,7 +394,7 @@ impl From<IntPoint> for StructProperty {
 
 impl From<Guid> for StructProperty {
     fn from(guid: Guid) -> Self {
-        let (a, b, c, d) = guid.into_4_ints();
+        let (a, b, c, d) = guid.into();
         Self::new(
             "Guid".to_string(),
             Guid([0u8; 16]),

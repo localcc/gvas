@@ -12,9 +12,12 @@ impl Guid {
     pub fn new(guid: [u8; 16]) -> Self {
         Guid(guid)
     }
+}
 
+impl From<(u32, u32, u32, u32)> for Guid {
     /// Create new instance of Guid struct from 4 u32 values
-    pub fn from_4_ints(a: u32, b: u32, c: u32, d: u32) -> Self {
+    fn from(value: (u32, u32, u32, u32)) -> Self {
+        let (a, b, c, d) = value;
         Guid([
             (a & 0xff) as u8,
             ((a >> 8) & 0xff) as u8,
@@ -34,25 +37,27 @@ impl Guid {
             ((d >> 24) & 0xff) as u8,
         ])
     }
+}
 
+impl From<Guid> for (u32, u32, u32, u32) {
     /// Convert Guid struct into 4 u32 values
-    pub fn into_4_ints(&self) -> (u32, u32, u32, u32) {
-        let a = self.0[0] as u32
-            | ((self.0[1] as u32) << 8)
-            | ((self.0[2] as u32) << 16)
-            | ((self.0[3] as u32) << 24);
-        let b = self.0[4] as u32
-            | ((self.0[5] as u32) << 8)
-            | ((self.0[6] as u32) << 16)
-            | ((self.0[7] as u32) << 24);
-        let c = self.0[8] as u32
-            | ((self.0[9] as u32) << 8)
-            | ((self.0[10] as u32) << 16)
-            | ((self.0[11] as u32) << 24);
-        let d = self.0[12] as u32
-            | ((self.0[13] as u32) << 8)
-            | ((self.0[14] as u32) << 16)
-            | ((self.0[15] as u32) << 24);
+    fn from(guid: Guid) -> Self {
+        let a = guid.0[0] as u32
+            | ((guid.0[1] as u32) << 8)
+            | ((guid.0[2] as u32) << 16)
+            | ((guid.0[3] as u32) << 24);
+        let b = guid.0[4] as u32
+            | ((guid.0[5] as u32) << 8)
+            | ((guid.0[6] as u32) << 16)
+            | ((guid.0[7] as u32) << 24);
+        let c = guid.0[8] as u32
+            | ((guid.0[9] as u32) << 8)
+            | ((guid.0[10] as u32) << 16)
+            | ((guid.0[11] as u32) << 24);
+        let d = guid.0[12] as u32
+            | ((guid.0[13] as u32) << 8)
+            | ((guid.0[14] as u32) << 16)
+            | ((guid.0[15] as u32) << 24);
 
         (a, b, c, d)
     }
