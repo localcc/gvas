@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Debug,
     io::{Cursor, Read, Seek, SeekFrom, Write},
 };
 
@@ -7,7 +8,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError}, types::Guid,
+    error::{Error, SerializeError},
+    types::Guid,
 };
 
 use super::{struct_property::StructProperty, Property, PropertyTrait};
@@ -20,7 +22,7 @@ struct ArrayStructInfo {
     guid: Guid,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ArrayProperty {
     pub property_type: String,
@@ -117,10 +119,26 @@ impl ArrayProperty {
     }
 }
 
+impl Debug for ArrayProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.properties.len() {
+            0 => write!(f, "[]"),
+            1 => write!(f, "[{:?}]", self.properties.first().unwrap()),
+            _ => {
+                write!(f, "[")?;
+                for property in &self.properties {
+                    write!(f, "\n    {:?},", property)?;
+                }
+                write!(f, "\n]")
+            }
+        }
+    }
+}
+
 impl PropertyTrait for ArrayProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            panic!("Nested arrays not supported"); // fixme: throw error
+            return Err(SerializeError::invalid_value("Nested arrays not supported").into());
         }
 
         cursor.write_string(&String::from("ArrayProperty"))?;
@@ -137,8 +155,8 @@ impl PropertyTrait for ArrayProperty {
         match self.property_type.as_str() {
             "StructProperty" => {
                 let array_struct_info = self.array_struct_info.as_ref().ok_or_else(|| {
-                    SerializeError::InvalidValue(
-                        "Array type is StructProperty but array_struct_info is None".to_string(),
+                    SerializeError::invalid_value(
+                        "Array type is StructProperty but array_struct_info is None",
                     )
                 })?;
 
@@ -157,9 +175,9 @@ impl PropertyTrait for ArrayProperty {
                             e.write(cursor, false)?;
                             Ok(())
                         }
-                        _ => Err(SerializeError::InvalidValue(String::from(
+                        _ => Err(SerializeError::invalid_value(
                             "Array property_type doesn't match property inside array",
-                        ))
+                        )
                         .into()),
                     };
                     res?;

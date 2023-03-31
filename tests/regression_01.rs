@@ -13,7 +13,7 @@ use gvas::{
 #[test]
 fn regression_01_guid() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/regression_01.bin");
-    let mut file = File::open(&path).expect("Failed to open test asset");
+    let mut file = File::open(path).expect("Failed to open test asset");
 
     let mut data = Vec::new();
     file.read_to_end(&mut data)

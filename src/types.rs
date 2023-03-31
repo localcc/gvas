@@ -1,4 +1,8 @@
-use std::{fmt::{Debug, Display}, str::FromStr, error::Error};
+use std::{
+    error::Error,
+    fmt::{Debug, Display},
+    str::FromStr,
+};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Guid(pub [u8; 16]);
@@ -57,7 +61,7 @@ impl Guid {
 impl Debug for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let guid = self.to_string();
-        f.debug_tuple("Guid").field(&guid).finish()
+        write!(f, "Guid({})", &guid)
     }
 }
 
@@ -104,8 +108,7 @@ impl Display for ParseGuidError {
     }
 }
 
-impl Error for ParseGuidError {
-}
+impl Error for ParseGuidError {}
 
 impl FromStr for Guid {
     type Err = ParseGuidError;
@@ -117,7 +120,8 @@ impl FromStr for Guid {
         }
         let mut guid = Guid(Default::default());
         for i in 0..16 {
-            guid.0[i] = u8::from_str_radix(&cleaned[i*2..i*2+2], 16).map_err(|_| ParseGuidError)?;
+            guid.0[i] =
+                u8::from_str_radix(&cleaned[i * 2..i * 2 + 2], 16).map_err(|_| ParseGuidError)?;
         }
         Ok(guid)
     }
@@ -127,7 +131,8 @@ impl FromStr for Guid {
 impl serde::Serialize for Guid {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
+        S: serde::Serializer,
+    {
         serializer.collect_str(self)
     }
 }
@@ -135,7 +140,8 @@ impl serde::Serialize for Guid {
 #[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for Guid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: serde::Deserializer<'de>
+    where
+        D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         Guid::from_str(&s).map_err(serde::de::Error::custom)
