@@ -2,7 +2,10 @@ use std::{fmt::Debug, io::Cursor};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{
+    cursor_ext::CursorExt,
+    error::{Error, SerializeError},
+};
 
 use super::PropertyTrait;
 
@@ -36,7 +39,9 @@ impl TextProperty {
 
     pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
         if include_header {
-            panic!("TextProperty only supported in arrays")
+            return Err(
+                SerializeError::invalid_value("TextProperty only supported in arrays").into(),
+            );
         }
 
         let component_type = cursor.read_u32::<LittleEndian>()?;
@@ -112,7 +117,11 @@ impl TextProperty {
             values = Some(strings);
         } else {
             // Unknown text
-            panic!("Unknown component type {}", component_type);
+            return Err(SerializeError::InvalidValue(format!(
+                "Unexpected component_type {}",
+                component_type
+            ))
+            .into());
         }
 
         Ok(TextProperty { value, values })
@@ -147,14 +156,16 @@ impl Debug for TextProperty {
 impl PropertyTrait for TextProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            panic!("TextProperty only supported in arrays")
+            return Err(
+                SerializeError::invalid_value("TextProperty only supported in arrays").into(),
+            );
         }
 
         let component_type = match (self.values.is_some(), self.value.is_some()) {
             (false, false) => 0,
             (false, true) => 1,
             (true, false) => 2,
-            _ => panic!("value and values are both set"),
+            _ => return Err(SerializeError::invalid_value("value and values are both set").into()),
         };
 
         cursor.write_u32::<LittleEndian>(component_type)?;
@@ -187,7 +198,11 @@ impl PropertyTrait for TextProperty {
                 cursor.write_string(value)?;
             }
         } else {
-            panic!("Unexpected component_type {}", component_type);
+            return Err(SerializeError::InvalidValue(format!(
+                "Unexpected component_type {}",
+                component_type
+            ))
+            .into());
         }
         Ok(())
     }

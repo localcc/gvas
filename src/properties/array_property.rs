@@ -137,7 +137,7 @@ impl Debug for ArrayProperty {
 impl PropertyTrait for ArrayProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            panic!("Nested arrays not supported"); // fixme: throw error
+            return Err(SerializeError::invalid_value("Nested arrays not supported").into());
         }
 
         cursor.write_string(&String::from("ArrayProperty"))?;
@@ -154,8 +154,8 @@ impl PropertyTrait for ArrayProperty {
         match self.property_type.as_str() {
             "StructProperty" => {
                 let array_struct_info = self.array_struct_info.as_ref().ok_or_else(|| {
-                    SerializeError::InvalidValue(
-                        "Array type is StructProperty but array_struct_info is None".to_string(),
+                    SerializeError::invalid_value(
+                        "Array type is StructProperty but array_struct_info is None",
                     )
                 })?;
 
@@ -174,9 +174,9 @@ impl PropertyTrait for ArrayProperty {
                             e.write(cursor, false)?;
                             Ok(())
                         }
-                        _ => Err(SerializeError::InvalidValue(String::from(
+                        _ => Err(SerializeError::invalid_value(
                             "Array property_type doesn't match property inside array",
-                        ))
+                        )
                         .into()),
                     };
                     res?;
