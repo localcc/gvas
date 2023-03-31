@@ -8,7 +8,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError}, types::Guid,
+    error::{Error, SerializeError},
+    types::Guid,
 };
 
 use super::{struct_property::StructProperty, Property, PropertyTrait};

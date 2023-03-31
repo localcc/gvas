@@ -33,6 +33,7 @@ macro_rules! verify_property {
 
 use gvas::{properties::Property, GvasFile};
 
+#[allow(clippy::approx_constant)]
 fn verify_file_data(file: &GvasFile) {
     let properties = &file.properties;
 
@@ -127,7 +128,7 @@ fn verify_file_data(file: &GvasFile) {
 #[test]
 fn read_file() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/Slot1.sav");
-    let mut file = File::open(&path).expect("Failed to open test asset");
+    let mut file = File::open(path).expect("Failed to open test asset");
 
     let mut data = Vec::new();
     file.read_to_end(&mut data)
@@ -142,7 +143,7 @@ fn read_file() {
 #[test]
 fn write_file() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/Slot1.sav");
-    let mut file = File::open(&path).expect("Failed to open test asset");
+    let mut file = File::open(path).expect("Failed to open test asset");
 
     let mut data = Vec::new();
     file.read_to_end(&mut data)

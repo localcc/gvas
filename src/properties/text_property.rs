@@ -187,7 +187,7 @@ impl PropertyTrait for TextProperty {
                 cursor.write_u8(255)?;
                 cursor.write_u32::<LittleEndian>(rtf.values.len() as u32)?;
                 for value in &rtf.values {
-                    cursor.write_string(&value)?;
+                    cursor.write_string(value)?;
                 }
             }
         } else if component_type == 2 {
