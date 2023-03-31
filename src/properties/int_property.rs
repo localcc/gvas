@@ -1,4 +1,7 @@
-use std::io::{Cursor, Read, Write};
+use std::{
+    fmt::Debug,
+    io::{Cursor, Read, Write},
+};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
@@ -21,7 +24,7 @@ macro_rules! check_size {
 
 macro_rules! impl_int_property {
     ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
-        #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+        #[derive(Clone, PartialEq, Eq, Hash)]
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub struct $name {
             pub value: $ty,
@@ -46,6 +49,12 @@ macro_rules! impl_int_property {
             }
         }
 
+        impl Debug for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "{}", self.value)
+            }
+        }
+
         impl PropertyTrait for $name {
             fn write(
                 &self,
@@ -64,7 +73,7 @@ macro_rules! impl_int_property {
     };
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Int8Property {
     pub value: i8,
@@ -86,6 +95,12 @@ impl Int8Property {
     }
 }
 
+impl Debug for Int8Property {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl PropertyTrait for Int8Property {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
@@ -98,7 +113,7 @@ impl PropertyTrait for Int8Property {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ByteProperty {
     pub name: Option<String>,
@@ -124,6 +139,12 @@ impl ByteProperty {
     }
 }
 
+impl Debug for ByteProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl PropertyTrait for ByteProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
@@ -139,7 +160,7 @@ impl PropertyTrait for ByteProperty {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BoolProperty {
     pub value: bool,
@@ -160,6 +181,12 @@ impl BoolProperty {
     }
 }
 
+impl Debug for BoolProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl PropertyTrait for BoolProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
@@ -175,7 +202,7 @@ impl PropertyTrait for BoolProperty {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FloatProperty {
     pub value: OrderedFloat<f32>,
@@ -199,6 +226,12 @@ impl FloatProperty {
     }
 }
 
+impl Debug for FloatProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl PropertyTrait for FloatProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
@@ -211,7 +244,7 @@ impl PropertyTrait for FloatProperty {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DoubleProperty {
     pub value: OrderedFloat<f64>,
@@ -232,6 +265,12 @@ impl DoubleProperty {
         Ok(Self {
             value: OrderedFloat(cursor.read_f64::<LittleEndian>()?),
         })
+    }
+}
+
+impl Debug for DoubleProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.value)
     }
 }
 

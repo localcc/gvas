@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Debug,
     io::{Cursor, Read, Seek, SeekFrom, Write},
 };
 
@@ -20,7 +21,7 @@ struct ArrayStructInfo {
     guid: Guid,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ArrayProperty {
     pub property_type: String,
@@ -114,6 +115,22 @@ impl ArrayProperty {
 
             array_struct_info,
         })
+    }
+}
+
+impl Debug for ArrayProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.properties.len() {
+            0 => write!(f, "[]"),
+            1 => write!(f, "[{:?}]", self.properties.first().unwrap()),
+            _ => {
+                write!(f, "[")?;
+                for property in &self.properties {
+                    write!(f, "\n    {:?},", property)?;
+                }
+                write!(f, "\n]")
+            }
+        }
     }
 }
 

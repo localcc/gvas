@@ -57,7 +57,7 @@ impl Guid {
 impl Debug for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let guid = self.to_string();
-        f.debug_tuple("Guid").field(&guid).finish()
+        write!(f, "Guid({})", &guid)
     }
 }
 
