@@ -67,6 +67,11 @@ impl Debug for Guid {
 
 impl Display for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.0.iter().all(|&x| x == 0) {
+            write!(f, "0")?;
+            return Ok(());
+        }
+
         write!(f, "{:02X}", self.0[0])?;
         write!(f, "{:02X}", self.0[1])?;
         write!(f, "{:02X}", self.0[2])?;
