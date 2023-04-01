@@ -423,6 +423,23 @@ impl From<Guid> for StructProperty {
 
 impl Debug for StructProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.guid.0.iter().all(|&x| x == 0) {
+            // Call inner formatter for Guid(0)
+            if let Some(vector) = self.get_vector() {
+                return vector.fmt(f);
+            } else if let Some(rotator) = self.get_rotator() {
+                return rotator.fmt(f);
+            } else if let Some(quat) = self.get_quat() {
+                return quat.fmt(f);
+            } else if let Some(date_time) = self.get_date_time() {
+                return date_time.fmt(f);
+            } else if let Some(int_point) = self.get_int_point() {
+                return int_point.fmt(f);
+            } else if let Some(guid) = self.get_guid() {
+                return guid.fmt(f);
+            }
+        }
+
         let mut debug_struct = f.debug_struct("StructProperty");
 
         debug_struct.field("type_name", &self.type_name);
