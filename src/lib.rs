@@ -4,7 +4,8 @@
 //!
 //! # Examples
 //!
-//! ```no_run,ignore
+//! ```no_run
+//! use gvas::GvasFile;
 //! use std::{
 //!     fs::File,
 //!     io::{Cursor, Read},
@@ -41,8 +42,10 @@
 //!
 //!  [`DeserializeError::MissingHint`]: error/enum.DeserializeError.html#variant.MissingHint
 //!
-//! ```no_run,ignore
+//! ```no_run
+//! use gvas::GvasFile;
 //! use std::{
+//!     collections::HashMap,
 //!     fs::File,
 //!     io::{Cursor, Read},
 //!     path::Path,
@@ -213,7 +216,8 @@ impl GvasHeader {
     ///
     /// # Examples
     ///
-    /// ```no_run,ignore
+    /// ```no_run
+    /// use gvas::GvasHeader;
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -225,7 +229,7 @@ impl GvasHeader {
     /// file.read_to_end(&mut data).unwrap();
     ///
     /// let mut cursor = Cursor::new(data);
-    /// let gvas_header = GvasHeader::read(&mut cursor);
+    /// let gvas_header = GvasHeader::read(&mut cursor).unwrap();
     ///
     /// println!("{:#?}", gvas_header);
     /// ```
@@ -258,7 +262,8 @@ impl GvasHeader {
     /// Write GvasHeader to a binary file
     ///
     /// # Examples
-    /// ```no_run,ignore
+    /// ```no_run
+    /// use gvas::GvasHeader;
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -270,9 +275,9 @@ impl GvasHeader {
     /// file.read_to_end(&mut data).unwrap();
     ///
     /// let mut cursor = Cursor::new(data);
-    /// let gvas_header = GvasHeader::read(&mut cursor);
+    /// let gvas_header = GvasHeader::read(&mut cursor).unwrap();
     ///
-    /// let mut writer = Cursor::new(Vec::new);
+    /// let mut writer = Cursor::new(Vec::new());
     /// gvas_header.write(&mut writer).unwrap();
     /// println!("{:#?}", writer.get_ref());
     /// ```
@@ -314,7 +319,8 @@ impl GvasFile {
     ///
     /// # Examples
     ///
-    /// ```no_run,ignore
+    /// ```no_run
+    /// use gvas::GvasFile;
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -347,8 +353,10 @@ impl GvasFile {
     ///
     /// # Examples
     ///
-    /// ```no_run,ignore
+    /// ```no_run
+    /// use gvas::GvasFile;
     /// use std::{
+    ///     collections::HashMap,
     ///     fs::File,
     ///     io::{Cursor, Read},
     ///     path::Path,
@@ -406,7 +414,8 @@ impl GvasFile {
     ///
     /// # Examples
     ///
-    /// ```no_run,ignore
+    /// ```no_run
+    /// use gvas::GvasFile;
     /// use std::{
     ///     fs::File,
     ///     io::{Cursor, Read},
@@ -418,9 +427,9 @@ impl GvasFile {
     /// file.read_to_end(&mut data).unwrap();
     ///
     /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read(&mut cursor);
+    /// let gvas_file = GvasFile::read(&mut cursor).unwrap();
     ///
-    /// let mut writer = Cursor::new(Vec::new);
+    /// let mut writer = Cursor::new(Vec::new());
     /// gvas_file.write(&mut writer).unwrap();
     /// println!("{:#?}", writer.get_ref());
     /// ```
