@@ -175,7 +175,7 @@ impl FCustomVersion {
 }
 
 /// Stores information about GVAS file, engine version, etc.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasHeader {
     pub file_type_tag: i32,
@@ -299,7 +299,7 @@ impl GvasHeader {
 }
 
 /// Main UE4 save file struct
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
     pub header: GvasHeader,

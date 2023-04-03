@@ -1,0 +1,55 @@
+use std::{collections::HashMap, io::Cursor};
+
+use gvas::{
+    properties::{str_property::StrProperty, Property},
+    FEngineVersion, GvasFile, GvasHeader,
+};
+
+#[test]
+fn test_file() {
+    let header = GvasHeader {
+        file_type_tag: 0,
+        save_game_file_version: 0,
+        package_file_ue4_version: 0,
+        engine_version: FEngineVersion {
+            major: 1,
+            minor: 2,
+            patch: 3,
+            change_list: 4,
+            branch: "engine version branch".to_string(),
+        },
+        custom_version_format: 0,
+        custom_versions: vec![],
+        save_game_class_name: "save game class name".to_string(),
+    };
+
+    let mut properties: HashMap<String, Property> = HashMap::new();
+
+    let str_property = StrProperty::from("Test for StrProperty");
+    properties.insert("StrProperty".into(), str_property.into());
+
+    let file = GvasFile { header, properties };
+
+    // Serialize GvasFile to Vec<u8>
+    let mut writer = Cursor::new(Vec::new());
+    file.write(&mut writer)
+        .expect("Failed to serialize gvas file");
+
+    // Read GvasFile from Vec<u8>
+    let mut reader = Cursor::new(writer.get_ref().to_owned());
+    let imported = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
+
+    // Compare the imported value to `file`
+    assert_eq!(file.header, imported.header);
+    for property_name in file.properties.keys() {
+        let left = file.properties.get(property_name);
+        let right = imported.properties.get(property_name);
+        if let (Some(l), Some(r)) = (left, right) {
+            assert_eq!(l, r, "{}", property_name);
+        } else {
+            assert_eq!(left, right, "{}", property_name);
+        }
+    }
+    assert_eq!(file.properties, imported.properties);
+    assert_eq!(file, imported);
+}

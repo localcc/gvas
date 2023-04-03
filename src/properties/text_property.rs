@@ -184,3 +184,23 @@ impl PropertyTrait for TextProperty {
         Ok(())
     }
 }
+
+impl RichText {
+    pub fn new(id: String, pattern: String, text_format: Vec<RichTextFormat>) -> Self {
+        RichText {
+            id,
+            pattern,
+            text_format,
+        }
+    }
+}
+
+impl RichTextFormat {
+    pub fn new(format_key: String, content_type: u32, values: Vec<String>) -> Self {
+        RichTextFormat {
+            format_key,
+            content_type,
+            values,
+        }
+    }
+}

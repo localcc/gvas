@@ -34,13 +34,13 @@ pub struct ArrayProperty {
 impl ArrayProperty {
     pub fn new(
         property_type: String,
-        field_name: Option<String>,
+        struct_info: Option<(String, String, Guid)>,
         properties: Vec<Property>,
     ) -> Self {
-        let array_struct_info = field_name.map(|field_name| ArrayStructInfo {
+        let array_struct_info = struct_info.map(|(field_name, type_name, guid)| ArrayStructInfo {
             field_name,
-            type_name: "".to_string(),
-            guid: Guid([0u8; 16]),
+            type_name,
+            guid,
         });
 
         ArrayProperty {
