@@ -63,6 +63,25 @@ impl From<Guid> for (u32, u32, u32, u32) {
     }
 }
 
+impl From<u128> for Guid {
+    fn from(value: u128) -> Self {
+        let (a, b, c, d) = (
+            (value & 0xffffffff) as u32,
+            ((value >> 32) & 0xffffffff) as u32,
+            ((value >> 64) & 0xffffffff) as u32,
+            ((value >> 96) & 0xffffffff) as u32,
+        );
+        Guid::from((a, b, c, d))
+    }
+}
+
+impl From<Guid> for u128 {
+    fn from(value: Guid) -> Self {
+        let (a, b, c, d) = value.into();
+        (a as u128) | ((b as u128) << 32) | ((c as u128) << 64) | ((d as u128) << 96)
+    }
+}
+
 impl Debug for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let guid = self.to_string();
@@ -125,6 +144,9 @@ impl FromStr for Guid {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let cleaned = s.replace('-', "");
+        let cleaned = cleaned.trim();
+        let cleaned = cleaned.strip_prefix('{').unwrap_or(cleaned);
+        let cleaned = cleaned.strip_suffix('}').unwrap_or(cleaned);
         if cleaned.len() != 32 {
             Err(ParseGuidError)?;
         }
