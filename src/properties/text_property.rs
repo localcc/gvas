@@ -130,25 +130,15 @@ impl TextProperty {
 
 impl Debug for TextProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match (self.values.is_some(), self.value.is_some()) {
-            (false, false) => {
-                // Empty text
-                f.write_str("Empty")
-            }
-            (false, true) => {
-                // Rich text
-                let value = self.value.as_ref().unwrap();
-                Debug::fmt(value, f)
-            }
-            (true, false) => {
-                // Simple text
-                let values = self.values.as_ref().unwrap();
-                f.debug_list().entries(values).finish()
-            }
-            _ => {
-                // Unknown text
-                f.write_str("Unknown type")
-            }
+        if let Some(value) = self.value.as_ref() {
+            // Rich text
+            value.fmt(f)
+        } else if let Some(values) = self.values.as_ref() {
+            // Simple text
+            f.debug_list().entries(values).finish()
+        } else {
+            // Empty text
+            f.write_str("Empty")
         }
     }
 }
