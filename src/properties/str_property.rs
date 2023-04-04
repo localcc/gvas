@@ -12,6 +12,12 @@ pub struct StrProperty {
     pub value: String,
 }
 
+impl From<&str> for StrProperty {
+    fn from(value: &str) -> Self {
+        StrProperty::new(value.into())
+    }
+}
+
 impl StrProperty {
     pub fn new(value: String) -> Self {
         StrProperty { value }

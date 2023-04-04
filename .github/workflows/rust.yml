@@ -49,7 +49,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-targets --all-features -- -D warnings
+          args: --all-features -- -D warnings -D clippy::expect_used -D clippy::panic -D clippy::unwrap_used
 
       - name: Test
         uses: actions-rs/cargo@v1

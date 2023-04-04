@@ -34,13 +34,13 @@ pub struct ArrayProperty {
 impl ArrayProperty {
     pub fn new(
         property_type: String,
-        field_name: Option<String>,
+        struct_info: Option<(String, String, Guid)>,
         properties: Vec<Property>,
     ) -> Self {
-        let array_struct_info = field_name.map(|field_name| ArrayStructInfo {
+        let array_struct_info = struct_info.map(|(field_name, type_name, guid)| ArrayStructInfo {
             field_name,
-            type_name: "".to_string(),
-            guid: Guid([0u8; 16]),
+            type_name,
+            guid,
         });
 
         ArrayProperty {
@@ -121,15 +121,39 @@ impl ArrayProperty {
 
 impl Debug for ArrayProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (sep, ind) = match f.alternate() {
+            true => ("\n", "    "),
+            false => (" ", ""),
+        };
+        // if let Some(struct_info) = &self.array_struct_info {
+        //     write!(f, "struct_info: {:?},{}", struct_info, sep)?;
+        //     write!(f, "property_type: {:?},{}", self.property_type, sep)?;
+        //     write!(f, "properties: ")?;
+        // }
         match self.properties.len() {
             0 => write!(f, "[]"),
-            1 => write!(f, "[{:?}]", self.properties.first().unwrap()),
+            1 => {
+                if let Some(first) = self.properties.first() {
+                    write!(f, "[{:?}]", first)
+                } else {
+                    Err(std::fmt::Error::default())
+                }
+            }
             _ => {
                 write!(f, "[")?;
+                let mut first = true;
                 for property in &self.properties {
-                    write!(f, "\n    {:?},", property)?;
+                    if first {
+                        first = false;
+                    } else {
+                        write!(f, ",")?;
+                    }
+                    write!(f, "{}{}{:?}", sep, ind, property)?;
                 }
-                write!(f, "\n]")
+                if f.alternate() && !first {
+                    write!(f, ",")?;
+                }
+                write!(f, "{}]", sep)
             }
         }
     }

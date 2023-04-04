@@ -53,10 +53,22 @@ impl CursorExt for Cursor<Vec<u8>> {
     }
 
     fn write_string(&mut self, v: &str) -> Result<(), Error> {
-        let len = v.len() + 1;
-        self.write_i32::<LittleEndian>(len as i32)?;
-        let _ = self.write(v.as_bytes())?;
-        let _ = self.write(&[0u8; 1])?;
+        if v.is_ascii() {
+            // ASCII strings do not require encoding
+            let len = v.len() + 1;
+            self.write_i32::<LittleEndian>(len as i32)?;
+            let _ = self.write(v.as_bytes())?;
+            let _ = self.write(&[0u8; 1])?;
+        } else {
+            // Perform UTF-16 encoding when non-ASCII characters are detected
+            let words: Vec<u16> = v.encode_utf16().collect();
+            let len = words.len() + 1;
+            self.write_i32::<LittleEndian>(-(len as i32))?;
+            for word in words {
+                self.write_u16::<LittleEndian>(word)?;
+            }
+            self.write_u16::<LittleEndian>(0u16)?;
+        }
         Ok(())
     }
 }

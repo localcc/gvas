@@ -130,25 +130,15 @@ impl TextProperty {
 
 impl Debug for TextProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match (self.values.is_some(), self.value.is_some()) {
-            (false, false) => {
-                // Empty text
-                f.write_str("Empty")
-            }
-            (false, true) => {
-                // Rich text
-                let value = self.value.as_ref().unwrap();
-                Debug::fmt(value, f)
-            }
-            (true, false) => {
-                // Simple text
-                let values = self.values.as_ref().unwrap();
-                f.debug_list().entries(values).finish()
-            }
-            _ => {
-                // Unknown text
-                f.write_str("Unknown type")
-            }
+        if let Some(value) = self.value.as_ref() {
+            // Rich text
+            value.fmt(f)
+        } else if let Some(values) = self.values.as_ref() {
+            // Simple text
+            f.debug_list().entries(values).finish()
+        } else {
+            // Empty text
+            f.write_str("Empty")
         }
     }
 }
@@ -161,19 +151,8 @@ impl PropertyTrait for TextProperty {
             );
         }
 
-        let component_type = match (self.values.is_some(), self.value.is_some()) {
-            (false, false) => 0,
-            (false, true) => 1,
-            (true, false) => 2,
-            _ => return Err(SerializeError::invalid_value("value and values are both set").into()),
-        };
-
-        cursor.write_u32::<LittleEndian>(component_type)?;
-        if component_type == 0 {
-            cursor.write_u8(255)?;
-            cursor.write_u32::<LittleEndian>(0)?;
-        } else if component_type == 1 {
-            let value = self.value.as_ref().unwrap();
+        if let Some(value) = &self.value {
+            cursor.write_u32::<LittleEndian>(1)?;
             cursor.write_u8(3)?;
             cursor.write_u8(8)?;
             cursor.write_u64::<LittleEndian>(0)?;
@@ -190,20 +169,38 @@ impl PropertyTrait for TextProperty {
                     cursor.write_string(value)?;
                 }
             }
-        } else if component_type == 2 {
-            let values = self.values.as_ref().unwrap();
+        } else if let Some(values) = &self.values {
+            cursor.write_u32::<LittleEndian>(2)?;
             cursor.write_u8(255)?;
             cursor.write_i32::<LittleEndian>(values.len() as i32)?;
             for value in values {
                 cursor.write_string(value)?;
             }
         } else {
-            return Err(SerializeError::InvalidValue(format!(
-                "Unexpected component_type {}",
-                component_type
-            ))
-            .into());
+            cursor.write_u32::<LittleEndian>(0)?;
+            cursor.write_u8(255)?;
+            cursor.write_u32::<LittleEndian>(0)?;
         }
         Ok(())
+    }
+}
+
+impl RichText {
+    pub fn new(id: String, pattern: String, text_format: Vec<RichTextFormat>) -> Self {
+        RichText {
+            id,
+            pattern,
+            text_format,
+        }
+    }
+}
+
+impl RichTextFormat {
+    pub fn new(format_key: String, content_type: u32, values: Vec<String>) -> Self {
+        RichTextFormat {
+            format_key,
+            content_type,
+            values,
+        }
     }
 }
