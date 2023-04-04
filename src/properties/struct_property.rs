@@ -7,6 +7,8 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
+use indexmap::IndexMap;
+
 use crate::{
     cast,
     cursor_ext::CursorExt,
@@ -35,11 +37,11 @@ macro_rules! write_flat_property {
 pub struct StructProperty {
     pub type_name: String,
     pub guid: Guid,
-    pub properties: HashMap<String, Property>,
+    pub properties: IndexMap<String, Property>,
 }
 
 impl StructProperty {
-    pub fn new(type_name: String, guid: Guid, properties: HashMap<String, Property>) -> Self {
+    pub fn new(type_name: String, guid: Guid, properties: IndexMap<String, Property>) -> Self {
         StructProperty {
             type_name,
             guid,
@@ -76,7 +78,7 @@ impl StructProperty {
             cursor.read_exact(&mut [0u8; 1])?;
         }
 
-        let mut properties: HashMap<String, Property> = HashMap::new();
+        let mut properties: IndexMap<String, Property> = IndexMap::new();
         match type_name.as_str() {
             "Vector" => {
                 properties.insert("X".to_string(), FloatProperty::read(cursor, false)?.into());
@@ -325,7 +327,7 @@ impl From<Vector> for StructProperty {
         Self::new(
             "Vector".to_string(),
             Guid([0u8; 16]),
-            HashMap::from([
+            IndexMap::from([
                 ("X".to_string(), FloatProperty::new(vector.x).into()),
                 ("Y".to_string(), FloatProperty::new(vector.y).into()),
                 ("Z".to_string(), FloatProperty::new(vector.z).into()),
@@ -339,7 +341,7 @@ impl From<Rotator> for StructProperty {
         Self::new(
             "Rotator".to_string(),
             Guid([0u8; 16]),
-            HashMap::from([
+            IndexMap::from([
                 (
                     "Pitch".to_string(),
                     FloatProperty::new(rotator.pitch).into(),
@@ -356,7 +358,7 @@ impl From<Quat> for StructProperty {
         Self::new(
             "Quat".to_string(),
             Guid([0u8; 16]),
-            HashMap::from([
+            IndexMap::from([
                 ("X".to_string(), FloatProperty::new(quat.x).into()),
                 ("Y".to_string(), FloatProperty::new(quat.y).into()),
                 ("Z".to_string(), FloatProperty::new(quat.z).into()),
@@ -371,7 +373,7 @@ impl From<DateTime> for StructProperty {
         Self::new(
             "DateTime".to_string(),
             Guid([0u8; 16]),
-            HashMap::from([(
+            IndexMap::from([(
                 "Ticks".to_string(),
                 UInt64Property::new(date_time.ticks).into(),
             )]),
@@ -384,7 +386,7 @@ impl From<IntPoint> for StructProperty {
         Self::new(
             "IntPoint".to_string(),
             Guid([0u8; 16]),
-            HashMap::from([
+            IndexMap::from([
                 ("X".to_string(), IntProperty::new(int_point.x).into()),
                 ("Y".to_string(), IntProperty::new(int_point.y).into()),
             ]),
@@ -398,7 +400,7 @@ impl From<Guid> for StructProperty {
         Self::new(
             "Guid".to_string(),
             Guid([0u8; 16]),
-            HashMap::from([
+            IndexMap::from([
                 // swapping back from BigEndian to LittleEndian
                 (
                     "A".to_string(),
@@ -492,7 +494,7 @@ impl serde::Serialize for StructProperty {
         struct StructProperty<'a> {
             type_name: &'a String,
             guid: &'a Guid,
-            properties: &'a HashMap<String, Property>,
+            properties: &'a IndexMap<String, Property>,
 
             #[serde(skip_serializing_if = "Option::is_none")]
             value: Option<Guid>,

@@ -6,6 +6,8 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
+use indexmap::IndexMap;
+
 use crate::{
     cursor_ext::CursorExt,
     error::{Error, SerializeError},
@@ -21,7 +23,7 @@ pub struct MapProperty {
     pub value_type: String,
     pub allocation_flags: u32,
     #[cfg_attr(feature = "serde", serde(with = "serde_value_impl"))]
-    pub value: HashMap<Property, Property>,
+    pub value: IndexMap<Property, Property>,
 }
 
 impl MapProperty {
@@ -29,7 +31,7 @@ impl MapProperty {
         key_type: String,
         value_type: String,
         allocation_flags: u32,
-        value: HashMap<Property, Property>,
+        value: IndexMap<Property, Property>,
     ) -> Self {
         MapProperty {
             key_type,
@@ -54,7 +56,7 @@ impl MapProperty {
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
         let element_count = cursor.read_i32::<LittleEndian>()?;
 
-        let mut map = HashMap::new();
+        let mut map = IndexMap::new();
         for _ in 0..element_count {
             let key_stack_entry = ScopedStackEntry::new(properties_stack, "Key".to_string());
             let key = Property::new(cursor, hints, properties_stack, &key_type, false, None)?;
@@ -132,7 +134,7 @@ impl Hash for MapProperty {
 
 #[cfg(feature = "serde")]
 mod serde_value_impl {
-    use std::collections::HashMap;
+    use indexmap::IndexMap;
 
     use serde::de::Deserializer;
     use serde::ser::Serializer;
@@ -146,7 +148,10 @@ mod serde_value_impl {
         value: T,
     }
 
-    pub fn serialize<S>(map: &HashMap<Property, Property>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(
+        map: &IndexMap<Property, Property>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -156,7 +161,7 @@ mod serde_value_impl {
         }))
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<HashMap<Property, Property>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<IndexMap<Property, Property>, D::Error>
     where
         D: Deserializer<'de>,
     {

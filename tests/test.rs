@@ -130,13 +130,16 @@ fn read_file() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/Slot1.sav");
     let mut file = File::open(path).expect("Failed to open test asset");
 
+    // Read the file in to a Vec<u8>
     let mut data = Vec::new();
     file.read_to_end(&mut data)
         .expect("Failed to read test asset");
 
+    // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-
     let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+
+    // Verify GvasFile contents
     verify_file_data(&file);
 }
 
@@ -145,20 +148,33 @@ fn write_file() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/Slot1.sav");
     let mut file = File::open(path).expect("Failed to open test asset");
 
+    // Read the file in to a Vec<u8>
     let mut data = Vec::new();
     file.read_to_end(&mut data)
         .expect("Failed to read test asset");
 
+    // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-
     let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+
+    // Verify GvasFile contents
     verify_file_data(&file);
 
+    // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());
     file.write(&mut writer)
         .expect("Failed to serialize gvas file");
 
+    // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let file = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
-    verify_file_data(&file);
+    let file2 = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
+
+    // Verify GvasFile contents
+    verify_file_data(&file2);
+
+    // Compare the two Vec<u8>s
+    // FIXME: assert_eq!(cursor.get_ref(), writer.get_ref());
+
+    // Compare the two GvasFiles
+    assert_eq!(file, file2);
 }

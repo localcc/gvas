@@ -79,6 +79,7 @@ use std::{
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use cursor_ext::CursorExt;
 use error::Error;
+use indexmap::IndexMap;
 use properties::{Property, PropertyTrait};
 use types::Guid;
 
@@ -303,7 +304,7 @@ impl GvasHeader {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
     pub header: GvasHeader,
-    pub properties: HashMap<String, Property>,
+    pub properties: IndexMap<String, Property>,
 }
 
 impl GvasFile {
@@ -383,7 +384,7 @@ impl GvasFile {
     ) -> Result<Self, Error> {
         let header = GvasHeader::read(cursor)?;
 
-        let mut properties = HashMap::new();
+        let mut properties = IndexMap::new();
         let mut property_name = cursor.read_string()?;
         while property_name != "None" {
             let property_type = cursor.read_string()?;
