@@ -6,7 +6,11 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{cursor_ext::CursorExt, error::Error, scoped_stack_entry::ScopedStackEntry};
+use crate::{
+    cursor_ext::CursorExt,
+    error::{Error, SerializeError},
+    scoped_stack_entry::ScopedStackEntry,
+};
 
 use super::{Property, PropertyTrait};
 
@@ -75,7 +79,9 @@ impl MapProperty {
 impl PropertyTrait for MapProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            panic!("Nested maps are not supported");
+            return Err(Error::from(SerializeError::InvalidValue(String::from(
+                "Nested maps are not supported",
+            ))));
         }
 
         cursor.write_string("MapProperty")?;

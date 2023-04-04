@@ -2,7 +2,10 @@ use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{
+    cursor_ext::CursorExt,
+    error::{Error, SerializeError},
+};
 
 use super::PropertyTrait;
 
@@ -34,8 +37,16 @@ impl EnumProperty {
         let value;
         if compact_name {
             let mut split = read_enum_type.split("::");
-            enum_type = split.next().unwrap().to_string();
-            value = split.next().unwrap().to_string();
+            if let Some(e) = split.next() {
+                enum_type = e.to_string();
+            } else {
+                return Err(Error::from(SerializeError::InvalidValue(read_enum_type)));
+            }
+            if let Some(e) = split.next() {
+                value = e.to_string();
+            } else {
+                return Err(Error::from(SerializeError::InvalidValue(read_enum_type)));
+            }
         } else {
             cursor.read_exact(&mut [0u8; 1])?;
             value = cursor.read_string()?;

@@ -132,7 +132,13 @@ impl Debug for ArrayProperty {
         // }
         match self.properties.len() {
             0 => write!(f, "[]"),
-            1 => write!(f, "[{:?}]", self.properties.first().unwrap()),
+            1 => {
+                if let Some(first) = self.properties.first() {
+                    write!(f, "[{:?}]", first)
+                } else {
+                    Err(std::fmt::Error::default())
+                }
+            }
             _ => {
                 write!(f, "[")?;
                 let mut first = true;

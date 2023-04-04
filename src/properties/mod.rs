@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, io::Cursor};
 use enum_dispatch::enum_dispatch;
 
 use crate::{
-    error::{DeserializeError, Error},
+    error::{DeserializeError, Error, SerializeError},
     scoped_stack_entry::ScopedStackEntry,
 };
 
@@ -142,7 +142,10 @@ impl Property {
                     )?
                     .into());
                 }
-                panic!("Invalid property creation call!");
+
+                Err(Error::from(SerializeError::InvalidValue(String::from(
+                    "Invalid property creation call!",
+                ))))
             }
         }
     }

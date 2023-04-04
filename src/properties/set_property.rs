@@ -5,7 +5,10 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{
+    cursor_ext::CursorExt,
+    error::{Error, SerializeError},
+};
 
 use super::{Property, PropertyTrait};
 
@@ -65,7 +68,9 @@ impl SetProperty {
 impl PropertyTrait for SetProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            panic!("Nested sets are not supported!"); // fixme: throw error
+            return Err(Error::from(SerializeError::InvalidValue(String::from(
+                "Nested sets are not supported!",
+            ))));
         }
 
         if self.properties.is_empty() {
