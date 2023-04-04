@@ -64,7 +64,7 @@
 //! println!("{:#?}", gvas_file);
 //! ```
 
-mod cursor_ext;
+pub mod cursor_ext;
 pub mod error;
 pub mod properties;
 pub(crate) mod scoped_stack_entry;
