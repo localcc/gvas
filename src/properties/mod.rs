@@ -15,6 +15,7 @@ use self::{
         Int8Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
     },
     map_property::MapProperty,
+    name_property::NameProperty,
     set_property::SetProperty,
     str_property::StrProperty,
     struct_property::StructProperty,
@@ -26,6 +27,7 @@ pub mod array_property;
 pub mod enum_property;
 pub mod int_property;
 pub mod map_property;
+pub mod name_property;
 pub mod set_property;
 pub mod str_property;
 pub mod struct_property;
@@ -68,6 +70,7 @@ pub enum Property {
     BoolProperty,
     EnumProperty,
     StrProperty,
+    NameProperty,
     TextProperty,
     StructProperty,
     ArrayProperty,
@@ -102,6 +105,7 @@ impl Property {
             "EnumProperty" => Ok(EnumProperty::read(cursor)?.into()),
             "StrProperty" => Ok(StrProperty::read(cursor, include_header)?.into()),
             "TextProperty" => Ok(TextProperty::read(cursor, include_header)?.into()),
+            "NameProperty" => Ok(NameProperty::read(cursor, include_header)?.into()),
             "StructProperty" => {
                 if !include_header {
                     let struct_path = properties_stack.join(".");
@@ -201,6 +205,7 @@ inner_traits!(
     BoolProperty,
     EnumProperty,
     StrProperty,
+    NameProperty,
     TextProperty,
     StructProperty,
     ArrayProperty,
