@@ -33,6 +33,17 @@ pub struct RichTextFormat {
     values: Vec<String>,
 }
 
+macro_rules! validate {
+    ($cond:expr, $($arg:tt)+) => {{
+        if !$cond {
+            return Err(SerializeError::InvalidValue(format!(
+                $($arg)+
+            ))
+            .into());
+        }
+    }};
+}
+
 impl TextProperty {
     pub fn new(value: Option<RichText>, values: Option<Vec<String>>) -> Self {
         if let Some(rich) = value {
@@ -45,18 +56,14 @@ impl TextProperty {
     }
 
     pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
-        if include_header {
-            return Err(
-                SerializeError::invalid_value("TextProperty only supported in arrays").into(),
-            );
-        }
+        validate!(!include_header, "TextProperty only supported in arrays");
 
         let component_type = cursor.read_u32::<LittleEndian>()?;
-        assert!(component_type <= 2, "component_type {} > 2", component_type);
+        validate!(component_type <= 2, "Unexpected component {component_type}");
 
         let expect_indicator = if component_type == 1 { 3 } else { 255 };
         let indicator = cursor.read_u8()?;
-        assert!(
+        validate!(
             indicator == expect_indicator,
             "Unexpected indicator {} for component {}, expected {}",
             indicator,
@@ -67,15 +74,15 @@ impl TextProperty {
         if component_type == 0 {
             // Empty text
             let count = cursor.read_u32::<LittleEndian>()?;
-            assert!(count == 0, "Unexpected count {}", count);
+            validate!(count == 0, "Unexpected count {count}");
 
             Ok(TextProperty::Empty())
         } else if component_type == 1 {
             // Rich text
             let num_flags = cursor.read_u8()?;
-            assert!(num_flags == 8, "Unexpected num_flags {}", num_flags);
+            validate!(num_flags == 8, "Unexpected num_flags {num_flags}");
             let flags = cursor.read_u64::<LittleEndian>()?;
-            assert!(flags == 0, "Unexpected flags {}", flags);
+            validate!(flags == 0, "Unexpected flags {flags}");
 
             let id = cursor.read_string()?;
             let pattern = cursor.read_string()?;
@@ -85,10 +92,10 @@ impl TextProperty {
             for _ in 0..arg_count {
                 let format_key = cursor.read_string()?;
                 let separator = cursor.read_u8()?;
-                assert!(separator == 4, "Unexpected separator {}", separator);
+                validate!(separator == 4, "Unexpected separator {separator}");
                 let content_type = cursor.read_u32::<LittleEndian>()?;
                 let indicator = cursor.read_u8()?;
-                assert!(indicator == 255, "Unexpected indicator {}", indicator);
+                validate!(indicator == 255, "Unexpected indicator {indicator}");
                 let count = cursor.read_u32::<LittleEndian>()?;
 
                 let mut values = vec![];
@@ -112,7 +119,7 @@ impl TextProperty {
         } else if component_type == 2 {
             // Simple text
             let count = cursor.read_u32::<LittleEndian>()?;
-            assert!(count > 0, "Unexpected count {}", count);
+            validate!(count > 0, "Unexpected count {count}");
 
             let mut strings: Vec<String> = vec![];
             for _ in 0..count {
