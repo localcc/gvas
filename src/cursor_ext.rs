@@ -48,7 +48,9 @@ impl CursorExt for Cursor<Vec<u8>> {
             self.read_exact(&mut buf)?;
             self.read_exact(&mut [0u8; 1])?;
 
-            Ok(String::from_utf8(buf).unwrap_or_else(|_| String::from("None")))
+            let string = String::from_utf8(buf)?;
+
+            Ok(string)
         }
     }
 
