@@ -11,9 +11,10 @@ use super::PropertyTrait;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct TextProperty {
-    value: Option<RichText>,
-    values: Option<Vec<String>>,
+pub enum TextProperty {
+    Empty(),
+    Rich(RichText),
+    Simple(Vec<String>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -34,7 +35,13 @@ pub struct RichTextFormat {
 
 impl TextProperty {
     pub fn new(value: Option<RichText>, values: Option<Vec<String>>) -> Self {
-        TextProperty { value, values }
+        if let Some(rich) = value {
+            TextProperty::Rich(rich)
+        } else if let Some(simple) = values {
+            TextProperty::Simple(simple)
+        } else {
+            TextProperty::Empty()
+        }
     }
 
     pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
@@ -57,13 +64,12 @@ impl TextProperty {
             expect_indicator
         );
 
-        let mut value: Option<_> = None;
-        let mut values: Option<_> = None;
-
         if component_type == 0 {
             // Empty text
             let count = cursor.read_u32::<LittleEndian>()?;
             assert!(count == 0, "Unexpected count {}", count);
+
+            Ok(TextProperty::Empty())
         } else if component_type == 1 {
             // Rich text
             let num_flags = cursor.read_u8()?;
@@ -98,11 +104,11 @@ impl TextProperty {
                 });
             }
 
-            value = Some(RichText {
+            Ok(TextProperty::Rich(RichText {
                 id,
                 pattern,
                 text_format,
-            });
+            }))
         } else if component_type == 2 {
             // Simple text
             let count = cursor.read_u32::<LittleEndian>()?;
@@ -114,31 +120,24 @@ impl TextProperty {
                 strings.push(str)
             }
 
-            values = Some(strings);
+            Ok(TextProperty::Simple(strings))
         } else {
             // Unknown text
-            return Err(SerializeError::InvalidValue(format!(
+            Err(SerializeError::InvalidValue(format!(
                 "Unexpected component_type {}",
                 component_type
             ))
-            .into());
+            .into())
         }
-
-        Ok(TextProperty { value, values })
     }
 }
 
 impl Debug for TextProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(value) = self.value.as_ref() {
-            // Rich text
-            value.fmt(f)
-        } else if let Some(values) = self.values.as_ref() {
-            // Simple text
-            f.debug_list().entries(values).finish()
-        } else {
-            // Empty text
-            f.write_str("Empty")
+        match self {
+            TextProperty::Rich(value) => value.fmt(f),
+            TextProperty::Simple(values) => f.debug_list().entries(values).finish(),
+            TextProperty::Empty() => f.write_str("Empty"),
         }
     }
 }
@@ -151,36 +150,43 @@ impl PropertyTrait for TextProperty {
             );
         }
 
-        if let Some(value) = &self.value {
-            cursor.write_u32::<LittleEndian>(1)?;
-            cursor.write_u8(3)?;
-            cursor.write_u8(8)?;
-            cursor.write_u64::<LittleEndian>(0)?;
-            cursor.write_string(&value.id)?;
-            cursor.write_string(&value.pattern)?;
-            cursor.write_u32::<LittleEndian>(value.text_format.len() as u32)?;
-            for rtf in &value.text_format {
-                cursor.write_string(&rtf.format_key)?;
-                cursor.write_u8(4)?;
-                cursor.write_u32::<LittleEndian>(rtf.content_type)?;
+        match self {
+            TextProperty::Empty() => {
+                cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u8(255)?;
-                cursor.write_u32::<LittleEndian>(rtf.values.len() as u32)?;
-                for value in &rtf.values {
+                cursor.write_u32::<LittleEndian>(0)?;
+            }
+
+            TextProperty::Rich(value) => {
+                cursor.write_u32::<LittleEndian>(1)?;
+                cursor.write_u8(3)?;
+                cursor.write_u8(8)?;
+                cursor.write_u64::<LittleEndian>(0)?;
+                cursor.write_string(&value.id)?;
+                cursor.write_string(&value.pattern)?;
+                cursor.write_u32::<LittleEndian>(value.text_format.len() as u32)?;
+                for rtf in &value.text_format {
+                    cursor.write_string(&rtf.format_key)?;
+                    cursor.write_u8(4)?;
+                    cursor.write_u32::<LittleEndian>(rtf.content_type)?;
+                    cursor.write_u8(255)?;
+                    cursor.write_u32::<LittleEndian>(rtf.values.len() as u32)?;
+                    for value in &rtf.values {
+                        cursor.write_string(value)?;
+                    }
+                }
+            }
+
+            TextProperty::Simple(values) => {
+                cursor.write_u32::<LittleEndian>(2)?;
+                cursor.write_u8(255)?;
+                cursor.write_i32::<LittleEndian>(values.len() as i32)?;
+                for value in values {
                     cursor.write_string(value)?;
                 }
             }
-        } else if let Some(values) = &self.values {
-            cursor.write_u32::<LittleEndian>(2)?;
-            cursor.write_u8(255)?;
-            cursor.write_i32::<LittleEndian>(values.len() as i32)?;
-            for value in values {
-                cursor.write_string(value)?;
-            }
-        } else {
-            cursor.write_u32::<LittleEndian>(0)?;
-            cursor.write_u8(255)?;
-            cursor.write_u32::<LittleEndian>(0)?;
         }
+
         Ok(())
     }
 }
