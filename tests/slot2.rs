@@ -44,7 +44,7 @@ fn write_slot2() {
     let file2 = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
 
     // Compare the two Vec<u8>s
-    // FIXME: assert_eq!(cursor.get_ref(), writer.get_ref());
+    assert_eq!(cursor.get_ref(), writer.get_ref());
 
     // Compare the two GvasFiles
     assert_eq!(file, file2);
