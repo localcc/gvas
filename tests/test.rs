@@ -19,38 +19,35 @@ macro_rules! get_or_panic {
 
 #[macro_export]
 macro_rules! verify_property {
-    ($map:expr, $property_name:expr, $property_class:ident, $value:expr) => {
-        let e = get_or_panic!($map, $property_name, $property_class);
-        match e.value == $value {
-            false => panic!(
-                "Property {} value doesn't match, expected {} got {}",
-                $property_name, $value, e.value
-            ),
-            true => {}
-        };
+    ($map:expr, $property_name:expr, $property_class:ident, $($value:expr),+) => {
+        let actual = get_or_panic!($map, $property_name, $property_class).to_owned();
+        let expected = $property_class::new($($value),+);
+        assert_eq!(actual, expected);
     };
 }
 
-use gvas::{properties::Property, GvasFile};
+use gvas::{
+    properties::{
+        array_property::ArrayProperty,
+        int_property::{
+            ByteProperty, DoubleProperty, FloatProperty, Int16Property, Int64Property,
+            Int8Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
+        },
+        str_property::StrProperty,
+        struct_property::{StructProperty, StructPropertyValue},
+        struct_types::DateTime,
+        Property,
+    },
+    types::Guid,
+    GvasFile,
+};
 
 #[allow(clippy::approx_constant)]
 fn verify_file_data(file: &GvasFile) {
     let properties = &file.properties;
 
-    let byte_property = get_or_panic!(properties, "u8_test", ByteProperty);
-    if byte_property.name.as_ref().unwrap() != "None" {
-        panic!(
-            "Property u8_test name doesn't match, expected None got {:?}",
-            byte_property.name
-        );
-    }
-    if byte_property.value != 129 {
-        panic!(
-            "Property u8_test value doesn't match, expected 129 got {}",
-            byte_property.value
-        );
-    }
-
+    let none = Some(String::from("None"));
+    verify_property!(properties, "u8_test", ByteProperty, none, 129);
     verify_property!(properties, "i8_test", Int8Property, -123);
     verify_property!(properties, "ushort_test", UInt16Property, 65530);
     verify_property!(properties, "short_test", Int16Property, -32764);
@@ -60,42 +57,71 @@ fn verify_file_data(file: &GvasFile) {
     verify_property!(properties, "long_test", Int64Property, i64::MIN + 1);
     verify_property!(properties, "f_property", FloatProperty, 3.14159);
     verify_property!(properties, "d_property", DoubleProperty, 3.14159265358979);
-    verify_property!(properties, "str_property", StrProperty, "Hello world");
+    let hello_world = String::from("Hello world");
+    verify_property!(properties, "str_property", StrProperty, hello_world);
 
     let struct_property = get_or_panic!(properties, "struct_property", StructProperty);
-    if struct_property.type_name != "CustomStruct" {
-        panic!(
-            "Property struct_property name doesn't match, expected CustomStruct got {}",
-            struct_property.type_name
-        );
+    match &struct_property.value {
+        StructPropertyValue::CustomStruct(name, props) => {
+            assert_eq!(name, "CustomStruct");
+            assert_eq!(
+                props.to_owned(),
+                vec![(
+                    "test_field".to_string(),
+                    Property::from(UInt64Property::new(12345))
+                )]
+            );
+        }
+        _ => {
+            panic!(
+                "Property struct_property name doesn't match, expected CustomStruct got {:?}",
+                struct_property.value
+            );
+        }
     }
-    let struct_property_properties = &struct_property.properties;
-    verify_property!(
-        struct_property_properties,
-        "test_field",
-        UInt64Property,
-        12345
-    );
 
     let date_time_property = get_or_panic!(properties, "date_time_property", StructProperty);
-
-    verify_property!(
-        date_time_property.properties,
-        "Ticks",
-        UInt64Property,
-        0x8DA2624F3F62720u64
+    assert_eq!(
+        date_time_property.to_owned(),
+        StructProperty::from(DateTime {
+            ticks: 0x8DA2624F3F62720u64
+        }),
     );
 
     let array_of_structs = get_or_panic!(properties, "array_of_structs", ArrayProperty);
-    for property in &array_of_structs.properties {
-        match property {
-            Property::StructProperty(e) => {
-                let properties = &e.properties;
-                verify_property!(properties, "test_field", UInt64Property, 10);
-            }
-            _ => panic!("array_of_structs elements are not StructProperty"),
-        }
-    }
+    assert_eq!(
+        array_of_structs.to_owned(),
+        ArrayProperty::new(
+            String::from("StructProperty"),
+            Some((
+                String::from("array_of_structs"),
+                String::from("CustomStruct"),
+                Guid::from(0)
+            )),
+            vec![
+                Property::from(StructProperty {
+                    guid: Guid::from(0),
+                    value: StructPropertyValue::CustomStruct(
+                        String::from("CustomStruct"),
+                        vec![(
+                            String::from("test_field"),
+                            UInt64Property { value: 10 }.into()
+                        )]
+                    )
+                }),
+                Property::from(StructProperty {
+                    guid: Guid::from(0),
+                    value: StructPropertyValue::CustomStruct(
+                        String::from("CustomStruct"),
+                        vec![(
+                            String::from("test_field"),
+                            UInt64Property { value: 10 }.into()
+                        )]
+                    )
+                }),
+            ]
+        )
+    );
 
     let array_of_ints = get_or_panic!(properties, "array_of_ints", ArrayProperty);
     for property in &array_of_ints.properties {

@@ -7,10 +7,7 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use indexmap::IndexMap;
-
 use crate::{
-    cast,
     cursor_ext::CursorExt,
     error::{Error, SerializeError},
     scoped_stack_entry::ScopedStackEntry,
@@ -23,30 +20,28 @@ use super::{
     Property, PropertyTrait,
 };
 
-macro_rules! write_flat_property {
-    ($cursor:expr, $properties:expr, $struct_name:expr, $property_name:expr) => {
-        $properties
-            .get($property_name)
-            .ok_or_else(|| SerializeError::struct_missing_field($struct_name, $property_name))?
-            .write($cursor, false)?;
-    };
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StructProperty {
+    pub guid: Guid,
+    pub value: StructPropertyValue,
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
-pub struct StructProperty {
-    pub type_name: String,
-    pub guid: Guid,
-    pub properties: IndexMap<String, Property>,
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum StructPropertyValue {
+    Vector(Vector),
+    Rotator(Rotator),
+    Quat(Quat),
+    DateTime(DateTime),
+    Guid(Guid),
+    IntPoint(IntPoint),
+    CustomStruct(String, Vec<(String, Property)>),
 }
 
 impl StructProperty {
-    pub fn new(type_name: String, guid: Guid, properties: IndexMap<String, Property>) -> Self {
-        StructProperty {
-            type_name,
-            guid,
-            properties,
-        }
+    pub fn new(guid: Guid, value: StructPropertyValue) -> Self {
+        StructProperty { guid, value }
     }
 
     fn read(
@@ -62,7 +57,10 @@ impl StructProperty {
 
         let type_name = match include_header {
             true => cursor.read_string()?,
-            false => type_name.unwrap_or_default(),
+            false => match type_name {
+                Some(t) => t,
+                None => return Err(SerializeError::invalid_value("type_name is required").into()),
+            },
         };
 
         let guid = match include_header {
@@ -78,51 +76,39 @@ impl StructProperty {
             cursor.read_exact(&mut [0u8; 1])?;
         }
 
-        let mut properties: IndexMap<String, Property> = IndexMap::new();
-        match type_name.as_str() {
-            "Vector" => {
-                properties.insert("X".to_string(), FloatProperty::read(cursor, false)?.into());
-                properties.insert("Y".to_string(), FloatProperty::read(cursor, false)?.into());
-                properties.insert("Z".to_string(), FloatProperty::read(cursor, false)?.into());
-            }
-            "Rotator" => {
-                properties.insert(
-                    "Pitch".to_string(),
-                    FloatProperty::read(cursor, false)?.into(),
-                );
-                properties.insert(
-                    "Yaw".to_string(),
-                    FloatProperty::read(cursor, false)?.into(),
-                );
-                properties.insert(
-                    "Roll".to_string(),
-                    FloatProperty::read(cursor, false)?.into(),
-                );
-            }
-            "Quat" => {
-                properties.insert("X".to_string(), FloatProperty::read(cursor, false)?.into());
-                properties.insert("Y".to_string(), FloatProperty::read(cursor, false)?.into());
-                properties.insert("Z".to_string(), FloatProperty::read(cursor, false)?.into());
-                properties.insert("W".to_string(), FloatProperty::read(cursor, false)?.into());
-            }
-            "DateTime" => {
-                properties.insert(
-                    "Ticks".to_string(),
-                    UInt64Property::read(cursor, false)?.into(),
-                );
-            }
-            "IntPoint" => {
-                properties.insert("X".to_string(), IntProperty::read(cursor, false)?.into());
-                properties.insert("Y".to_string(), IntProperty::read(cursor, false)?.into());
-            }
-            "Guid" => {
-                properties.insert("A".to_string(), UInt32Property::read(cursor, false)?.into());
-                properties.insert("B".to_string(), UInt32Property::read(cursor, false)?.into());
-                properties.insert("C".to_string(), UInt32Property::read(cursor, false)?.into());
-                properties.insert("D".to_string(), UInt32Property::read(cursor, false)?.into());
-            }
+        let value = match type_name.as_str() {
+            "Vector" => StructPropertyValue::Vector(Vector {
+                x: FloatProperty::read(cursor, false)?.value.0,
+                y: FloatProperty::read(cursor, false)?.value.0,
+                z: FloatProperty::read(cursor, false)?.value.0,
+            }),
+            "Rotator" => StructPropertyValue::Rotator(Rotator {
+                pitch: FloatProperty::read(cursor, false)?.value.0,
+                yaw: FloatProperty::read(cursor, false)?.value.0,
+                roll: FloatProperty::read(cursor, false)?.value.0,
+            }),
+            "Quat" => StructPropertyValue::Quat(Quat {
+                x: FloatProperty::read(cursor, false)?.value.0,
+                y: FloatProperty::read(cursor, false)?.value.0,
+                z: FloatProperty::read(cursor, false)?.value.0,
+                w: FloatProperty::read(cursor, false)?.value.0,
+            }),
+            "DateTime" => StructPropertyValue::DateTime(DateTime {
+                ticks: UInt64Property::read(cursor, false)?.value,
+            }),
+            "IntPoint" => StructPropertyValue::IntPoint(IntPoint {
+                x: IntProperty::read(cursor, false)?.value,
+                y: IntProperty::read(cursor, false)?.value,
+            }),
+            "Guid" => StructPropertyValue::Guid(Guid::from((
+                UInt32Property::read(cursor, false)?.value,
+                UInt32Property::read(cursor, false)?.value,
+                UInt32Property::read(cursor, false)?.value,
+                UInt32Property::read(cursor, false)?.value,
+            ))),
             _ => {
                 let mut key_name = cursor.read_string()?;
+                let mut properties = Vec::new();
                 while &key_name != "None" {
                     let value_type = cursor.read_string()?;
                     let _property_stack_entry =
@@ -130,16 +116,16 @@ impl StructProperty {
 
                     let property =
                         Property::new(cursor, hints, properties_stack, &value_type, true, None)?;
-                    properties.insert(key_name, property);
+                    properties.push((key_name, property));
                     key_name = cursor.read_string()?;
                 }
+                StructPropertyValue::CustomStruct(type_name, properties)
             }
-        }
+        };
 
         Ok(StructProperty {
-            type_name,
             guid: Guid::new(guid),
-            properties,
+            value,
         })
     }
 
@@ -167,94 +153,45 @@ impl StructProperty {
     }
 
     pub fn get_vector(&self) -> Option<Vector> {
-        if self.type_name != "Vector" {
-            return None;
+        match self.value {
+            StructPropertyValue::Vector(vector) => Some(vector),
+            _ => None,
         }
-
-        Some(Vector::new(
-            cast!(Property, FloatProperty, self.properties.get("X")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("Y")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("Z")?)?
-                .value
-                .0,
-        ))
     }
 
     pub fn get_rotator(&self) -> Option<Rotator> {
-        if self.type_name != "Rotator" {
-            return None;
+        match self.value {
+            StructPropertyValue::Rotator(rotator) => Some(rotator),
+            _ => None,
         }
-
-        Some(Rotator::new(
-            cast!(Property, FloatProperty, self.properties.get("Pitch")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("Yaw")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("Roll")?)?
-                .value
-                .0,
-        ))
     }
 
     pub fn get_quat(&self) -> Option<Quat> {
-        if self.type_name != "Quat" {
-            return None;
+        match self.value {
+            StructPropertyValue::Quat(quat) => Some(quat),
+            _ => None,
         }
-
-        Some(Quat::new(
-            cast!(Property, FloatProperty, self.properties.get("X")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("Y")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("Z")?)?
-                .value
-                .0,
-            cast!(Property, FloatProperty, self.properties.get("W")?)?
-                .value
-                .0,
-        ))
     }
 
     pub fn get_date_time(&self) -> Option<DateTime> {
-        if self.type_name != "DateTime" {
-            return None;
+        match self.value {
+            StructPropertyValue::DateTime(date_time) => Some(date_time),
+            _ => None,
         }
-
-        Some(DateTime::new(
-            cast!(Property, UInt64Property, self.properties.get("Ticks")?)?.value,
-        ))
     }
 
     pub fn get_int_point(&self) -> Option<IntPoint> {
-        if self.type_name != "IntPoint" {
-            return None;
+        match self.value {
+            StructPropertyValue::IntPoint(int_point) => Some(int_point),
+            _ => None,
         }
-
-        Some(IntPoint::new(
-            cast!(Property, IntProperty, self.properties.get("X")?)?.value,
-            cast!(Property, IntProperty, self.properties.get("Y")?)?.value,
-        ))
     }
 
     pub fn get_guid(&self) -> Option<Guid> {
-        if self.type_name != "Guid" {
-            return None;
+        match self.value {
+            StructPropertyValue::Guid(guid) => Some(guid),
+            _ => None,
         }
-
-        let a = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("A")?)?.value); // ue4 saves GUID in BigEndian format
-        let b = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("B")?)?.value);
-        let c = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("C")?)?.value);
-        let d = u32::swap_bytes(cast!(Property, UInt32Property, self.properties.get("D")?)?.value);
-
-        Some(Guid::from((a, b, c, d)))
     }
 }
 
@@ -263,47 +200,56 @@ impl PropertyTrait for StructProperty {
         let mut begin = 0;
         let mut write_begin = 0;
         if include_header {
-            cursor.write_string(&String::from("StructProperty"))?;
+            cursor.write_string("StructProperty")?;
             begin = cursor.position();
             cursor.write_u64::<LittleEndian>(0)?;
-            cursor.write_string(&self.type_name)?;
-            let _ = cursor.write(&self.guid.0)?;
-            let _ = cursor.write(&[0u8; 1])?;
+            cursor.write_string(match &self.value {
+                StructPropertyValue::Vector(_) => "Vector",
+                StructPropertyValue::Rotator(_) => "Rotator",
+                StructPropertyValue::Quat(_) => "Quat",
+                StructPropertyValue::DateTime(_) => "DateTime",
+                StructPropertyValue::Guid(_) => "Guid",
+                StructPropertyValue::IntPoint(_) => "IntPoint",
+                StructPropertyValue::CustomStruct(type_name, _) => type_name,
+            })?;
+            cursor.write_all(&self.guid.0)?;
+            cursor.write_all(&[0u8; 1])?;
             write_begin = cursor.position();
         }
 
-        match self.type_name.as_str() {
-            "Vector" => {
-                write_flat_property!(cursor, self.properties, "Vector", "X");
-                write_flat_property!(cursor, self.properties, "Vector", "Y");
-                write_flat_property!(cursor, self.properties, "Vector", "Z");
+        match &self.value {
+            StructPropertyValue::Vector(vector) => {
+                FloatProperty::new(vector.x).write(cursor, false)?;
+                FloatProperty::new(vector.y).write(cursor, false)?;
+                FloatProperty::new(vector.z).write(cursor, false)?;
             }
-            "Rotator" => {
-                write_flat_property!(cursor, self.properties, "Rotator", "Pitch");
-                write_flat_property!(cursor, self.properties, "Rotator", "Yaw");
-                write_flat_property!(cursor, self.properties, "Rotator", "Roll");
+            StructPropertyValue::Rotator(rotator) => {
+                FloatProperty::new(rotator.pitch).write(cursor, false)?;
+                FloatProperty::new(rotator.yaw).write(cursor, false)?;
+                FloatProperty::new(rotator.roll).write(cursor, false)?;
             }
-            "Quat" => {
-                write_flat_property!(cursor, self.properties, "Quat", "X");
-                write_flat_property!(cursor, self.properties, "Quat", "Y");
-                write_flat_property!(cursor, self.properties, "Quat", "Z");
-                write_flat_property!(cursor, self.properties, "Quat", "W");
+            StructPropertyValue::Quat(quat) => {
+                FloatProperty::new(quat.x).write(cursor, false)?;
+                FloatProperty::new(quat.y).write(cursor, false)?;
+                FloatProperty::new(quat.z).write(cursor, false)?;
+                FloatProperty::new(quat.w).write(cursor, false)?;
             }
-            "DateTime" => {
-                write_flat_property!(cursor, self.properties, "DateTime", "Ticks");
+            StructPropertyValue::DateTime(date_time) => {
+                UInt64Property::new(date_time.ticks).write(cursor, false)?;
             }
-            "IntPoint" => {
-                write_flat_property!(cursor, self.properties, "IntPoint", "X");
-                write_flat_property!(cursor, self.properties, "IntPoint", "Y");
+            StructPropertyValue::IntPoint(int_point) => {
+                IntProperty::new(int_point.x).write(cursor, false)?;
+                IntProperty::new(int_point.y).write(cursor, false)?;
             }
-            "Guid" => {
-                write_flat_property!(cursor, self.properties, "Guid", "A");
-                write_flat_property!(cursor, self.properties, "Guid", "B");
-                write_flat_property!(cursor, self.properties, "Guid", "C");
-                write_flat_property!(cursor, self.properties, "Guid", "D");
+            StructPropertyValue::Guid(guid) => {
+                let (a, b, c, d) = guid.to_owned().into();
+                UInt32Property::new(a).write(cursor, false)?;
+                UInt32Property::new(b).write(cursor, false)?;
+                UInt32Property::new(c).write(cursor, false)?;
+                UInt32Property::new(d).write(cursor, false)?;
             }
-            _ => {
-                for (key, value) in &self.properties {
+            StructPropertyValue::CustomStruct(_, properties) => {
+                for (key, value) in properties {
                     cursor.write_string(key)?;
                     value.write(cursor, true)?;
                 }
@@ -324,188 +270,68 @@ impl PropertyTrait for StructProperty {
 
 impl From<Vector> for StructProperty {
     fn from(vector: Vector) -> Self {
-        Self::new(
-            "Vector".to_string(),
-            Guid([0u8; 16]),
-            IndexMap::from([
-                ("X".to_string(), FloatProperty::new(vector.x).into()),
-                ("Y".to_string(), FloatProperty::new(vector.y).into()),
-                ("Z".to_string(), FloatProperty::new(vector.z).into()),
-            ]),
-        )
+        Self::new(Guid([0u8; 16]), StructPropertyValue::Vector(vector))
     }
 }
 
 impl From<Rotator> for StructProperty {
     fn from(rotator: Rotator) -> Self {
-        Self::new(
-            "Rotator".to_string(),
-            Guid([0u8; 16]),
-            IndexMap::from([
-                (
-                    "Pitch".to_string(),
-                    FloatProperty::new(rotator.pitch).into(),
-                ),
-                ("Yaw".to_string(), FloatProperty::new(rotator.yaw).into()),
-                ("Roll".to_string(), FloatProperty::new(rotator.roll).into()),
-            ]),
-        )
+        Self::new(Guid([0u8; 16]), StructPropertyValue::Rotator(rotator))
     }
 }
 
 impl From<Quat> for StructProperty {
     fn from(quat: Quat) -> Self {
-        Self::new(
-            "Quat".to_string(),
-            Guid([0u8; 16]),
-            IndexMap::from([
-                ("X".to_string(), FloatProperty::new(quat.x).into()),
-                ("Y".to_string(), FloatProperty::new(quat.y).into()),
-                ("Z".to_string(), FloatProperty::new(quat.z).into()),
-                ("W".to_string(), FloatProperty::new(quat.w).into()),
-            ]),
-        )
+        Self::new(Guid([0u8; 16]), StructPropertyValue::Quat(quat))
     }
 }
 
 impl From<DateTime> for StructProperty {
     fn from(date_time: DateTime) -> Self {
-        Self::new(
-            "DateTime".to_string(),
-            Guid([0u8; 16]),
-            IndexMap::from([(
-                "Ticks".to_string(),
-                UInt64Property::new(date_time.ticks).into(),
-            )]),
-        )
+        Self::new(Guid([0u8; 16]), StructPropertyValue::DateTime(date_time))
     }
 }
 
 impl From<IntPoint> for StructProperty {
     fn from(int_point: IntPoint) -> Self {
-        Self::new(
-            "IntPoint".to_string(),
-            Guid([0u8; 16]),
-            IndexMap::from([
-                ("X".to_string(), IntProperty::new(int_point.x).into()),
-                ("Y".to_string(), IntProperty::new(int_point.y).into()),
-            ]),
-        )
+        Self::new(Guid([0u8; 16]), StructPropertyValue::IntPoint(int_point))
     }
 }
 
 impl From<Guid> for StructProperty {
     fn from(guid: Guid) -> Self {
-        let (a, b, c, d) = guid.into();
-        Self::new(
-            "Guid".to_string(),
-            Guid([0u8; 16]),
-            IndexMap::from([
-                // swapping back from BigEndian to LittleEndian
-                (
-                    "A".to_string(),
-                    UInt32Property::new(u32::swap_bytes(a)).into(),
-                ),
-                (
-                    "B".to_string(),
-                    UInt32Property::new(u32::swap_bytes(b)).into(),
-                ),
-                (
-                    "C".to_string(),
-                    UInt32Property::new(u32::swap_bytes(c)).into(),
-                ),
-                (
-                    "D".to_string(),
-                    UInt32Property::new(u32::swap_bytes(d)).into(),
-                ),
-            ]),
-        )
+        Self::new(Guid([0u8; 16]), StructPropertyValue::Guid(guid))
     }
 }
 
 impl Debug for StructProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.guid.0.iter().all(|&x| x == 0) {
-            // Call inner formatter for Guid(0)
-            if let Some(vector) = self.get_vector() {
-                return vector.fmt(f);
-            } else if let Some(rotator) = self.get_rotator() {
-                return rotator.fmt(f);
-            } else if let Some(quat) = self.get_quat() {
-                return quat.fmt(f);
-            } else if let Some(date_time) = self.get_date_time() {
-                return date_time.fmt(f);
-            } else if let Some(int_point) = self.get_int_point() {
-                return int_point.fmt(f);
-            } else if let Some(guid) = self.get_guid() {
-                return guid.fmt(f);
-            }
+            return self.value.fmt(f);
         }
 
         let mut debug_struct = f.debug_struct("StructProperty");
 
-        debug_struct.field("type_name", &self.type_name);
         debug_struct.field("guid", &self.guid);
-
-        if let Some(vector) = self.get_vector() {
-            debug_struct.field("vector", &vector);
-        } else if let Some(rotator) = self.get_rotator() {
-            debug_struct.field("rotator", &rotator);
-        } else if let Some(quat) = self.get_quat() {
-            debug_struct.field("quat", &quat);
-        } else if let Some(date_time) = self.get_date_time() {
-            debug_struct.field("date_time", &date_time);
-        } else if let Some(int_point) = self.get_int_point() {
-            debug_struct.field("int_point", &int_point);
-        } else if let Some(guid) = self.get_guid() {
-            debug_struct.field("value", &guid);
-        } else {
-            debug_struct.field("properties", &self.properties);
-        }
+        debug_struct.field("value", &self.value);
 
         debug_struct.finish()
     }
 }
 
-impl PartialEq for StructProperty {
-    fn eq(&self, other: &Self) -> bool {
-        self.type_name == other.type_name
-            && self.guid == other.guid
-            && self.properties == other.properties
-    }
-}
-
-impl Eq for StructProperty {}
-
-impl Hash for StructProperty {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.type_name.hash(state);
-        self.guid.hash(state);
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for StructProperty {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        #[derive(serde::Serialize)]
-        struct StructProperty<'a> {
-            type_name: &'a String,
-            guid: &'a Guid,
-            properties: &'a IndexMap<String, Property>,
-
-            #[serde(skip_serializing_if = "Option::is_none")]
-            value: Option<Guid>,
+impl Debug for StructPropertyValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Vector(v) => v.fmt(f),
+            Self::Rotator(r) => r.fmt(f),
+            Self::Quat(q) => q.fmt(f),
+            Self::DateTime(dt) => dt.fmt(f),
+            Self::Guid(g) => g.fmt(f),
+            Self::IntPoint(ip) => ip.fmt(f),
+            Self::CustomStruct(t, v) => {
+                write!(f, "{} ", t)?;
+                f.debug_list().entries(v).finish()
+            }
         }
-
-        StructProperty {
-            type_name: &self.type_name,
-            guid: &self.guid,
-            properties: &self.properties,
-            value: self.get_guid(),
-        }
-        .serialize(serializer)
     }
 }

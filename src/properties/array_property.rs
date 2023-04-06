@@ -125,11 +125,11 @@ impl Debug for ArrayProperty {
             true => ("\n", "    "),
             false => (" ", ""),
         };
-        // if let Some(struct_info) = &self.array_struct_info {
-        //     write!(f, "struct_info: {:?},{}", struct_info, sep)?;
-        //     write!(f, "property_type: {:?},{}", self.property_type, sep)?;
-        //     write!(f, "properties: ")?;
-        // }
+        if let Some(struct_info) = &self.array_struct_info {
+            write!(f, "struct_info: {:?},{}", struct_info, sep)?;
+            write!(f, "property_type: {:?},{}", self.property_type, sep)?;
+            write!(f, "properties: ")?;
+        }
         match self.properties.len() {
             0 => write!(f, "[]"),
             1 => {
