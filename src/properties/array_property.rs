@@ -31,6 +31,17 @@ pub struct ArrayProperty {
     array_struct_info: Option<ArrayStructInfo>,
 }
 
+macro_rules! validate {
+    ($cond:expr, $($arg:tt)+) => {{
+        if !$cond {
+            return Err(SerializeError::InvalidValue(format!(
+                $($arg)+
+            ))
+            .into());
+        }
+    }};
+}
+
 impl ArrayProperty {
     pub fn new(
         property_type: String,
@@ -60,9 +71,10 @@ impl ArrayProperty {
 
         let property_type = cursor.read_string()?;
         cursor.read_exact(&mut [0u8; 1])?;
+        let start_position = cursor.position();
 
-        let properties_len = cursor.read_i32::<LittleEndian>()? as usize;
-        let mut properties: Vec<Property> = Vec::with_capacity(properties_len);
+        let property_count = cursor.read_i32::<LittleEndian>()? as usize;
+        let mut properties: Vec<Property> = Vec::with_capacity(property_count);
 
         let mut array_struct_info = None;
 
@@ -71,14 +83,15 @@ impl ArrayProperty {
                 let field_name = cursor.read_string()?;
 
                 let _dup_property_type = cursor.read_string()?;
-                let _length_without_struct_name = cursor.read_u64::<LittleEndian>()?;
+                let properties_size = cursor.read_u64::<LittleEndian>()?;
 
                 let struct_name = cursor.read_string()?;
                 let mut struct_guid = [0u8; 16];
                 cursor.read_exact(&mut struct_guid)?;
                 cursor.read_exact(&mut [0u8; 1])?;
 
-                for _ in 0..properties_len {
+                let properties_start = cursor.position();
+                for _ in 0..property_count {
                     properties.push(
                         StructProperty::read_with_type_name(
                             cursor,
@@ -89,6 +102,11 @@ impl ArrayProperty {
                         .into(),
                     );
                 }
+                let properties_end = cursor.position();
+                validate!(
+                    properties_end == properties_start + properties_size,
+                    "{properties_end} == {properties_start} + {properties_size}",
+                );
 
                 array_struct_info = Some(ArrayStructInfo {
                     type_name: struct_name,
@@ -97,18 +115,23 @@ impl ArrayProperty {
                 });
             }
             _ => {
-                for _ in 0..properties_len {
+                for _ in 0..property_count {
                     properties.push(Property::new(
                         cursor,
                         hints,
                         properties_stack,
                         &property_type,
                         false,
-                        Some((length - 4) / properties_len as u64 + length),
+                        Some((length - 4) / property_count as u64 + length),
                     )?)
                 }
             }
         };
+        let end_position = cursor.position();
+        validate!(
+            end_position == start_position + length,
+            "{end_position} == {start_position} + {length}"
+        );
 
         Ok(ArrayProperty {
             property_type,
