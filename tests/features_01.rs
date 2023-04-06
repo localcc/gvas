@@ -110,12 +110,13 @@ fn read_features_01() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/features_01.bin");
     let mut file = File::open(path).expect("Failed to open test asset");
 
+    // Read the file in to a Vec<u8>
     let mut data = Vec::new();
     file.read_to_end(&mut data)
         .expect("Failed to read test asset");
 
+    // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-
     let hints = get_hints();
     GvasFile::read_with_hints(&mut cursor, &hints).expect("Failed to parse gvas file");
 }
@@ -125,20 +126,29 @@ fn write_features_01() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/features_01.bin");
     let mut file = File::open(path).expect("Failed to open test asset!");
 
+    // Read the file in to a Vec<u8>
     let mut data = Vec::new();
     file.read_to_end(&mut data)
         .expect("Failed to read test asset");
 
+    // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-
     let hints = get_hints();
-
     let file = GvasFile::read_with_hints(&mut cursor, &hints).expect("Failed to parse gvas file");
 
+    // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());
     file.write(&mut writer)
         .expect("Failed to serialize gvas file");
 
+    // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    GvasFile::read_with_hints(&mut reader, &hints).expect("Failed to read serialized gvas file");
+    let file2 = GvasFile::read_with_hints(&mut reader, &hints)
+        .expect("Failed to read serialized gvas file");
+
+    // Compare the two Vec<u8>s
+    // FIXME: assert_eq!(cursor.get_ref(), writer.get_ref());
+
+    // Compare the two GvasFiles
+    assert_eq!(file, file2);
 }

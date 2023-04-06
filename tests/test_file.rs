@@ -1,4 +1,6 @@
-use std::{collections::HashMap, io::Cursor};
+use std::io::Cursor;
+
+use indexmap::IndexMap;
 
 use gvas::{
     properties::{str_property::StrProperty, Property},
@@ -23,7 +25,7 @@ fn test_file() {
         save_game_class_name: "save game class name".to_string(),
     };
 
-    let mut properties: HashMap<String, Property> = HashMap::new();
+    let mut properties: IndexMap<String, Property> = IndexMap::new();
 
     let str_property = StrProperty::from("Test for StrProperty");
     properties.insert("StrProperty".into(), str_property.into());

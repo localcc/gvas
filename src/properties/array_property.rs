@@ -125,11 +125,11 @@ impl Debug for ArrayProperty {
             true => ("\n", "    "),
             false => (" ", ""),
         };
-        // if let Some(struct_info) = &self.array_struct_info {
-        //     write!(f, "struct_info: {:?},{}", struct_info, sep)?;
-        //     write!(f, "property_type: {:?},{}", self.property_type, sep)?;
-        //     write!(f, "properties: ")?;
-        // }
+        if let Some(struct_info) = &self.array_struct_info {
+            write!(f, "struct_info: {:?},{}", struct_info, sep)?;
+            write!(f, "property_type: {:?},{}", self.property_type, sep)?;
+            write!(f, "properties: ")?;
+        }
         match self.properties.len() {
             0 => write!(f, "[]"),
             1 => {
@@ -187,11 +187,12 @@ impl PropertyTrait for ArrayProperty {
                 cursor.write_string(&array_struct_info.field_name)?;
                 cursor.write_string(&self.property_type)?;
 
-                let begin_without_name = cursor.position();
+                let len_position = cursor.position();
                 cursor.write_u64::<LittleEndian>(0)?;
                 cursor.write_string(&array_struct_info.type_name)?;
                 let _ = cursor.write(&array_struct_info.guid.0)?;
                 let _ = cursor.write(&[0u8; 1])?;
+                let begin_without_name = cursor.position();
 
                 for property in &self.properties {
                     let res: Result<(), Error> = match property {
@@ -207,7 +208,7 @@ impl PropertyTrait for ArrayProperty {
                     res?;
                 }
                 let end_without_name = cursor.position();
-                cursor.seek(SeekFrom::Start(begin_without_name))?;
+                cursor.seek(SeekFrom::Start(len_position))?;
                 cursor.write_u64::<LittleEndian>(end_without_name - begin_without_name)?;
                 cursor.seek(SeekFrom::Start(end_without_name))?;
             }

@@ -56,4 +56,6 @@ fn regression_01_guid() {
         .expect("Failed to get property from written asset as Guid");
 
     assert_eq!(original_guid, written_guid);
+
+    assert_eq!(cursor.get_ref(), writer.get_ref());
 }

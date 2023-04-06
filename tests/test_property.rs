@@ -24,6 +24,8 @@ use gvas::{
     types::Guid,
 };
 
+use indexmap::IndexMap;
+
 macro_rules! test_property {
     ($function_name:ident, $type:ident, $property_value:expr) => {
         #[test]
@@ -169,7 +171,7 @@ test_property!(
         "StrProperty".into(),
         "FloatProperty".into(),
         0,
-        HashMap::from([
+        IndexMap::from([
             (
                 Property::from(StrProperty::from("key1")),
                 Property::from(FloatProperty::new(-1f32)),

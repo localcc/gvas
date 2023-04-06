@@ -9,7 +9,7 @@ fn test_write_string() -> Result<(), Error> {
     cursor.write_string("test")?;
     assert_eq!(
         cursor.get_ref(),
-        &[5u8, 0u8, 0u8, 0u8, 't' as u8, 'e' as u8, 's' as u8, 't' as u8, 0u8],
+        &[5u8, 0u8, 0u8, 0u8, b't', b'e', b's', b't', 0u8],
     );
 
     // Non-ASCII

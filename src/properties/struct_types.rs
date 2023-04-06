@@ -1,6 +1,9 @@
-use std::fmt::Display;
+use std::{fmt::Display, hash::Hash};
+
+use ordered_float::OrderedFloat;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Vector {
     pub x: f32,
     pub y: f32,
@@ -19,7 +22,18 @@ impl Display for Vector {
     }
 }
 
+impl Eq for Vector {}
+
+impl Hash for Vector {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        OrderedFloat::from(self.x).hash(state);
+        OrderedFloat::from(self.x).hash(state);
+        OrderedFloat::from(self.z).hash(state);
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Rotator {
     pub pitch: f32,
     pub yaw: f32,
@@ -42,7 +56,18 @@ impl Display for Rotator {
     }
 }
 
+impl Eq for Rotator {}
+
+impl Hash for Rotator {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        OrderedFloat::from(self.pitch).hash(state);
+        OrderedFloat::from(self.yaw).hash(state);
+        OrderedFloat::from(self.roll).hash(state);
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Quat {
     pub x: f32,
     pub y: f32,
@@ -62,7 +87,19 @@ impl Display for Quat {
     }
 }
 
+impl Eq for Quat {}
+
+impl Hash for Quat {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        OrderedFloat::from(self.x).hash(state);
+        OrderedFloat::from(self.x).hash(state);
+        OrderedFloat::from(self.z).hash(state);
+        OrderedFloat::from(self.w).hash(state);
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DateTime {
     pub ticks: u64,
 }
@@ -80,6 +117,7 @@ impl Display for DateTime {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct IntPoint {
     pub x: i32,
     pub y: i32,
