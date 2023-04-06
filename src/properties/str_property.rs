@@ -36,7 +36,7 @@ impl StrProperty {
 impl PropertyTrait for StrProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("StrProperty"))?;
+            cursor.write_string("StrProperty")?;
             let property_length = match &self.value {
                 Some(value) => value.len() + 1 + 4, // 1 is null-byte, 4 is string length field size
                 None => 4,                          // 4 is string length field size

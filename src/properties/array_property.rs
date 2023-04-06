@@ -165,7 +165,7 @@ impl PropertyTrait for ArrayProperty {
             return Err(SerializeError::invalid_value("Nested arrays not supported").into());
         }
 
-        cursor.write_string(&String::from("ArrayProperty"))?;
+        cursor.write_string("ArrayProperty")?;
 
         let begin = cursor.position();
         cursor.write_u64::<LittleEndian>(0)?;

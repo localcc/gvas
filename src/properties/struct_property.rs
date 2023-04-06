@@ -253,7 +253,7 @@ impl PropertyTrait for StructProperty {
                     cursor.write_string(key)?;
                     value.write(cursor, true)?;
                 }
-                cursor.write_string(&String::from("None"))?;
+                cursor.write_string("None")?;
             }
         };
 

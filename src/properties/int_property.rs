@@ -62,7 +62,7 @@ macro_rules! impl_int_property {
                 include_header: bool,
             ) -> Result<(), Error> {
                 if include_header {
-                    cursor.write_string(&String::from(stringify!($name)))?;
+                    cursor.write_string(stringify!($name))?;
                     cursor.write_i64::<LittleEndian>($size)?;
                     let _ = cursor.write(&[0u8; 1])?;
                 }
@@ -104,7 +104,7 @@ impl Debug for Int8Property {
 impl PropertyTrait for Int8Property {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("Int8Property"))?;
+            cursor.write_string("Int8Property")?;
             cursor.write_i64::<LittleEndian>(1)?;
             let _ = cursor.write(&[0u8; 1])?;
         }
@@ -148,7 +148,7 @@ impl Debug for ByteProperty {
 impl PropertyTrait for ByteProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("ByteProperty"))?;
+            cursor.write_string("ByteProperty")?;
             cursor.write_i64::<LittleEndian>(1)?;
             cursor.write_string(self.name.as_ref().ok_or_else(|| {
                 SerializeError::InvalidValue(String::from("self.name None expected Some(...)"))
@@ -190,7 +190,7 @@ impl Debug for BoolProperty {
 impl PropertyTrait for BoolProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("BoolProperty"))?;
+            cursor.write_string("BoolProperty")?;
             cursor.write_i64::<LittleEndian>(0)?;
             cursor.write_all(&[0u8; 1])?;
         }
@@ -235,7 +235,7 @@ impl Debug for FloatProperty {
 impl PropertyTrait for FloatProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("FloatProperty"))?;
+            cursor.write_string("FloatProperty")?;
             cursor.write_i64::<LittleEndian>(4)?;
             let _ = cursor.write(&[0u8; 1])?;
         }
@@ -277,7 +277,7 @@ impl Debug for DoubleProperty {
 impl PropertyTrait for DoubleProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("DoubleProperty"))?;
+            cursor.write_string("DoubleProperty")?;
             cursor.write_i64::<LittleEndian>(8)?;
             let _ = cursor.write(&[0u8; 1])?;
         }

@@ -7,7 +7,7 @@ use std::{
 #[macro_export]
 macro_rules! get_or_panic {
     ($map:expr, $property_name:expr, $property_class:ident) => {
-        match $map.get(&String::from($property_name)) {
+        match $map.get($property_name) {
             Some(e) => match e {
                 Property::$property_class(e) => e,
                 _ => panic!("Property {} doesn't match expected type", $property_name),
