@@ -199,7 +199,7 @@ fn write_file() {
     verify_file_data(&file2);
 
     // Compare the two Vec<u8>s
-    // FIXME: assert_eq!(cursor.get_ref(), writer.get_ref());
+    assert_eq!(cursor.get_ref(), writer.get_ref());
 
     // Compare the two GvasFiles
     assert_eq!(file, file2);
