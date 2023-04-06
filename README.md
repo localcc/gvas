@@ -2,6 +2,11 @@
 
 The gvas crate is a Rust library that allows parsing of gvas save files.
 
+## Documentation
+
+Crate documentation is published to
+[docs.rs/gvas](https://docs.rs/gvas/).
+
 ## Save files
 
 A gvas save file is a binary file format used by the Unreal Engine 4 (UE4) game
