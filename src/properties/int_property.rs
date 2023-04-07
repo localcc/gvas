@@ -164,20 +164,28 @@ impl PropertyTrait for ByteProperty {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BoolProperty {
     pub value: bool,
+    pub indicator: u8,
 }
 
 impl BoolProperty {
     pub fn new(value: bool) -> Self {
-        BoolProperty { value }
+        BoolProperty {
+            value,
+            indicator: 0u8,
+        }
     }
 
     pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+        let mut indicator = 0u8;
         if include_header {
             check_size!(cursor, 0);
-            cursor.read_exact(&mut [0u8; 1])?;
+            indicator = cursor.read_u8()?;
         }
         let val = cursor.read_u8()?;
-        Ok(BoolProperty { value: val > 0 })
+        Ok(BoolProperty {
+            value: val > 0,
+            indicator,
+        })
     }
 }
 
@@ -192,7 +200,7 @@ impl PropertyTrait for BoolProperty {
         if include_header {
             cursor.write_string("BoolProperty")?;
             cursor.write_i64::<LittleEndian>(0)?;
-            cursor.write_all(&[0u8; 1])?;
+            cursor.write_u8(self.indicator)?;
         }
         cursor.write_u8(match self.value {
             true => 1,
