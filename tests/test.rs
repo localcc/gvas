@@ -189,15 +189,15 @@ fn write_file() {
     file.write(&mut writer)
         .expect("Failed to serialize gvas file");
 
+    // Compare the two Vec<u8>s
+    assert_eq!(cursor.get_ref(), writer.get_ref());
+
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
     let file2 = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
 
     // Verify GvasFile contents
     verify_file_data(&file2);
-
-    // Compare the two Vec<u8>s
-    assert_eq!(cursor.get_ref(), writer.get_ref());
 
     // Compare the two GvasFiles
     assert_eq!(file, file2);
