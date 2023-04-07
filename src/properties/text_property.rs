@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError},
+    error::{DeserializeError, Error, SerializeError},
 };
 
 use super::PropertyTrait;
@@ -34,12 +34,12 @@ pub struct RichTextFormat {
 }
 
 macro_rules! validate {
-    ($cond:expr, $($arg:tt)+) => {{
+    ($cursor:expr, $cond:expr, $($arg:tt)+) => {{
         if !$cond {
-            return Err(SerializeError::InvalidValue(format!(
-                $($arg)+
-            ))
-            .into());
+            Err(DeserializeError::InvalidProperty(
+                format!($($arg)+),
+                $cursor.position(),
+            ))?
         }
     }};
 }
@@ -56,14 +56,23 @@ impl TextProperty {
     }
 
     pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
-        validate!(!include_header, "TextProperty only supported in arrays");
+        validate!(
+            cursor,
+            !include_header,
+            "TextProperty only supported in arrays"
+        );
 
         let component_type = cursor.read_u32::<LittleEndian>()?;
-        validate!(component_type <= 2, "Unexpected component {component_type}");
+        validate!(
+            cursor,
+            component_type <= 2,
+            "Unexpected component {component_type}"
+        );
 
         let expect_indicator = if component_type == 1 { 3 } else { 255 };
         let indicator = cursor.read_u8()?;
         validate!(
+            cursor,
             indicator == expect_indicator,
             "Unexpected indicator {} for component {}, expected {}",
             indicator,
@@ -74,15 +83,15 @@ impl TextProperty {
         if component_type == 0 {
             // Empty text
             let count = cursor.read_u32::<LittleEndian>()?;
-            validate!(count == 0, "Unexpected count {count}");
+            validate!(cursor, count == 0, "Unexpected count {count}");
 
             Ok(TextProperty::Empty())
         } else if component_type == 1 {
             // Rich text
             let num_flags = cursor.read_u8()?;
-            validate!(num_flags == 8, "Unexpected num_flags {num_flags}");
+            validate!(cursor, num_flags == 8, "Unexpected num_flags {num_flags}");
             let flags = cursor.read_u64::<LittleEndian>()?;
-            validate!(flags == 0, "Unexpected flags {flags}");
+            validate!(cursor, flags == 0, "Unexpected flags {flags}");
 
             let id = cursor.read_string()?;
             let pattern = cursor.read_string()?;
@@ -92,10 +101,10 @@ impl TextProperty {
             for _ in 0..arg_count {
                 let format_key = cursor.read_string()?;
                 let separator = cursor.read_u8()?;
-                validate!(separator == 4, "Unexpected separator {separator}");
+                validate!(cursor, separator == 4, "Unexpected separator {separator}");
                 let content_type = cursor.read_u32::<LittleEndian>()?;
                 let indicator = cursor.read_u8()?;
-                validate!(indicator == 255, "Unexpected indicator {indicator}");
+                validate!(cursor, indicator == 255, "Unexpected indicator {indicator}");
                 let count = cursor.read_u32::<LittleEndian>()?;
 
                 let mut values = vec![];
@@ -119,7 +128,7 @@ impl TextProperty {
         } else if component_type == 2 {
             // Simple text
             let count = cursor.read_u32::<LittleEndian>()?;
-            validate!(count > 0, "Unexpected count {count}");
+            validate!(cursor, count > 0, "Unexpected count {count}");
 
             let mut strings: Vec<String> = vec![];
             for _ in 0..count {
@@ -130,11 +139,10 @@ impl TextProperty {
             Ok(TextProperty::Simple(strings))
         } else {
             // Unknown text
-            Err(SerializeError::InvalidValue(format!(
-                "Unexpected component_type {}",
-                component_type
-            ))
-            .into())
+            Err(DeserializeError::InvalidProperty(
+                format!("Unexpected component_type {}", component_type),
+                cursor.position(),
+            ))?
         }
     }
 }

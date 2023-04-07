@@ -9,7 +9,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError},
+    error::{DeserializeError, Error},
     scoped_stack_entry::ScopedStackEntry,
     types::Guid,
 };
@@ -59,7 +59,10 @@ impl StructProperty {
             true => cursor.read_string()?,
             false => match type_name {
                 Some(t) => t,
-                None => return Err(SerializeError::invalid_value("type_name is required").into()),
+                None => Err(DeserializeError::missing_argument(
+                    "type_name",
+                    cursor.position(),
+                ))?,
             },
         };
 

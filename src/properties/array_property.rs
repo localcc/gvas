@@ -8,7 +8,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError},
+    error::{DeserializeError, Error, SerializeError},
     types::Guid,
 };
 
@@ -32,12 +32,12 @@ pub struct ArrayProperty {
 }
 
 macro_rules! validate {
-    ($cond:expr, $($arg:tt)+) => {{
+    ($cursor:expr, $cond:expr, $($arg:tt)+) => {{
         if !$cond {
-            return Err(SerializeError::InvalidValue(format!(
-                $($arg)+
-            ))
-            .into());
+            Err(DeserializeError::InvalidProperty(
+                format!($($arg)+),
+                $cursor.position(),
+            ))?
         }
     }};
 }
@@ -104,6 +104,7 @@ impl ArrayProperty {
                 }
                 let properties_end = cursor.position();
                 validate!(
+                    cursor,
                     properties_end == properties_start + properties_size,
                     "{properties_end} == {properties_start} + {properties_size}",
                 );
@@ -129,6 +130,7 @@ impl ArrayProperty {
         };
         let end_position = cursor.position();
         validate!(
+            cursor,
             end_position == start_position + length,
             "{end_position} == {start_position} + {length}"
         );
