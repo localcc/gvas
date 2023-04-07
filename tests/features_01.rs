@@ -146,9 +146,9 @@ fn write_features_01() {
 
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let file2 = GvasFile::read_with_hints(&mut reader, &hints)
+    let read_back = GvasFile::read_with_hints(&mut reader, &hints)
         .expect("Failed to read serialized gvas file");
 
     // Compare the two GvasFiles
-    assert_eq!(file, file2);
+    assert_eq!(file, read_back);
 }
