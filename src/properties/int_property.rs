@@ -51,7 +51,7 @@ macro_rules! impl_int_property {
 
         impl Debug for $name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "{}", self.value)
+                write!(f, "{}{}", self.value, stringify!($ty))
             }
         }
 
@@ -97,7 +97,7 @@ impl Int8Property {
 
 impl Debug for Int8Property {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}i8", self.value)
     }
 }
 
@@ -141,7 +141,7 @@ impl ByteProperty {
 
 impl Debug for ByteProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}u8", self.value)
     }
 }
 
@@ -228,7 +228,7 @@ impl FloatProperty {
 
 impl Debug for FloatProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}f32", self.value)
     }
 }
 
@@ -270,7 +270,7 @@ impl DoubleProperty {
 
 impl Debug for DoubleProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}f64", self.value)
     }
 }
 
