@@ -96,7 +96,7 @@ impl PropertyTrait for SetProperty {
 
         let end_write = cursor.position();
         cursor.seek(SeekFrom::Start(begin))?;
-        cursor.write_u64::<LittleEndian>(end_write - set_begin - 1)?;
+        cursor.write_u64::<LittleEndian>(end_write - set_begin)?;
         cursor.seek(SeekFrom::Start(end_write))?;
 
         Ok(())
