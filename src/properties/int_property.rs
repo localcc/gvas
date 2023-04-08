@@ -51,7 +51,7 @@ macro_rules! impl_int_property {
 
         impl Debug for $name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "{}", self.value)
+                write!(f, "{}{}", self.value, stringify!($ty))
             }
         }
 
@@ -62,7 +62,7 @@ macro_rules! impl_int_property {
                 include_header: bool,
             ) -> Result<(), Error> {
                 if include_header {
-                    cursor.write_string(&String::from(stringify!($name)))?;
+                    cursor.write_string(stringify!($name))?;
                     cursor.write_i64::<LittleEndian>($size)?;
                     let _ = cursor.write(&[0u8; 1])?;
                 }
@@ -97,14 +97,14 @@ impl Int8Property {
 
 impl Debug for Int8Property {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}i8", self.value)
     }
 }
 
 impl PropertyTrait for Int8Property {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("Int8Property"))?;
+            cursor.write_string("Int8Property")?;
             cursor.write_i64::<LittleEndian>(1)?;
             let _ = cursor.write(&[0u8; 1])?;
         }
@@ -141,14 +141,14 @@ impl ByteProperty {
 
 impl Debug for ByteProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}u8", self.value)
     }
 }
 
 impl PropertyTrait for ByteProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("ByteProperty"))?;
+            cursor.write_string("ByteProperty")?;
             cursor.write_i64::<LittleEndian>(1)?;
             cursor.write_string(self.name.as_ref().ok_or_else(|| {
                 SerializeError::InvalidValue(String::from("self.name None expected Some(...)"))
@@ -164,20 +164,28 @@ impl PropertyTrait for ByteProperty {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BoolProperty {
     pub value: bool,
+    pub indicator: u8,
 }
 
 impl BoolProperty {
     pub fn new(value: bool) -> Self {
-        BoolProperty { value }
+        BoolProperty {
+            value,
+            indicator: 0u8,
+        }
     }
 
     pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+        let mut indicator = 0u8;
         if include_header {
             check_size!(cursor, 0);
-            cursor.read_exact(&mut [0u8; 1])?;
+            indicator = cursor.read_u8()?;
         }
         let val = cursor.read_u8()?;
-        Ok(BoolProperty { value: val > 0 })
+        Ok(BoolProperty {
+            value: val > 0,
+            indicator,
+        })
     }
 }
 
@@ -190,9 +198,9 @@ impl Debug for BoolProperty {
 impl PropertyTrait for BoolProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("BoolProperty"))?;
+            cursor.write_string("BoolProperty")?;
             cursor.write_i64::<LittleEndian>(0)?;
-            cursor.write_all(&[0u8; 1])?;
+            cursor.write_u8(self.indicator)?;
         }
         cursor.write_u8(match self.value {
             true => 1,
@@ -228,14 +236,14 @@ impl FloatProperty {
 
 impl Debug for FloatProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}f32", self.value)
     }
 }
 
 impl PropertyTrait for FloatProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("FloatProperty"))?;
+            cursor.write_string("FloatProperty")?;
             cursor.write_i64::<LittleEndian>(4)?;
             let _ = cursor.write(&[0u8; 1])?;
         }
@@ -270,14 +278,14 @@ impl DoubleProperty {
 
 impl Debug for DoubleProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}f64", self.value)
     }
 }
 
 impl PropertyTrait for DoubleProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if include_header {
-            cursor.write_string(&String::from("DoubleProperty"))?;
+            cursor.write_string("DoubleProperty")?;
             cursor.write_i64::<LittleEndian>(8)?;
             let _ = cursor.write(&[0u8; 1])?;
         }

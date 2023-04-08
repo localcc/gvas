@@ -65,20 +65,45 @@ impl From<Guid> for (u32, u32, u32, u32) {
 
 impl From<u128> for Guid {
     fn from(value: u128) -> Self {
-        let (a, b, c, d) = (
-            (value & 0xffffffff) as u32,
-            ((value >> 32) & 0xffffffff) as u32,
-            ((value >> 64) & 0xffffffff) as u32,
-            ((value >> 96) & 0xffffffff) as u32,
-        );
-        Guid::from((a, b, c, d))
+        Guid([
+            (value & 0xff) as u8,
+            ((value >> 8) & 0xff) as u8,
+            ((value >> (8 * 2)) & 0xff) as u8,
+            ((value >> (8 * 3)) & 0xff) as u8,
+            ((value >> (8 * 4)) & 0xff) as u8,
+            ((value >> (8 * 5)) & 0xff) as u8,
+            ((value >> (8 * 6)) & 0xff) as u8,
+            ((value >> (8 * 7)) & 0xff) as u8,
+            ((value >> (8 * 8)) & 0xff) as u8,
+            ((value >> (8 * 9)) & 0xff) as u8,
+            ((value >> (8 * 10)) & 0xff) as u8,
+            ((value >> (8 * 11)) & 0xff) as u8,
+            ((value >> (8 * 12)) & 0xff) as u8,
+            ((value >> (8 * 13)) & 0xff) as u8,
+            ((value >> (8 * 14)) & 0xff) as u8,
+            ((value >> (8 * 15)) & 0xff) as u8,
+        ])
     }
 }
 
 impl From<Guid> for u128 {
     fn from(value: Guid) -> Self {
-        let (a, b, c, d) = value.into();
-        (a as u128) | ((b as u128) << 32) | ((c as u128) << 64) | ((d as u128) << 96)
+        (value.0[0] as u128)
+            | ((value.0[1] as u128) << 8)
+            | ((value.0[2] as u128) << (8 * 2))
+            | ((value.0[3] as u128) << (8 * 3))
+            | ((value.0[4] as u128) << (8 * 4))
+            | ((value.0[5] as u128) << (8 * 5))
+            | ((value.0[6] as u128) << (8 * 6))
+            | ((value.0[7] as u128) << (8 * 7))
+            | ((value.0[8] as u128) << (8 * 8))
+            | ((value.0[9] as u128) << (8 * 9))
+            | ((value.0[10] as u128) << (8 * 10))
+            | ((value.0[11] as u128) << (8 * 11))
+            | ((value.0[12] as u128) << (8 * 12))
+            | ((value.0[13] as u128) << (8 * 13))
+            | ((value.0[14] as u128) << (8 * 14))
+            | ((value.0[15] as u128) << (8 * 15))
     }
 }
 

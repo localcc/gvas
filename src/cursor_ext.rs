@@ -9,11 +9,20 @@ use crate::error::{DeserializeError, Error};
 
 pub trait CursorExt {
     fn read_string(&mut self) -> Result<String, Error>;
+    fn read_string_opt(&mut self) -> Result<Option<String>, Error>;
     fn write_string(&mut self, v: &str) -> Result<(), Error>;
+    fn write_string_opt(&mut self, v: Option<&str>) -> Result<(), Error>;
 }
 
 impl CursorExt for Cursor<Vec<u8>> {
     fn read_string(&mut self) -> Result<String, Error> {
+        match CursorExt::read_string_opt(self)? {
+            Some(str) => Ok(str),
+            None => Err(DeserializeError::InvalidString(0).into()),
+        }
+    }
+
+    fn read_string_opt(&mut self) -> Result<Option<String>, Error> {
         let len = self.read_i32::<LittleEndian>()?;
         if len == i32::MIN {
             return Err(DeserializeError::InvalidString(len).into());
@@ -24,7 +33,7 @@ impl CursorExt for Cursor<Vec<u8>> {
         }
 
         if len == 0 {
-            return Ok("".to_string());
+            return Ok(None);
         }
 
         if len < 0 {
@@ -42,7 +51,7 @@ impl CursorExt for Cursor<Vec<u8>> {
 
             self.read_exact(&mut [0u8; 2])?;
 
-            Ok(string)
+            Ok(Some(string))
         } else {
             let mut buf = vec![0u8; len as usize - 1];
             self.read_exact(&mut buf)?;
@@ -50,7 +59,7 @@ impl CursorExt for Cursor<Vec<u8>> {
 
             let string = String::from_utf8(buf)?;
 
-            Ok(string)
+            Ok(Some(string))
         }
     }
 
@@ -72,5 +81,15 @@ impl CursorExt for Cursor<Vec<u8>> {
             self.write_u16::<LittleEndian>(0u16)?;
         }
         Ok(())
+    }
+
+    fn write_string_opt(&mut self, v: Option<&str>) -> Result<(), Error> {
+        match v {
+            Some(str) => self.write_string(str),
+            None => {
+                self.write_i32::<LittleEndian>(0)?;
+                Ok(())
+            }
+        }
     }
 }

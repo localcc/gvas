@@ -448,7 +448,7 @@ impl GvasFile {
             cursor.write_string(name)?;
             property.write(cursor, true)?;
         }
-        cursor.write_string(&String::from("None"))?;
+        cursor.write_string("None")?;
         cursor.write_i32::<LittleEndian>(0)?; // padding
         Ok(())
     }

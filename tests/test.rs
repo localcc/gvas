@@ -7,7 +7,7 @@ use std::{
 #[macro_export]
 macro_rules! get_or_panic {
     ($map:expr, $property_name:expr, $property_class:ident) => {
-        match $map.get(&String::from($property_name)) {
+        match $map.get($property_name) {
             Some(e) => match e {
                 Property::$property_class(e) => e,
                 _ => panic!("Property {} doesn't match expected type", $property_name),
@@ -57,7 +57,7 @@ fn verify_file_data(file: &GvasFile) {
     verify_property!(properties, "long_test", Int64Property, i64::MIN + 1);
     verify_property!(properties, "f_property", FloatProperty, 3.14159);
     verify_property!(properties, "d_property", DoubleProperty, 3.14159265358979);
-    let hello_world = String::from("Hello world");
+    let hello_world = Some(String::from("Hello world"));
     verify_property!(properties, "str_property", StrProperty, hello_world);
 
     let struct_property = get_or_panic!(properties, "struct_property", StructProperty);
@@ -142,9 +142,7 @@ fn verify_file_data(file: &GvasFile) {
     for property in &array_of_strings.properties {
         match property {
             Property::StrProperty(e) => {
-                if &e.value != "Hello world from array" {
-                    panic!("Property value value doesn't match, expected \"Hello world from array\" got {}", e.value);
-                }
+                assert_eq!(e.value, Some(String::from("Hello world from array")));
             }
             _ => panic!("array_of_strings elements are not StrProperty"),
         }

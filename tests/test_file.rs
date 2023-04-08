@@ -42,16 +42,5 @@ fn test_file() {
     let imported = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
 
     // Compare the imported value to `file`
-    assert_eq!(file.header, imported.header);
-    for property_name in file.properties.keys() {
-        let left = file.properties.get(property_name);
-        let right = imported.properties.get(property_name);
-        if let (Some(l), Some(r)) = (left, right) {
-            assert_eq!(l, r, "{}", property_name);
-        } else {
-            assert_eq!(left, right, "{}", property_name);
-        }
-    }
-    assert_eq!(file.properties, imported.properties);
     assert_eq!(file, imported);
 }

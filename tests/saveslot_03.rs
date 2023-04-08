@@ -60,5 +60,9 @@ fn write_save_slot_03() {
         .expect("Failed to serialize gvas file");
 
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    GvasFile::read_with_hints(&mut reader, &hints).expect("Failed to read serialized gvas file");
+    let read_back = GvasFile::read_with_hints(&mut reader, &hints)
+        .expect("Failed to read serialized gvas file");
+
+    // Compare the two GvasFiles
+    assert_eq!(file, read_back);
 }
