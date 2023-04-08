@@ -308,6 +308,7 @@ impl GvasHeader {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
     pub header: GvasHeader,
+    #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub properties: IndexMap<String, Property>,
 }
 

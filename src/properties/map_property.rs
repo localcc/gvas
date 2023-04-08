@@ -16,13 +16,13 @@ use crate::{
 
 use super::{Property, PropertyTrait};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MapProperty {
     pub key_type: String,
     pub value_type: String,
     pub allocation_flags: u32,
-    #[cfg_attr(feature = "serde", serde(with = "serde_value_impl"))]
+    #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub value: IndexMap<Property, Property>,
 }
 
@@ -116,58 +116,10 @@ impl PropertyTrait for MapProperty {
     }
 }
 
-impl PartialEq for MapProperty {
-    fn eq(&self, other: &Self) -> bool {
-        self.key_type == other.key_type && self.value_type == other.value_type
-    }
-}
-
-impl Eq for MapProperty {}
-
 impl Hash for MapProperty {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.key_type.hash(state);
         self.value_type.hash(state);
         self.allocation_flags.hash(state);
-    }
-}
-
-#[cfg(feature = "serde")]
-mod serde_value_impl {
-    use indexmap::IndexMap;
-
-    use serde::de::Deserializer;
-    use serde::ser::Serializer;
-    use serde::{Deserialize, Serialize};
-
-    use super::Property;
-
-    #[derive(Serialize, Deserialize)]
-    struct Entry<T> {
-        key: T,
-        value: T,
-    }
-
-    pub fn serialize<S>(
-        map: &IndexMap<Property, Property>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.collect_seq(map.iter().map(|x| Entry {
-            key: x.0,
-            value: x.1,
-        }))
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<IndexMap<Property, Property>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Ok(Vec::<Entry<Property>>::deserialize(deserializer)?
-            .into_iter()
-            .map(|x| (x.key, x.value))
-            .collect())
     }
 }

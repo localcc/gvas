@@ -20,14 +20,14 @@ use super::{
     Property, PropertyTrait,
 };
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StructProperty {
     pub guid: Guid,
     pub value: StructPropertyValue,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum StructPropertyValue {
     Vector(Vector),
@@ -304,37 +304,5 @@ impl From<IntPoint> for StructProperty {
 impl From<Guid> for StructProperty {
     fn from(guid: Guid) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Guid(guid))
-    }
-}
-
-impl Debug for StructProperty {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.guid.0.iter().all(|&x| x == 0) {
-            return self.value.fmt(f);
-        }
-
-        let mut debug_struct = f.debug_struct("StructProperty");
-
-        debug_struct.field("guid", &self.guid);
-        debug_struct.field("value", &self.value);
-
-        debug_struct.finish()
-    }
-}
-
-impl Debug for StructPropertyValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Vector(v) => v.fmt(f),
-            Self::Rotator(r) => r.fmt(f),
-            Self::Quat(q) => q.fmt(f),
-            Self::DateTime(dt) => dt.fmt(f),
-            Self::Guid(g) => g.fmt(f),
-            Self::IntPoint(ip) => ip.fmt(f),
-            Self::CustomStruct(t, v) => {
-                write!(f, "{} ", t)?;
-                f.debug_list().entries(v).finish()
-            }
-        }
     }
 }

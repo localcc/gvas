@@ -22,7 +22,7 @@ struct ArrayStructInfo {
     guid: Guid,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ArrayProperty {
     pub property_type: String,
@@ -141,46 +141,6 @@ impl ArrayProperty {
 
             array_struct_info,
         })
-    }
-}
-
-impl Debug for ArrayProperty {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (sep, ind) = match f.alternate() {
-            true => ("\n", "    "),
-            false => (" ", ""),
-        };
-        if let Some(struct_info) = &self.array_struct_info {
-            write!(f, "struct_info: {:?},{}", struct_info, sep)?;
-            write!(f, "property_type: {:?},{}", self.property_type, sep)?;
-            write!(f, "properties: ")?;
-        }
-        match self.properties.len() {
-            0 => write!(f, "[]"),
-            1 => {
-                if let Some(first) = self.properties.first() {
-                    write!(f, "[{:?}]", first)
-                } else {
-                    Err(std::fmt::Error::default())
-                }
-            }
-            _ => {
-                write!(f, "[")?;
-                let mut first = true;
-                for property in &self.properties {
-                    if first {
-                        first = false;
-                    } else {
-                        write!(f, ",")?;
-                    }
-                    write!(f, "{}{}{:?}", sep, ind, property)?;
-                }
-                if f.alternate() && !first {
-                    write!(f, ",")?;
-                }
-                write!(f, "{}]", sep)
-            }
-        }
     }
 }
 
