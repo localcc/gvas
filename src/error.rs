@@ -123,7 +123,6 @@ pub enum ErrorCode {
     Io(io::Error),
     Utf8(FromUtf8Error),
     Utf16(FromUtf16Error),
-    None,
 }
 
 impl Display for ErrorCode {
@@ -134,7 +133,6 @@ impl Display for ErrorCode {
             ErrorCode::Io(ref e) => Display::fmt(e, f),
             ErrorCode::Utf8(ref e) => Display::fmt(e, f),
             ErrorCode::Utf16(ref e) => Display::fmt(e, f),
-            ErrorCode::None => write!(f, "unk"),
         }
     }
 }
@@ -142,14 +140,6 @@ impl Display for ErrorCode {
 #[derive(Debug)]
 pub struct Error {
     code: ErrorCode,
-}
-
-impl Error {
-    pub fn empty() -> Self {
-        Error {
-            code: ErrorCode::None,
-        }
-    }
 }
 
 impl From<DeserializeError> for Error {
