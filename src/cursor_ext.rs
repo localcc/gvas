@@ -1,7 +1,4 @@
-use std::{
-    io::{Cursor, Read, Write},
-    mem::size_of,
-};
+use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -18,44 +15,43 @@ impl CursorExt for Cursor<Vec<u8>> {
     fn read_string(&mut self) -> Result<String, Error> {
         match CursorExt::read_string_opt(self)? {
             Some(str) => Ok(str),
-            None => Err(DeserializeError::InvalidString(0).into()),
+            None => Err(DeserializeError::InvalidString(0, self.position()))?,
         }
     }
 
     fn read_string_opt(&mut self) -> Result<Option<String>, Error> {
         let len = self.read_i32::<LittleEndian>()?;
-        if len == i32::MIN {
-            return Err(DeserializeError::InvalidString(len).into());
-        }
 
         if !(-131072..=131072).contains(&len) {
-            return Err(DeserializeError::InvalidString(len).into());
-        }
+            Err(DeserializeError::InvalidString(len, self.position()))?
+        } else if len == 0 {
+            Ok(None)
+        } else if len < 0 {
+            let mut buf = vec![0u16; -len as usize - 1];
+            self.read_u16_into::<LittleEndian>(&mut buf)?;
 
-        if len == 0 {
-            return Ok(None);
-        }
+            let terminator = self.read_u16::<LittleEndian>()?;
+            if terminator != 0 {
+                Err(DeserializeError::InvalidStringTermination(
+                    terminator,
+                    self.position(),
+                ))?
+            }
 
-        if len < 0 {
-            let len = -len;
-
-            let len = len * size_of::<u16>() as i32 - 2;
-            let mut buf = vec![0u8; len as usize];
-            self.read_exact(&mut buf)?;
-
-            let string = String::from_utf16(
-                &buf.chunks(2)
-                    .map(|e| u16::from_le_bytes([e[0], e[1]]))
-                    .collect::<Vec<_>>(),
-            )?;
-
-            self.read_exact(&mut [0u8; 2])?;
+            let string = String::from_utf16(&buf[..])?;
 
             Ok(Some(string))
         } else {
             let mut buf = vec![0u8; len as usize - 1];
             self.read_exact(&mut buf)?;
-            self.read_exact(&mut [0u8; 1])?;
+
+            let terminator = self.read_u8()?;
+            if terminator != 0 {
+                Err(DeserializeError::InvalidStringTermination(
+                    terminator as u16,
+                    self.position(),
+                ))?
+            }
 
             let string = String::from_utf8(buf)?;
 

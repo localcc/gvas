@@ -39,12 +39,12 @@ fn write_slot2() {
     file.write(&mut writer)
         .expect("Failed to serialize gvas file");
 
+    // Compare the two Vec<u8>s
+    assert_eq!(cursor.get_ref(), writer.get_ref());
+
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
     let read_back = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
-
-    // Compare the two Vec<u8>s
-    assert_eq!(cursor.get_ref(), writer.get_ref());
 
     // Compare the two GvasFiles
     assert_eq!(file, read_back);

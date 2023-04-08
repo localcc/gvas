@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::CursorExt,
-    error::{Error, SerializeError},
+    error::{DeserializeError, Error},
 };
 
 use super::PropertyTrait;
@@ -40,12 +40,18 @@ impl EnumProperty {
             if let Some(e) = split.next() {
                 enum_type = e.to_string();
             } else {
-                return Err(Error::from(SerializeError::InvalidValue(read_enum_type)));
+                return Err(DeserializeError::InvalidEnumType(
+                    read_enum_type,
+                    cursor.position(),
+                ))?;
             }
             if let Some(e) = split.next() {
                 value = e.to_string();
             } else {
-                return Err(Error::from(SerializeError::InvalidValue(read_enum_type)));
+                return Err(DeserializeError::InvalidEnumType(
+                    read_enum_type,
+                    cursor.position(),
+                ))?;
             }
         } else {
             cursor.read_exact(&mut [0u8; 1])?;

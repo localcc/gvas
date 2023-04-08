@@ -68,9 +68,9 @@ impl SetProperty {
 impl PropertyTrait for SetProperty {
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            return Err(Error::from(SerializeError::InvalidValue(String::from(
+            Err(SerializeError::invalid_value(
                 "Nested sets are not supported!",
-            ))));
+            ))?
         }
 
         if self.properties.is_empty() {

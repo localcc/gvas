@@ -17,7 +17,11 @@ macro_rules! check_size {
     ($cursor:ident, $expected:literal) => {
         let value_size = $cursor.read_u64::<LittleEndian>()?;
         if value_size != $expected {
-            return Err(DeserializeError::InvalidValueSize($expected, value_size).into());
+            Err(DeserializeError::InvalidValueSize(
+                $expected,
+                value_size,
+                $cursor.position(),
+            ))?
         }
     };
 }

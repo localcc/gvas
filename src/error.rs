@@ -8,21 +8,46 @@ use std::{
 #[derive(Debug)]
 pub enum DeserializeError {
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
-    InvalidValueSize(u64, u64),
+    InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
-    InvalidString(i32),
+    InvalidString(i32, u64),
+    /// If a null terminator is missing
+    InvalidStringTermination(u16, u64),
     /// If a hint is missing.
     MissingHint(String, String, u64),
+    /// If an argument is missing
+    MissingArgument(String, u64),
+    /// If an EnumProperty has an invalid enum type
+    InvalidEnumType(String, u64),
+    /// If a Property creation fails
+    InvalidProperty(String, u64),
+}
+
+impl DeserializeError {
+    pub fn missing_argument(argument_name: &str, position: u64) -> Self {
+        Self::MissingArgument(argument_name.to_string(), position)
+    }
+    pub fn invalid_property(reason: &str, position: u64) -> Self {
+        Self::InvalidProperty(reason.to_string(), position)
+    }
 }
 
 impl Display for DeserializeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DeserializeError::InvalidValueSize(ref expected, ref got) => {
-                write!(f, "Invalid value size, expected {} got {}", expected, got)
+            DeserializeError::InvalidValueSize(ref expected, ref got, ref position) => {
+                write!(
+                    f,
+                    "Invalid value size, expected {} got {} at position {}",
+                    expected, got, position
+                )
             }
-            DeserializeError::InvalidString(ref got) => {
-                write!(f, "Invalid string size, got {}", got)
+            DeserializeError::InvalidString(ref got, ref position) => {
+                write!(
+                    f,
+                    "Invalid string size, got {} at position {}",
+                    got, position
+                )
             }
             DeserializeError::MissingHint(ref struct_name, ref struct_path, ref position) => {
                 write!(
@@ -30,6 +55,30 @@ impl Display for DeserializeError {
                     "Missing hint for struct {} at path {}, cursor position: {}",
                     struct_name, struct_path, position
                 )
+            }
+            DeserializeError::InvalidStringTermination(ref char, ref position) => {
+                write!(
+                    f,
+                    "Invalid string termination {} at position {}",
+                    char, position
+                )
+            }
+            DeserializeError::MissingArgument(ref argument_name, ref position) => {
+                write!(
+                    f,
+                    "Missing argument: {} at position {}",
+                    argument_name, position
+                )
+            }
+            DeserializeError::InvalidEnumType(ref enum_type, ref position) => {
+                write!(
+                    f,
+                    "Invalid enum type {} at position {}",
+                    enum_type, position
+                )
+            }
+            DeserializeError::InvalidProperty(ref reason, ref position) => {
+                write!(f, "Invalid property {} at position {}", reason, position)
             }
         }
     }
@@ -57,7 +106,9 @@ impl SerializeError {
 impl Display for SerializeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SerializeError::InvalidValue(ref msg) => write!(f, "Invaid value {}", msg),
+            SerializeError::InvalidValue(ref msg) => {
+                write!(f, "Invaid value {}", msg)
+            }
             SerializeError::StructMissingField(ref type_name, ref missing_field) => {
                 write!(f, "Struct {} missing field {}", type_name, missing_field)
             }
