@@ -4,11 +4,7 @@ use std::{
     path::Path,
 };
 
-use gvas::{
-    cast,
-    properties::{struct_property::StructProperty, Property},
-    GvasFile,
-};
+use gvas::GvasFile;
 
 #[test]
 fn regression_01_guid() {
@@ -38,29 +34,23 @@ fn regression_01_guid() {
     // Compare the two GvasFiles
     assert_eq!(file, read_back);
 
-    let original_property: &StructProperty = cast!(
-        Property,
-        StructProperty,
-        file.properties
-            .get("Thing")
-            .expect("Failed to get test property in original asset")
-    )
-    .expect("Failed to cast property from original asset to the correct type");
-
-    let written_property: &StructProperty = cast!(
-        Property,
-        StructProperty,
-        read_back
-            .properties
-            .get("Thing")
-            .expect("Failed to get test property in written asset")
-    )
-    .expect("Failed to cast property from written asset to the correct type");
-
-    let original_guid = original_property
+    let original_guid = file
+        .properties
+        .get("Thing")
+        .expect("Failed to get test property in original asset")
+        .get_struct()
+        .expect("Failed to cast property from original asset to the correct type")
+        .value
         .get_guid()
         .expect("Failed to get property from original asset as Guid");
-    let written_guid = written_property
+
+    let written_guid = read_back
+        .properties
+        .get("Thing")
+        .expect("Failed to get test property in written asset")
+        .get_struct()
+        .expect("Failed to cast property from written asset to the correct type")
+        .value
         .get_guid()
         .expect("Failed to get property from written asset as Guid");
 

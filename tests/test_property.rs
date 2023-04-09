@@ -3,7 +3,6 @@ mod test_file;
 use std::{collections::HashMap, io::Cursor};
 
 use gvas::{
-    cast,
     cursor_ext::CursorExt,
     properties::{
         array_property::ArrayProperty,
@@ -55,10 +54,7 @@ macro_rules! test_property {
             .expect(&format!("Reading {} from {:?}", property_type, reader));
 
             assert_eq!(writer, reader);
-            assert_eq!(
-                property,
-                cast!(Property, $type, imported).expect(&format!("{} cast", stringify!($type)))
-            );
+            assert_eq!(Property::$type(property), imported);
         }
     };
 }
