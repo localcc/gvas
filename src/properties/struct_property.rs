@@ -21,26 +21,38 @@ use super::{
     Property, PropertyTrait,
 };
 
+/// A structure representing a property that holds a struct value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StructProperty {
+    /// The unique identifier of the property.
     pub guid: Guid,
+    /// The value of the property.
     pub value: StructPropertyValue,
 }
 
+/// The possible values of a `StructProperty`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum StructPropertyValue {
+    /// A `Vector` value.
     Vector(Vector),
+    /// A `Rotator` value.
     Rotator(Rotator),
+    /// A `Quat` value.
     Quat(Quat),
+    /// A `DateTime` value.
     DateTime(DateTime),
+    /// A `Guid` value.
     Guid(Guid),
+    /// An `IntPoint` value.
     IntPoint(IntPoint),
+    /// A custom struct value.
     CustomStruct(String, Vec<(String, Property)>),
 }
 
 impl StructProperty {
+    /// Creates a new `StructProperty` instance.
     pub fn new(guid: Guid, value: StructPropertyValue) -> Self {
         StructProperty { guid, value }
     }

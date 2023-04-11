@@ -4,6 +4,7 @@ use std::{
     str::FromStr,
 };
 
+/// Stores a 128-bit guid (globally unique identifier)
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Guid(pub [u8; 16]);
 
@@ -153,6 +154,7 @@ impl Display for Guid {
     }
 }
 
+/// An error ocurred while parsing a Guid
 #[derive(Debug)]
 pub struct ParseGuidError;
 
