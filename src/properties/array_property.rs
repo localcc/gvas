@@ -22,10 +22,13 @@ struct ArrayStructInfo {
     guid: Guid,
 }
 
+/// A property that holds an array of values.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ArrayProperty {
+    /// The type of Property in `properties`.
     pub property_type: String,
+    /// An array of values.
     pub properties: Vec<Property>,
 
     array_struct_info: Option<ArrayStructInfo>,
@@ -43,6 +46,7 @@ macro_rules! validate {
 }
 
 impl ArrayProperty {
+    /// Creates a new `ArrayProperty` instance.
     pub fn new(
         property_type: String,
         struct_info: Option<(String, String, Guid)>,

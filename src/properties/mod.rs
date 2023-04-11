@@ -36,11 +36,13 @@ pub mod text_property;
 pub mod unknown_property;
 
 #[macro_export]
-macro_rules! cast {
-    ($namespace:ident, $type:ident, $field:expr) => {
-        match $field {
-            $namespace::$type(e) => Some(e),
-            _ => None,
+macro_rules! make_matcher {
+    ($type:ident, $name:ident) => {
+        pub fn $name(&self) -> Option<&$type> {
+            match self {
+                Self::$type(e) => Some(e),
+                _ => None,
+            }
         }
     };
 }
@@ -150,6 +152,27 @@ impl Property {
             }
         }
     }
+
+    make_matcher!(ArrayProperty, get_array);
+    make_matcher!(EnumProperty, get_enum);
+    make_matcher!(BoolProperty, get_bool);
+    make_matcher!(ByteProperty, get_byte);
+    make_matcher!(DoubleProperty, get_f64);
+    make_matcher!(FloatProperty, get_f32);
+    make_matcher!(Int16Property, get_i16);
+    make_matcher!(Int64Property, get_i64);
+    make_matcher!(Int8Property, get_i8);
+    make_matcher!(IntProperty, get_int);
+    make_matcher!(UInt16Property, get_u16);
+    make_matcher!(UInt32Property, get_u32);
+    make_matcher!(UInt64Property, get_u64);
+    make_matcher!(MapProperty, get_map);
+    make_matcher!(NameProperty, get_name);
+    make_matcher!(SetProperty, get_set);
+    make_matcher!(StrProperty, get_str);
+    make_matcher!(StructProperty, get_struct);
+    make_matcher!(TextProperty, get_text);
+    make_matcher!(UnknownProperty, get_unknown);
 }
 
 macro_rules! inner_traits {

@@ -94,10 +94,12 @@ pub enum SerializeError {
 }
 
 impl SerializeError {
+    /// A helper method for creating `InvalidValue` errors
     pub fn invalid_value(msg: &str) -> Self {
         Self::InvalidValue(msg.to_string())
     }
 
+    /// A helper method for creating `StructMissingField` errors
     pub fn struct_missing_field(type_name: &str, missing_field: &str) -> Self {
         Self::StructMissingField(type_name.to_string(), missing_field.to_string())
     }
@@ -116,14 +118,19 @@ impl Display for SerializeError {
     }
 }
 
+/// A wrapper for the various error types this crate can emit
 #[derive(Debug)]
 pub enum ErrorCode {
+    /// A `DeserializeError` occurred
     Deserialize(DeserializeError),
+    /// A `SerializeError` occurred
     Serialize(SerializeError),
+    /// An `std::io::Error` occurred
     Io(io::Error),
+    /// A `FromUtf8Error` occurred
     Utf8(FromUtf8Error),
+    /// A `FromUtf16Error` occurred
     Utf16(FromUtf16Error),
-    None,
 }
 
 impl Display for ErrorCode {
@@ -134,7 +141,6 @@ impl Display for ErrorCode {
             ErrorCode::Io(ref e) => Display::fmt(e, f),
             ErrorCode::Utf8(ref e) => Display::fmt(e, f),
             ErrorCode::Utf16(ref e) => Display::fmt(e, f),
-            ErrorCode::None => write!(f, "unk"),
         }
     }
 }
@@ -142,14 +148,6 @@ impl Display for ErrorCode {
 #[derive(Debug)]
 pub struct Error {
     code: ErrorCode,
-}
-
-impl Error {
-    pub fn empty() -> Self {
-        Error {
-            code: ErrorCode::None,
-        }
-    }
 }
 
 impl From<DeserializeError> for Error {

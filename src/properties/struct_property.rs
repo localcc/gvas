@@ -10,6 +10,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::{
     cursor_ext::CursorExt,
     error::{DeserializeError, Error},
+    make_matcher,
     scoped_stack_entry::ScopedStackEntry,
     types::Guid,
 };
@@ -20,26 +21,38 @@ use super::{
     Property, PropertyTrait,
 };
 
+/// A structure representing a property that holds a struct value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StructProperty {
+    /// The unique identifier of the property.
     pub guid: Guid,
+    /// The value of the property.
     pub value: StructPropertyValue,
 }
 
+/// The possible values of a `StructProperty`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum StructPropertyValue {
+    /// A `Vector` value.
     Vector(Vector),
+    /// A `Rotator` value.
     Rotator(Rotator),
+    /// A `Quat` value.
     Quat(Quat),
+    /// A `DateTime` value.
     DateTime(DateTime),
+    /// A `Guid` value.
     Guid(Guid),
+    /// An `IntPoint` value.
     IntPoint(IntPoint),
+    /// A custom struct value.
     CustomStruct(String, Vec<(String, Property)>),
 }
 
 impl StructProperty {
+    /// Creates a new `StructProperty` instance.
     pub fn new(guid: Guid, value: StructPropertyValue) -> Self {
         StructProperty { guid, value }
     }
@@ -154,48 +167,6 @@ impl StructProperty {
             Some(type_name.to_string()),
         )
     }
-
-    pub fn get_vector(&self) -> Option<Vector> {
-        match self.value {
-            StructPropertyValue::Vector(vector) => Some(vector),
-            _ => None,
-        }
-    }
-
-    pub fn get_rotator(&self) -> Option<Rotator> {
-        match self.value {
-            StructPropertyValue::Rotator(rotator) => Some(rotator),
-            _ => None,
-        }
-    }
-
-    pub fn get_quat(&self) -> Option<Quat> {
-        match self.value {
-            StructPropertyValue::Quat(quat) => Some(quat),
-            _ => None,
-        }
-    }
-
-    pub fn get_date_time(&self) -> Option<DateTime> {
-        match self.value {
-            StructPropertyValue::DateTime(date_time) => Some(date_time),
-            _ => None,
-        }
-    }
-
-    pub fn get_int_point(&self) -> Option<IntPoint> {
-        match self.value {
-            StructPropertyValue::IntPoint(int_point) => Some(int_point),
-            _ => None,
-        }
-    }
-
-    pub fn get_guid(&self) -> Option<Guid> {
-        match self.value {
-            StructPropertyValue::Guid(guid) => Some(guid),
-            _ => None,
-        }
-    }
 }
 
 impl PropertyTrait for StructProperty {
@@ -305,4 +276,13 @@ impl From<Guid> for StructProperty {
     fn from(guid: Guid) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Guid(guid))
     }
+}
+
+impl StructPropertyValue {
+    make_matcher!(Vector, get_vector);
+    make_matcher!(Rotator, get_rotator);
+    make_matcher!(Quat, get_quat);
+    make_matcher!(DateTime, get_date_time);
+    make_matcher!(IntPoint, get_int_point);
+    make_matcher!(Guid, get_guid);
 }

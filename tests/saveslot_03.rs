@@ -435,9 +435,9 @@ fn read_save_slot_03() {
                                     vec![
                                         (
                                             String::from("AttributeName"),
-                                            Property::from(StrProperty {
-                                                value: Some(String::from("Currency_Blueprints"))
-                                            })
+                                            Property::from(StrProperty::from(
+                                                "Currency_Blueprints"
+                                            ))
                                         ),
                                         (
                                             String::from("Attribute"),
