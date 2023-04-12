@@ -4,10 +4,15 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::error::{DeserializeError, Error};
 
+/// Extensions for `Cursor`
 pub trait CursorExt {
+    /// Reads a GVAS string.
     fn read_string(&mut self) -> Result<String, Error>;
+    /// Reads a GVAS string.
     fn read_string_opt(&mut self) -> Result<Option<String>, Error>;
+    /// Writes a GVAS string.
     fn write_string(&mut self, v: &str) -> Result<(), Error>;
+    /// Writes a GVAS string.
     fn write_string_opt(&mut self, v: Option<&str>) -> Result<(), Error>;
 }
 

@@ -26,9 +26,11 @@ pub enum DeserializeError {
 }
 
 impl DeserializeError {
+    /// A helper for creating `MissingArgument` errors
     pub fn missing_argument(argument_name: &str, position: u64) -> Self {
         Self::MissingArgument(argument_name.to_string(), position)
     }
+    /// A helper for creating `InvalidProperty` errors
     pub fn invalid_property(reason: &str, position: u64) -> Self {
         Self::InvalidProperty(reason.to_string(), position)
     }
@@ -99,12 +101,12 @@ pub enum SerializeError {
 }
 
 impl SerializeError {
-    /// A helper method for creating `InvalidValue` errors
+    /// A helper for creating `InvalidValue` errors
     pub fn invalid_value(msg: &str) -> Self {
         Self::InvalidValue(msg.to_string())
     }
 
-    /// A helper method for creating `StructMissingField` errors
+    /// A helper for creating `StructMissingField` errors
     pub fn struct_missing_field(type_name: &str, missing_field: &str) -> Self {
         Self::StructMissingField(type_name.to_string(), missing_field.to_string())
     }
@@ -150,6 +152,7 @@ impl Display for ErrorCode {
     }
 }
 
+/// Base type for errors.
 #[derive(Debug)]
 pub struct Error {
     code: ErrorCode,

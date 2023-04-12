@@ -6,9 +6,11 @@ use crate::{cursor_ext::CursorExt, error::Error};
 
 use super::PropertyTrait;
 
+/// A property that holds a GVAS string value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StrProperty {
+    /// Value of the GVAS string.
     pub value: Option<String>,
 }
 
@@ -19,6 +21,7 @@ impl From<&str> for StrProperty {
 }
 
 impl StrProperty {
+    /// Creates a new `StrProperty` instance.
     pub fn new(value: Option<String>) -> Self {
         StrProperty { value }
     }

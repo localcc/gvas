@@ -15,6 +15,7 @@ pub struct UnknownProperty {
 }
 
 impl UnknownProperty {
+    /// Creates a new `UnknownProperty` instance.
     pub fn new(property_name: String, raw: Vec<u8>) -> Self {
         UnknownProperty { property_name, raw }
     }

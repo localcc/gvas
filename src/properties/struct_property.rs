@@ -21,7 +21,7 @@ use super::{
     Property, PropertyTrait,
 };
 
-/// A structure representing a property that holds a struct value.
+/// A property that holds a struct value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StructProperty {

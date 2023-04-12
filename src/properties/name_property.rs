@@ -6,9 +6,11 @@ use crate::{cursor_ext::CursorExt, error::Error};
 
 use super::PropertyTrait;
 
+/// A property that holds a name.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct NameProperty {
+    /// Name value.
     pub value: String,
 }
 

@@ -9,14 +9,19 @@ use crate::{
 
 use super::PropertyTrait;
 
+/// A property that stores GVAS Text.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TextProperty {
+    /// An empty `TextProperty`.
     Empty(),
+    /// A rich `TextProperty`.
     Rich(RichText),
+    /// A simple `TextProperty`.
     Simple(Vec<String>),
 }
 
+/// A struct describing a rich `TextProperty`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RichText {
@@ -25,6 +30,7 @@ pub struct RichText {
     text_format: Vec<RichTextFormat>,
 }
 
+/// A struct describing a text_format entry in a rich `TextProperty`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RichTextFormat {
@@ -45,6 +51,7 @@ macro_rules! validate {
 }
 
 impl TextProperty {
+    /// Creates a new `TextProperty` instance.
     pub fn new(value: Option<RichText>, values: Option<Vec<String>>) -> Self {
         if let Some(rich) = value {
             TextProperty::Rich(rich)
@@ -207,6 +214,7 @@ impl PropertyTrait for TextProperty {
 }
 
 impl RichText {
+    /// Creates a new `RichText` instance.
     pub fn new(id: String, pattern: String, text_format: Vec<RichTextFormat>) -> Self {
         RichText {
             id,
@@ -217,6 +225,7 @@ impl RichText {
 }
 
 impl RichTextFormat {
+    /// Creates a new `RichTextFormat` instance.
     pub fn new(format_key: String, content_type: u32, values: Vec<String>) -> Self {
         RichTextFormat {
             format_key,

@@ -23,21 +23,36 @@ use self::{
     unknown_property::UnknownProperty,
 };
 
+/// Module for `ArrayProperty`.
 pub mod array_property;
+/// Module for `EnumProperty`.
 pub mod enum_property;
+/// Module for `IntProperty` and various integer properties.
 pub mod int_property;
+/// Module for `MapProperty`
 pub mod map_property;
+/// Module for `NameProperty`
 pub mod name_property;
+/// Module for `SetProperty`
 pub mod set_property;
+/// Module for `StrProperty`
 pub mod str_property;
+/// Module for `StructProperty`
 pub mod struct_property;
+/// Module for `StructProperty` sub-types.
 pub mod struct_types;
+/// Module for `TextProperty`
 pub mod text_property;
+/// Module for `UnknownProperty`
 pub mod unknown_property;
 
+/// Creates a match helper function for enums.
 #[macro_export]
 macro_rules! make_matcher {
     ($type:ident, $name:ident) => {
+        #[doc = "Retrieves the enum value as a `"]
+        #[doc = stringify!($type)]
+        #[doc = "`."]
         pub fn $name(&self) -> Option<&$type> {
             match self {
                 Self::$type(e) => Some(e),
@@ -47,11 +62,14 @@ macro_rules! make_matcher {
     };
 }
 
+/// Property traits.
 #[enum_dispatch]
 pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
+    /// Serialize.
     fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error>;
 }
 
+/// GVAS property types.
 #[enum_dispatch(PropertyTrait)]
 #[cfg_attr(
     feature = "serde",
@@ -59,30 +77,50 @@ pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
     serde(tag = "type")
 )]
 pub enum Property {
-    Int8Property,
-    ByteProperty,
-    Int16Property,
-    UInt16Property,
-    IntProperty,
-    UInt32Property,
-    Int64Property,
-    UInt64Property,
-    FloatProperty,
-    DoubleProperty,
-    BoolProperty,
-    EnumProperty,
-    StrProperty,
-    NameProperty,
-    TextProperty,
-    StructProperty,
+    /// An `ArrayProperty`.
     ArrayProperty,
-    SetProperty,
+    /// A `BoolProperty`.
+    BoolProperty,
+    /// A `ByteProperty`.
+    ByteProperty,
+    /// A `DoubleProperty`.
+    DoubleProperty,
+    /// An `EnumProperty`.
+    EnumProperty,
+    /// A `FloatProperty`.
+    FloatProperty,
+    /// An `Int16Property`.
+    Int16Property,
+    /// An `Int64Property`.
+    Int64Property,
+    /// An `Int8Property`.
+    Int8Property,
+    /// An `IntProperty`.
+    IntProperty,
+    /// A `MapProperty`.
     MapProperty,
-
+    /// A `NameProperty`.
+    NameProperty,
+    /// A `SetProperty`.
+    SetProperty,
+    /// A `StrProperty`.
+    StrProperty,
+    /// A `StructProperty`.
+    StructProperty,
+    /// A `TextProperty`.
+    TextProperty,
+    /// A `UInt16Property`.
+    UInt16Property,
+    /// A `UInt32Property`.
+    UInt32Property,
+    /// A `UInt64Property`.
+    UInt64Property,
+    /// An `UnknownProperty`.
     UnknownProperty,
 }
 
 impl Property {
+    /// Creates a new `Property` instance.
     pub fn new(
         cursor: &mut Cursor<Vec<u8>>,
         hints: &HashMap<String, String>,

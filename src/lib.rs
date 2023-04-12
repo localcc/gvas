@@ -1,3 +1,5 @@
+#![warn(missing_docs)]
+
 //! Gvas
 //!
 //! UE4 Save File parsing library
@@ -66,10 +68,14 @@
 //! # Ok::<(), Error>(())
 //! ```
 
+/// Extensions for `Cursor`.
 pub mod cursor_ext;
+/// Error types.
 pub mod error;
+/// Property types.
 pub mod properties;
 pub(crate) mod scoped_stack_entry;
+/// Various types.
 pub mod types;
 
 use std::{
@@ -91,10 +97,15 @@ use crate::error::DeserializeError;
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FEngineVersion {
+    /// Major version number.
     pub major: u16,
+    /// Minor version number.
     pub minor: u16,
+    /// Patch version number.
     pub patch: u16,
+    /// Build id.
     pub change_list: u32,
+    /// Build id string.
     pub branch: String,
 }
 
@@ -109,6 +120,7 @@ impl Display for FEngineVersion {
 }
 
 impl FEngineVersion {
+    /// Creates a new instance of `FEngineVersion`
     pub fn new(major: u16, minor: u16, patch: u16, change_list: u32, branch: String) -> Self {
         FEngineVersion {
             major,
@@ -150,11 +162,14 @@ impl FEngineVersion {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FCustomVersion {
+    /// Key
     pub key: Guid,
+    /// Value
     pub version: i32,
 }
 
 impl FCustomVersion {
+    /// Creates a new instance of `FCustomVersion`
     pub fn new(key: Guid, version: i32) -> Self {
         FCustomVersion { key, version }
     }
@@ -179,22 +194,31 @@ impl FCustomVersion {
     }
 }
 
+/// The four bytes 'GVAS' appear at the beginning of every GVAS file.
 pub const FILE_TYPE_GVAS: i32 = i32::from_le_bytes([b'G', b'V', b'A', b'S']);
 
 /// Stores information about GVAS file, engine version, etc.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasHeader {
+    /// The literal 'GVAS'.
     pub file_type_tag: i32,
+    /// Save game file version.
     pub save_game_file_version: i32,
+    /// File format version.
     pub package_file_ue4_version: i32,
+    /// Unreal Engine version.
     pub engine_version: FEngineVersion,
+    /// Custom version format.
     pub custom_version_format: i32,
+    /// Custom versions.
     pub custom_versions: Vec<FCustomVersion>,
+    /// Save game class name.
     pub save_game_class_name: String,
 }
 
 impl GvasHeader {
+    /// Creates a new instance of `GvasHeader`
     pub fn new(
         file_type_tag: i32,
         save_game_file_version: i32,
@@ -314,7 +338,9 @@ impl GvasHeader {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
+    /// GVAS file header.
     pub header: GvasHeader,
+    /// GVAS properties.
     #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub properties: IndexMap<String, Property>,
 }

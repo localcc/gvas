@@ -9,6 +9,7 @@ use crate::{
 
 use super::PropertyTrait;
 
+/// A property that holds an enum value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnumProperty {
@@ -18,6 +19,7 @@ pub struct EnumProperty {
 }
 
 impl EnumProperty {
+    /// Creates a new `EnumProperty` instance.
     pub fn new(enum_type: String, value: String, compact_name: bool) -> Self {
         EnumProperty {
             enum_type,
