@@ -76,6 +76,7 @@ pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
     derive(serde::Serialize, serde::Deserialize),
     serde(tag = "type")
 )]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Property {
     /// An `ArrayProperty`.
     ArrayProperty,
@@ -212,69 +213,3 @@ impl Property {
     make_matcher!(TextProperty, get_text);
     make_matcher!(UnknownProperty, get_unknown);
 }
-
-macro_rules! inner_traits {
-    ($($property:ident),*) => {
-        impl Debug for Property {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                match self {
-                    $(
-                        Self::$property(arg0) => f.debug_tuple(stringify!($property)).field(arg0).finish(),
-                    )*
-                }
-            }
-        }
-
-        impl Clone for Property {
-            fn clone(&self) -> Self {
-                match self {
-                    $(
-                        Self::$property(arg0) => Self::$property(arg0.clone()),
-                    )*
-                }
-            }
-        }
-
-        impl PartialEq for Property {
-            fn eq(&self, other: &Self) -> bool {
-                match (self, other) {
-                    $(
-                        (Self::$property(l0), Self::$property(r0)) => l0 == r0,
-                    )*
-                    _ => false
-                }
-            }
-        }
-
-        impl Eq for Property {}
-
-        impl Hash for Property {
-            fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-                core::mem::discriminant(self).hash(state);
-            }
-        }
-    };
-}
-
-inner_traits!(
-    Int8Property,
-    ByteProperty,
-    Int16Property,
-    UInt16Property,
-    IntProperty,
-    UInt32Property,
-    Int64Property,
-    UInt64Property,
-    FloatProperty,
-    DoubleProperty,
-    BoolProperty,
-    EnumProperty,
-    StrProperty,
-    NameProperty,
-    TextProperty,
-    StructProperty,
-    ArrayProperty,
-    SetProperty,
-    MapProperty,
-    UnknownProperty
-);
