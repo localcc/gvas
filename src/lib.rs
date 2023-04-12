@@ -85,6 +85,8 @@ use indexmap::IndexMap;
 use properties::{Property, PropertyTrait};
 use types::Guid;
 
+use crate::error::DeserializeError;
+
 /// Stores UE4 version in which the GVAS file was saved
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -177,6 +179,8 @@ impl FCustomVersion {
     }
 }
 
+pub const FILE_TYPE_GVAS: i32 = i32::from_le_bytes([b'G', b'V', b'A', b'S']);
+
 /// Stores information about GVAS file, engine version, etc.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -239,6 +243,9 @@ impl GvasHeader {
     /// ```
     pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
         let file_type_tag = cursor.read_i32::<LittleEndian>()?;
+        if file_type_tag != FILE_TYPE_GVAS {
+            Err(DeserializeError::InvalidFileType(file_type_tag))?
+        }
         let save_game_file_version = cursor.read_i32::<LittleEndian>()?;
         let package_file_ue4_version = cursor.read_i32::<LittleEndian>()?;
         let engine_version = FEngineVersion::read(cursor)?;

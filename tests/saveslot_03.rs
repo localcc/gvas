@@ -18,7 +18,7 @@ use gvas::{
         Property,
     },
     types::Guid,
-    FCustomVersion, FEngineVersion, GvasFile, GvasHeader,
+    FCustomVersion, FEngineVersion, GvasFile, GvasHeader, FILE_TYPE_GVAS,
 };
 use indexmap::IndexMap;
 
@@ -59,7 +59,7 @@ fn read_save_slot_03() {
     assert_eq!(
         file.header,
         GvasHeader {
-            file_type_tag: 1396790855,
+            file_type_tag: FILE_TYPE_GVAS,
             save_game_file_version: 2,
             package_file_ue4_version: 522,
             engine_version: FEngineVersion {

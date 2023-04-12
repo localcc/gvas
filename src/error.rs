@@ -7,6 +7,8 @@ use std::{
 /// Gets thrown when there is a deserialization error
 #[derive(Debug)]
 pub enum DeserializeError {
+    /// If the file header is not GVAS
+    InvalidFileType(i32),
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
     InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
@@ -35,6 +37,9 @@ impl DeserializeError {
 impl Display for DeserializeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            DeserializeError::InvalidFileType(ref file_type) => {
+                write!(f, "Invalid file type {}", file_type)
+            }
             DeserializeError::InvalidValueSize(ref expected, ref got, ref position) => {
                 write!(
                     f,
