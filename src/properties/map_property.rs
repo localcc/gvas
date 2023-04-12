@@ -16,17 +16,23 @@ use crate::{
 
 use super::{Property, PropertyTrait};
 
+/// A property that stores a map of properties to properties.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MapProperty {
+    /// Key type name.
     pub key_type: String,
+    /// Value type name.
     pub value_type: String,
+    /// Allocation flags.
     pub allocation_flags: u32,
+    /// Map entries.
     #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub value: IndexMap<Property, Property>,
 }
 
 impl MapProperty {
+    /// Creates a new `MapProperty` instance.
     pub fn new(
         key_type: String,
         value_type: String,

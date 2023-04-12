@@ -8,7 +8,7 @@ use gvas::{
 };
 
 #[test]
-fn test_file() {
+fn test_file_err() {
     let header = GvasHeader {
         file_type_tag: 0,
         save_game_file_version: 0,
@@ -39,8 +39,6 @@ fn test_file() {
 
     // Read GvasFile from Vec<u8>
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let imported = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
-
-    // Compare the imported value to `file`
-    assert_eq!(file, imported);
+    let err = GvasFile::read(&mut reader).expect_err("Expected file type error");
+    assert_eq!(err.to_string(), "Invalid file type 0");
 }

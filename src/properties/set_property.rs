@@ -12,15 +12,20 @@ use crate::{
 
 use super::{Property, PropertyTrait};
 
+/// A property that stores a set of properties.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SetProperty {
+    /// Property type.
     pub property_type: String,
+    /// Allocation flags.
     pub allocation_flags: u32,
+    /// Properties.
     pub properties: Vec<Property>,
 }
 
 impl SetProperty {
+    /// Creates a new `SetProperty` instance.
     pub fn new(property_type: String, allocation_flags: u32, properties: Vec<Property>) -> Self {
         SetProperty {
             property_type,

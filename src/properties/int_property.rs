@@ -28,13 +28,20 @@ macro_rules! check_size {
 
 macro_rules! impl_int_property {
     ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
+        #[doc = "A property that stores a `"]
+        #[doc = stringify!($ty)]
+        #[doc = "`."]
         #[derive(Clone, PartialEq, Eq, Hash)]
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub struct $name {
+            /// Integer value.
             pub value: $ty,
         }
 
         impl $name {
+            #[doc = "Creates a new `"]
+            #[doc = stringify!($name)]
+            #[doc = "` instance."]
             pub fn new(value: $ty) -> Self {
                 $name { value }
             }
@@ -77,13 +84,16 @@ macro_rules! impl_int_property {
     };
 }
 
+/// A property that stores a `i8`.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Int8Property {
+    /// Integer value.
     pub value: i8,
 }
 
 impl Int8Property {
+    /// Creates a new `Int8Property` instance.
     pub fn new(value: i8) -> Self {
         Int8Property { value }
     }
@@ -117,14 +127,18 @@ impl PropertyTrait for Int8Property {
     }
 }
 
+/// A property that stores a `u8`.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ByteProperty {
+    /// Property name.
     pub name: Option<String>,
+    /// Integer value.
     pub value: u8,
 }
 
 impl ByteProperty {
+    /// Creates a new `ByteProperty` instance.
     pub fn new(name: Option<String>, value: u8) -> Self {
         ByteProperty { name, value }
     }
@@ -164,14 +178,18 @@ impl PropertyTrait for ByteProperty {
     }
 }
 
+/// A property that stores a `bool`.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BoolProperty {
+    /// Boolean value.
     pub value: bool,
+    /// Indicator value.
     pub indicator: u8,
 }
 
 impl BoolProperty {
+    /// Creates a new `BoolProperty` instance.
     pub fn new(value: bool) -> Self {
         BoolProperty {
             value,
@@ -214,13 +232,16 @@ impl PropertyTrait for BoolProperty {
     }
 }
 
+/// A property that stores a `f32`.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FloatProperty {
+    /// Integer value.
     pub value: OrderedFloat<f32>,
 }
 
 impl FloatProperty {
+    /// Creates a new `FloatProperty` instance.
     pub fn new(value: f32) -> Self {
         FloatProperty {
             value: OrderedFloat(value),
@@ -256,13 +277,16 @@ impl PropertyTrait for FloatProperty {
     }
 }
 
+/// A property that stores a `f64`.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DoubleProperty {
+    /// Integer value.
     pub value: OrderedFloat<f64>,
 }
 
 impl DoubleProperty {
+    /// Creates a new `DoubleProperty` instance.
     pub fn new(value: f64) -> Self {
         DoubleProperty {
             value: OrderedFloat(value),

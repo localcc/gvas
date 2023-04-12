@@ -7,6 +7,8 @@ use std::{
 /// Gets thrown when there is a deserialization error
 #[derive(Debug)]
 pub enum DeserializeError {
+    /// If the file header is not GVAS
+    InvalidFileType(i32),
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
     InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
@@ -24,9 +26,11 @@ pub enum DeserializeError {
 }
 
 impl DeserializeError {
+    /// A helper for creating `MissingArgument` errors
     pub fn missing_argument(argument_name: &str, position: u64) -> Self {
         Self::MissingArgument(argument_name.to_string(), position)
     }
+    /// A helper for creating `InvalidProperty` errors
     pub fn invalid_property(reason: &str, position: u64) -> Self {
         Self::InvalidProperty(reason.to_string(), position)
     }
@@ -35,6 +39,9 @@ impl DeserializeError {
 impl Display for DeserializeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            DeserializeError::InvalidFileType(ref file_type) => {
+                write!(f, "Invalid file type {}", file_type)
+            }
             DeserializeError::InvalidValueSize(ref expected, ref got, ref position) => {
                 write!(
                     f,
@@ -94,12 +101,12 @@ pub enum SerializeError {
 }
 
 impl SerializeError {
-    /// A helper method for creating `InvalidValue` errors
+    /// A helper for creating `InvalidValue` errors
     pub fn invalid_value(msg: &str) -> Self {
         Self::InvalidValue(msg.to_string())
     }
 
-    /// A helper method for creating `StructMissingField` errors
+    /// A helper for creating `StructMissingField` errors
     pub fn struct_missing_field(type_name: &str, missing_field: &str) -> Self {
         Self::StructMissingField(type_name.to_string(), missing_field.to_string())
     }
@@ -145,6 +152,7 @@ impl Display for ErrorCode {
     }
 }
 
+/// Base type for errors.
 #[derive(Debug)]
 pub struct Error {
     code: ErrorCode,
