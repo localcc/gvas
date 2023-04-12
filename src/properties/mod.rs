@@ -151,7 +151,11 @@ impl Property {
                 if !include_header {
                     let struct_path = properties_stack.join(".");
                     let Some(hint) = hints.get(&struct_path) else {
-                        return Err(DeserializeError::MissingHint(value_type.to_string(), struct_path, cursor.position()).into());
+                        Err(DeserializeError::MissingHint(
+                            value_type.to_string(),
+                            struct_path,
+                            cursor.position(),
+                        ))?
                     };
 
                     return Ok(StructProperty::read_with_type_name(
