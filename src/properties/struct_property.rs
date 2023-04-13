@@ -93,22 +93,22 @@ impl StructProperty {
         }
 
         let value = match type_name.as_str() {
-            "Vector" => StructPropertyValue::Vector(Vector {
-                x: FloatProperty::read(cursor, false)?.value.0,
-                y: FloatProperty::read(cursor, false)?.value.0,
-                z: FloatProperty::read(cursor, false)?.value.0,
-            }),
-            "Rotator" => StructPropertyValue::Rotator(Rotator {
-                pitch: FloatProperty::read(cursor, false)?.value.0,
-                yaw: FloatProperty::read(cursor, false)?.value.0,
-                roll: FloatProperty::read(cursor, false)?.value.0,
-            }),
-            "Quat" => StructPropertyValue::Quat(Quat {
-                x: FloatProperty::read(cursor, false)?.value.0,
-                y: FloatProperty::read(cursor, false)?.value.0,
-                z: FloatProperty::read(cursor, false)?.value.0,
-                w: FloatProperty::read(cursor, false)?.value.0,
-            }),
+            "Vector" => StructPropertyValue::Vector(Vector::new(
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+            )),
+            "Rotator" => StructPropertyValue::Rotator(Rotator::new(
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+            )),
+            "Quat" => StructPropertyValue::Quat(Quat::new(
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+            )),
             "DateTime" => StructPropertyValue::DateTime(DateTime {
                 ticks: UInt64Property::read(cursor, false)?.value,
             }),
@@ -193,20 +193,20 @@ impl PropertyTrait for StructProperty {
 
         match &self.value {
             StructPropertyValue::Vector(vector) => {
-                FloatProperty::new(vector.x).write(cursor, false)?;
-                FloatProperty::new(vector.y).write(cursor, false)?;
-                FloatProperty::new(vector.z).write(cursor, false)?;
+                FloatProperty::new(f32::from(vector.x)).write(cursor, false)?;
+                FloatProperty::new(f32::from(vector.y)).write(cursor, false)?;
+                FloatProperty::new(f32::from(vector.z)).write(cursor, false)?;
             }
             StructPropertyValue::Rotator(rotator) => {
-                FloatProperty::new(rotator.pitch).write(cursor, false)?;
-                FloatProperty::new(rotator.yaw).write(cursor, false)?;
-                FloatProperty::new(rotator.roll).write(cursor, false)?;
+                FloatProperty::new(f32::from(rotator.pitch)).write(cursor, false)?;
+                FloatProperty::new(f32::from(rotator.yaw)).write(cursor, false)?;
+                FloatProperty::new(f32::from(rotator.roll)).write(cursor, false)?;
             }
             StructPropertyValue::Quat(quat) => {
-                FloatProperty::new(quat.x).write(cursor, false)?;
-                FloatProperty::new(quat.y).write(cursor, false)?;
-                FloatProperty::new(quat.z).write(cursor, false)?;
-                FloatProperty::new(quat.w).write(cursor, false)?;
+                FloatProperty::new(f32::from(quat.x)).write(cursor, false)?;
+                FloatProperty::new(f32::from(quat.y)).write(cursor, false)?;
+                FloatProperty::new(f32::from(quat.z)).write(cursor, false)?;
+                FloatProperty::new(f32::from(quat.w)).write(cursor, false)?;
             }
             StructPropertyValue::DateTime(date_time) => {
                 UInt64Property::new(date_time.ticks).write(cursor, false)?;

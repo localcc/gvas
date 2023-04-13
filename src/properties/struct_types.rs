@@ -3,20 +3,23 @@ use std::{fmt::Display, hash::Hash};
 use ordered_float::OrderedFloat;
 
 /// A struct that stores a vector.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Vector {
     /// X coordinate.
-    pub x: f32,
+    pub x: OrderedFloat<f32>,
     /// Y coordinate.
-    pub y: f32,
+    pub y: OrderedFloat<f32>,
     /// Z coordinate.
-    pub z: f32,
+    pub z: OrderedFloat<f32>,
 }
 
 impl Vector {
     /// Creates a new `Vector` instance.
     pub fn new(x: f32, y: f32, z: f32) -> Self {
+        let x = OrderedFloat::from(x);
+        let y = OrderedFloat::from(y);
+        let z = OrderedFloat::from(z);
         Vector { x, y, z }
     }
 }
@@ -27,31 +30,24 @@ impl Display for Vector {
     }
 }
 
-impl Eq for Vector {}
-
-impl Hash for Vector {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        OrderedFloat::from(self.x).hash(state);
-        OrderedFloat::from(self.x).hash(state);
-        OrderedFloat::from(self.z).hash(state);
-    }
-}
-
 /// A struct that stores a rotator.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Rotator {
     /// Euclidean pitch.
-    pub pitch: f32,
+    pub pitch: OrderedFloat<f32>,
     /// Euclidean yaw.
-    pub yaw: f32,
+    pub yaw: OrderedFloat<f32>,
     /// Euclidean roll.
-    pub roll: f32,
+    pub roll: OrderedFloat<f32>,
 }
 
 impl Rotator {
     /// Creates a new `Rotator` instance.
     pub fn new(pitch: f32, yaw: f32, roll: f32) -> Self {
+        let pitch = OrderedFloat::from(pitch);
+        let yaw = OrderedFloat::from(yaw);
+        let roll = OrderedFloat::from(roll);
         Rotator { pitch, yaw, roll }
     }
 }
@@ -66,33 +62,27 @@ impl Display for Rotator {
     }
 }
 
-impl Eq for Rotator {}
-
-impl Hash for Rotator {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        OrderedFloat::from(self.pitch).hash(state);
-        OrderedFloat::from(self.yaw).hash(state);
-        OrderedFloat::from(self.roll).hash(state);
-    }
-}
-
 /// A struct that stores a quaternion.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Quat {
     /// X component.
-    pub x: f32,
+    pub x: OrderedFloat<f32>,
     /// Y component.
-    pub y: f32,
+    pub y: OrderedFloat<f32>,
     /// Z component.
-    pub z: f32,
+    pub z: OrderedFloat<f32>,
     /// Real component.
-    pub w: f32,
+    pub w: OrderedFloat<f32>,
 }
 
 impl Quat {
     /// Creates a new `Quat` instance.
     pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
+        let x = OrderedFloat::from(x);
+        let y = OrderedFloat::from(y);
+        let z = OrderedFloat::from(z);
+        let w = OrderedFloat::from(w);
         Quat { x, y, z, w }
     }
 }
@@ -100,17 +90,6 @@ impl Quat {
 impl Display for Quat {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "x: {} y: {} z: {} w: {}", self.x, self.y, self.z, self.w)
-    }
-}
-
-impl Eq for Quat {}
-
-impl Hash for Quat {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        OrderedFloat::from(self.x).hash(state);
-        OrderedFloat::from(self.x).hash(state);
-        OrderedFloat::from(self.z).hash(state);
-        OrderedFloat::from(self.w).hash(state);
     }
 }
 
