@@ -1,25 +1,31 @@
-use std::{fmt::Display, io};
+use std::io;
 
+use thiserror::Error;
 use unreal_helpers::error::FStringError;
 
 /// Gets thrown when there is a deserialization error
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum DeserializeError {
     /// If the file header is not GVAS
+    #[error("Invalid file type {0}")]
     InvalidFileType(i32),
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
+    #[error("Invalid value size, expected {0} got {1} at position {2}")]
     InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
+    #[error("Invalid string size, got {0} at position {1}")]
     InvalidString(i32, u64),
-    /// If a null terminator is missing
-    InvalidStringTermination(u16, u64),
     /// If a hint is missing.
+    #[error("Missing hint for struct {0} at path {1}, cursor position: {2}")]
     MissingHint(String, String, u64),
     /// If an argument is missing
+    #[error("Missing argument: {0} at position {1}")]
     MissingArgument(String, u64),
     /// If an EnumProperty has an invalid enum type
+    #[error("Invalid enum type {0} at position {1}")]
     InvalidEnumType(String, u64),
     /// If a Property creation fails
+    #[error("Invalid property {0} at position {1}")]
     InvalidProperty(String, u64),
 }
 
@@ -34,67 +40,14 @@ impl DeserializeError {
     }
 }
 
-impl Display for DeserializeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            DeserializeError::InvalidFileType(ref file_type) => {
-                write!(f, "Invalid file type {}", file_type)
-            }
-            DeserializeError::InvalidValueSize(ref expected, ref got, ref position) => {
-                write!(
-                    f,
-                    "Invalid value size, expected {} got {} at position {}",
-                    expected, got, position
-                )
-            }
-            DeserializeError::InvalidString(ref got, ref position) => {
-                write!(
-                    f,
-                    "Invalid string size, got {} at position {}",
-                    got, position
-                )
-            }
-            DeserializeError::MissingHint(ref struct_name, ref struct_path, ref position) => {
-                write!(
-                    f,
-                    "Missing hint for struct {} at path {}, cursor position: {}",
-                    struct_name, struct_path, position
-                )
-            }
-            DeserializeError::InvalidStringTermination(ref char, ref position) => {
-                write!(
-                    f,
-                    "Invalid string termination {} at position {}",
-                    char, position
-                )
-            }
-            DeserializeError::MissingArgument(ref argument_name, ref position) => {
-                write!(
-                    f,
-                    "Missing argument: {} at position {}",
-                    argument_name, position
-                )
-            }
-            DeserializeError::InvalidEnumType(ref enum_type, ref position) => {
-                write!(
-                    f,
-                    "Invalid enum type {} at position {}",
-                    enum_type, position
-                )
-            }
-            DeserializeError::InvalidProperty(ref reason, ref position) => {
-                write!(f, "Invalid property {} at position {}", reason, position)
-            }
-        }
-    }
-}
-
 /// Gets thrown when there is a serialization error
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum SerializeError {
     /// A value was invalid
+    #[error("Invalid value {0}")]
     InvalidValue(String),
     /// Struct is missing a field, e.g. struct with type_name `Vector` doesn't have an `X` property
+    #[error("Struct {0} missing field {1}")]
     StructMissingField(String, String),
 }
 
@@ -110,85 +63,19 @@ impl SerializeError {
     }
 }
 
-impl Display for SerializeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SerializeError::InvalidValue(ref msg) => {
-                write!(f, "Invaid value {}", msg)
-            }
-            SerializeError::StructMissingField(ref type_name, ref missing_field) => {
-                write!(f, "Struct {} missing field {}", type_name, missing_field)
-            }
-        }
-    }
-}
-
 /// A wrapper for the various error types this crate can emit
-#[derive(Debug)]
-pub enum ErrorCode {
+#[derive(Error, Debug)]
+pub enum Error {
     /// A `DeserializeError` occurred
-    Deserialize(DeserializeError),
+    #[error(transparent)]
+    Deserialize(#[from] DeserializeError),
     /// A `SerializeError` occurred
-    Serialize(SerializeError),
+    #[error(transparent)]
+    Serialize(#[from] SerializeError),
     /// An `FStringError` occured
-    FString(FStringError),
+    #[error(transparent)]
+    FString(#[from] FStringError),
     /// An `std::io::Error` occured
-    Io(io::Error),
-}
-
-impl Display for ErrorCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ErrorCode::Deserialize(ref e) => Display::fmt(e, f),
-            ErrorCode::Serialize(ref e) => Display::fmt(e, f),
-            ErrorCode::FString(ref e) => Display::fmt(e, f),
-            ErrorCode::Io(ref e) => Display::fmt(e, f),
-        }
-    }
-}
-
-/// Base type for errors.
-#[derive(Debug)]
-pub struct Error {
-    code: ErrorCode,
-}
-
-impl From<DeserializeError> for Error {
-    fn from(e: DeserializeError) -> Self {
-        Error {
-            code: ErrorCode::Deserialize(e),
-        }
-    }
-}
-
-impl From<SerializeError> for Error {
-    fn from(e: SerializeError) -> Self {
-        Error {
-            code: ErrorCode::Serialize(e),
-        }
-    }
-}
-
-impl From<FStringError> for Error {
-    fn from(e: FStringError) -> Self {
-        Error {
-            code: ErrorCode::FString(e),
-        }
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error {
-            code: ErrorCode::Io(e),
-        }
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.code, f)
-    }
+    #[error(transparent)]
+    Io(#[from] io::Error),
 }
