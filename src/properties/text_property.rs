@@ -25,18 +25,24 @@ pub enum TextProperty {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RichText {
-    id: String,
-    pattern: String,
-    text_format: Vec<RichTextFormat>,
+    /// A unique identifier.
+    pub id: String,
+    /// Text pattern.
+    pub pattern: String,
+    /// Text pattern substitutions.
+    pub text_format: Vec<RichTextFormat>,
 }
 
 /// A struct describing a text_format entry in a rich `TextProperty`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RichTextFormat {
-    format_key: String,
-    content_type: u32,
-    values: Vec<String>,
+    /// Substituation key.
+    pub format_key: String,
+    /// Content type.
+    pub content_type: u32,
+    /// Substitution value.
+    pub values: Vec<String>,
 }
 
 macro_rules! validate {
