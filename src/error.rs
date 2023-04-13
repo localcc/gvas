@@ -1,8 +1,6 @@
-use std::{
-    fmt::Display,
-    io,
-    string::{FromUtf16Error, FromUtf8Error},
-};
+use std::{fmt::Display, io};
+
+use unreal_helpers::error::FStringError;
 
 /// Gets thrown when there is a deserialization error
 #[derive(Debug)]
@@ -132,12 +130,10 @@ pub enum ErrorCode {
     Deserialize(DeserializeError),
     /// A `SerializeError` occurred
     Serialize(SerializeError),
-    /// An `std::io::Error` occurred
+    /// An `FStringError` occured
+    FString(FStringError),
+    /// An `std::io::Error` occured
     Io(io::Error),
-    /// A `FromUtf8Error` occurred
-    Utf8(FromUtf8Error),
-    /// A `FromUtf16Error` occurred
-    Utf16(FromUtf16Error),
 }
 
 impl Display for ErrorCode {
@@ -145,9 +141,8 @@ impl Display for ErrorCode {
         match self {
             ErrorCode::Deserialize(ref e) => Display::fmt(e, f),
             ErrorCode::Serialize(ref e) => Display::fmt(e, f),
+            ErrorCode::FString(ref e) => Display::fmt(e, f),
             ErrorCode::Io(ref e) => Display::fmt(e, f),
-            ErrorCode::Utf8(ref e) => Display::fmt(e, f),
-            ErrorCode::Utf16(ref e) => Display::fmt(e, f),
         }
     }
 }
@@ -174,26 +169,18 @@ impl From<SerializeError> for Error {
     }
 }
 
-impl From<io::Error> for Error {
-    fn from(e: io::Error) -> Self {
+impl From<FStringError> for Error {
+    fn from(e: FStringError) -> Self {
+        Error {
+            code: ErrorCode::FString(e),
+        }
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
         Error {
             code: ErrorCode::Io(e),
-        }
-    }
-}
-
-impl From<FromUtf8Error> for Error {
-    fn from(e: FromUtf8Error) -> Self {
-        Error {
-            code: ErrorCode::Utf8(e),
-        }
-    }
-}
-
-impl From<FromUtf16Error> for Error {
-    fn from(e: FromUtf16Error) -> Self {
-        Error {
-            code: ErrorCode::Utf16(e),
         }
     }
 }

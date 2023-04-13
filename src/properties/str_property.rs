@@ -1,6 +1,7 @@
 use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::{cursor_ext::CursorExt, error::Error};
 
@@ -31,7 +32,7 @@ impl StrProperty {
             let _length = cursor.read_u64::<LittleEndian>()?;
             cursor.read_exact(&mut [0u8; 1])?;
         }
-        let value = cursor.read_string_opt()?;
+        let value = cursor.read_fstring()?;
         Ok(StrProperty { value })
     }
 }
@@ -48,12 +49,8 @@ impl PropertyTrait for StrProperty {
             let _ = cursor.write(&[0u8; 1])?;
         }
 
-        match &self.value {
-            Some(value) => cursor.write_string(value),
-            None => {
-                cursor.write_all(&[0u8; 4])?;
-                Ok(())
-            }
-        }
+        cursor.write_fstring(self.value.as_deref())?;
+
+        Ok(())
     }
 }
