@@ -425,8 +425,12 @@ impl GvasFile {
         let header = GvasHeader::read(cursor)?;
 
         let mut properties = IndexMap::new();
-        let mut property_name = cursor.read_string()?;
-        while property_name != "None" {
+        loop {
+            let property_name = cursor.read_string()?;
+            if property_name == "None" {
+                break;
+            }
+
             let property_type = cursor.read_string()?;
 
             let mut properties_stack = Vec::new();
@@ -441,7 +445,6 @@ impl GvasFile {
                 None,
             )?;
             properties.insert(property_name, property);
-            property_name = cursor.read_string()?;
         }
 
         Ok(GvasFile { header, properties })
