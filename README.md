@@ -42,12 +42,8 @@ use std::{
     path::Path,
 };
 
-let mut file = File::open("save.sav").unwrap();
-let mut data = Vec::new();
-file.read_to_end(&mut data).unwrap();
-
-let mut cursor = Cursor::new(data);
-let gvas_file = GvasFile::read(&mut cursor);
+let mut file = File::open("save.sav")?;
+let gvas_file = GvasFile::read(&mut file);
 
 println!("{:#?}", gvas_file);
 ```

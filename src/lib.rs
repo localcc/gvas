@@ -10,16 +10,12 @@
 //! use gvas::{error::Error, GvasFile};
 //! use std::{
 //!     fs::File,
-//!     io::{Cursor, Read},
+//!     io::Read,
 //!     path::Path,
 //! };
 //!
 //! let mut file = File::open("save.sav")?;
-//! let mut data = Vec::new();
-//! file.read_to_end(&mut data)?;
-//!
-//! let mut cursor = Cursor::new(data);
-//! let gvas_file = GvasFile::read(&mut cursor);
+//! let gvas_file = GvasFile::read(&mut file);
 //!
 //! println!("{:#?}", gvas_file);
 //! # Ok::<(), Error>(())
@@ -50,19 +46,16 @@
 //! use std::{
 //!     collections::HashMap,
 //!     fs::File,
-//!     io::{Cursor, Read},
+//!     io::Read,
 //!     path::Path,
 //! };
 //!
 //! let mut file = File::open("save.sav")?;
-//! let mut data = Vec::new();
-//! file.read_to_end(&mut data)?;
 //!
 //! let mut hints = HashMap::new();
 //! hints.insert("UnLockedMissionParameters.MapProperty.Key.StructProperty".to_string(), "Guid".to_string());
 //!
-//! let mut cursor = Cursor::new(data);
-//! let gvas_file = GvasFile::read_with_hints(&mut cursor, &hints);
+//! let gvas_file = GvasFile::read_with_hints(&mut file, &hints);
 //!
 //! println!("{:#?}", gvas_file);
 //! # Ok::<(), Error>(())
@@ -251,16 +244,13 @@ impl GvasHeader {
     /// use gvas::{error::Error, GvasHeader};
     /// use std::{
     ///     fs::File,
-    ///     io::{Cursor, Read},
+    ///     io::Read,
     ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
     ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_header = GvasHeader::read(&mut cursor)?;
+    /// let gvas_header = GvasHeader::read(&mut file)?;
     ///
     /// println!("{:#?}", gvas_header);
     /// # Ok::<(), Error>(())
@@ -306,11 +296,7 @@ impl GvasHeader {
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
-    ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_header = GvasHeader::read(&mut cursor)?;
+    /// let gvas_header = GvasHeader::read(&mut file)?;
     ///
     /// let mut writer = Cursor::new(Vec::new());
     /// gvas_header.write(&mut writer)?;
@@ -362,16 +348,12 @@ impl GvasFile {
     /// use gvas::{error::Error, GvasFile};
     /// use std::{
     ///     fs::File,
-    ///     io::{Cursor, Read},
+    ///     io::Read,
     ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
-    ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read(&mut cursor);
+    /// let gvas_file = GvasFile::read(&mut file);
     ///
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
@@ -398,13 +380,11 @@ impl GvasFile {
     /// use std::{
     ///     collections::HashMap,
     ///     fs::File,
-    ///     io::{Cursor, Read},
+    ///     io::Read,
     ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
     ///
     /// let mut hints = HashMap::new();
     /// hints.insert(
@@ -412,8 +392,7 @@ impl GvasFile {
     ///     "Guid".to_string(),
     /// );
     ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read_with_hints(&mut cursor, &hints);
+    /// let gvas_file = GvasFile::read_with_hints(&mut file, &hints);
     ///
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
@@ -467,11 +446,7 @@ impl GvasFile {
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
-    ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read(&mut cursor)?;
+    /// let gvas_file = GvasFile::read(&mut file)?;
     ///
     /// let mut writer = Cursor::new(Vec::new());
     /// gvas_file.write(&mut writer)?;

@@ -154,14 +154,8 @@ fn read_file() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/Slot1.sav");
     let mut file = File::open(path).expect("Failed to open test asset");
 
-    // Read the file in to a Vec<u8>
-    let mut data = Vec::new();
-    file.read_to_end(&mut data)
-        .expect("Failed to read test asset");
-
-    // Convert the Vec<u8> to a GvasFile
-    let mut cursor = Cursor::new(data);
-    let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+    // Read the file in to a GvasFile
+    let file = GvasFile::read(&mut file).expect("Failed to parse gvas file");
 
     // Verify GvasFile contents
     verify_file_data(&file);
