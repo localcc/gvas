@@ -10,8 +10,6 @@
 //! use gvas::{error::Error, GvasFile};
 //! use std::{
 //!     fs::File,
-//!     io::Read,
-//!     path::Path,
 //! };
 //!
 //! let mut file = File::open("save.sav")?;
@@ -46,8 +44,6 @@
 //! use std::{
 //!     collections::HashMap,
 //!     fs::File,
-//!     io::Read,
-//!     path::Path,
 //! };
 //!
 //! let mut file = File::open("save.sav")?;
@@ -244,8 +240,6 @@ impl GvasHeader {
     /// use gvas::{error::Error, GvasHeader};
     /// use std::{
     ///     fs::File,
-    ///     io::Read,
-    ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
@@ -291,8 +285,7 @@ impl GvasHeader {
     /// use gvas::{error::Error, GvasHeader};
     /// use std::{
     ///     fs::File,
-    ///     io::{Cursor, Read},
-    ///     path::Path,
+    ///     io::Cursor,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
@@ -346,11 +339,7 @@ impl GvasFile {
     ///
     /// ```no_run
     /// use gvas::{error::Error, GvasFile};
-    /// use std::{
-    ///     fs::File,
-    ///     io::Read,
-    ///     path::Path,
-    /// };
+    /// use std::fs::File;
     ///
     /// let mut file = File::open("save.sav")?;
     /// let gvas_file = GvasFile::read(&mut file);
@@ -377,12 +366,7 @@ impl GvasFile {
     ///
     /// ```no_run
     /// use gvas::{error::Error, GvasFile};
-    /// use std::{
-    ///     collections::HashMap,
-    ///     fs::File,
-    ///     io::Read,
-    ///     path::Path,
-    /// };
+    /// use std::{collections::HashMap, fs::File};
     ///
     /// let mut file = File::open("save.sav")?;
     ///
@@ -441,8 +425,7 @@ impl GvasFile {
     /// use gvas::{error::Error, GvasFile};
     /// use std::{
     ///     fs::File,
-    ///     io::{Cursor, Read},
-    ///     path::Path,
+    ///     io::Cursor,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;

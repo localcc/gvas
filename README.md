@@ -26,21 +26,13 @@ gvas, the serde feature must be enabled by running
 
 ## Examples
 
-The example code provided below demonstrates how to use the gvas crate to read
-a gvas save file. The code first reads the contents of the gvas .sav file into
-a byte vector. Then, a Cursor is created from the byte vector to allow reading
-from the vector as if it were a file. Finally, the GvasFile struct's read()
-method is used to parse the data from the cursor and produce a GvasFile struct.
-The GvasFile struct represents the parsed data from the gvas save file and can
-be used to read and modify the data.
+The example code below demonstrates how to use the gvas crate to read a gvas
+save file. The GvasFile struct's read() method is used to parse the data from
+the file and produce a GvasFile struct.
 
 ```rust
 use gvas::GvasFile;
-use std::{
-    fs::File,
-    io::{Cursor, Read},
-    path::Path,
-};
+use std::fs::File;
 
 let mut file = File::open("save.sav")?;
 let gvas_file = GvasFile::read(&mut file);
