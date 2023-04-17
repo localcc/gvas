@@ -69,12 +69,12 @@ impl EnumProperty {
 }
 
 impl PropertyTrait for EnumProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("EnumProperty")?;
         }
 
-        let begin = cursor.position();
+        let begin = cursor.stream_position()?;
         cursor.write_u64::<LittleEndian>(0)?;
 
         if self.compact_name {
@@ -84,9 +84,9 @@ impl PropertyTrait for EnumProperty {
             cursor.write_string(&self.enum_type)?;
             cursor.write_all(&[0u8; 1])?;
 
-            let value_begin = cursor.position();
+            let value_begin = cursor.stream_position()?;
             cursor.write_string(&self.value)?;
-            let value_end = cursor.position();
+            let value_end = cursor.stream_position()?;
 
             cursor.seek(SeekFrom::Start(begin))?;
             cursor.write_u64::<LittleEndian>(value_end - value_begin)?;

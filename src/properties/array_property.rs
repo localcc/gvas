@@ -149,19 +149,19 @@ impl ArrayProperty {
 }
 
 impl PropertyTrait for ArrayProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             return Err(SerializeError::invalid_value("Nested arrays not supported").into());
         }
 
         cursor.write_string("ArrayProperty")?;
 
-        let begin = cursor.position();
+        let begin = cursor.stream_position()?;
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.property_type)?;
         let _ = cursor.write(&[0u8; 1])?;
-        let begin_write = cursor.position();
+        let begin_write = cursor.stream_position()?;
 
         cursor.write_i32::<LittleEndian>(self.properties.len() as i32)?;
 
@@ -176,12 +176,12 @@ impl PropertyTrait for ArrayProperty {
                 cursor.write_string(&array_struct_info.field_name)?;
                 cursor.write_string(&self.property_type)?;
 
-                let len_position = cursor.position();
+                let len_position = cursor.stream_position()?;
                 cursor.write_u64::<LittleEndian>(0)?;
                 cursor.write_string(&array_struct_info.type_name)?;
                 let _ = cursor.write(&array_struct_info.guid.0)?;
                 let _ = cursor.write(&[0u8; 1])?;
-                let begin_without_name = cursor.position();
+                let begin_without_name = cursor.stream_position()?;
 
                 for property in &self.properties {
                     let res: Result<(), Error> = match property {
@@ -196,7 +196,7 @@ impl PropertyTrait for ArrayProperty {
                     };
                     res?;
                 }
-                let end_without_name = cursor.position();
+                let end_without_name = cursor.stream_position()?;
                 cursor.seek(SeekFrom::Start(len_position))?;
                 cursor.write_u64::<LittleEndian>(end_without_name - begin_without_name)?;
                 cursor.seek(SeekFrom::Start(end_without_name))?;
@@ -208,7 +208,7 @@ impl PropertyTrait for ArrayProperty {
             }
         }
 
-        let end_write = cursor.position();
+        let end_write = cursor.stream_position()?;
         cursor.seek(SeekFrom::Start(begin))?;
         cursor.write_u64::<LittleEndian>(end_write - begin_write)?;
         cursor.seek(SeekFrom::Start(end_write))?;

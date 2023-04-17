@@ -71,7 +71,7 @@ impl SetProperty {
 }
 
 impl PropertyTrait for SetProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             Err(SerializeError::invalid_value(
                 "Nested sets are not supported!",
@@ -84,13 +84,13 @@ impl PropertyTrait for SetProperty {
 
         cursor.write_string("SetProperty")?;
 
-        let begin = cursor.position();
+        let begin = cursor.stream_position()?;
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.property_type)?;
         let _ = cursor.write(&[0u8; 1])?;
 
-        let set_begin = cursor.position();
+        let set_begin = cursor.stream_position()?;
 
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_i32::<LittleEndian>(self.properties.len() as i32)?;
@@ -99,7 +99,7 @@ impl PropertyTrait for SetProperty {
             property.write(cursor, false)?;
         }
 
-        let end_write = cursor.position();
+        let end_write = cursor.stream_position()?;
         cursor.seek(SeekFrom::Start(begin))?;
         cursor.write_u64::<LittleEndian>(end_write - set_begin)?;
         cursor.seek(SeekFrom::Start(end_write))?;

@@ -81,7 +81,7 @@ pub mod types;
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
-    io::{Cursor, Read, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -148,7 +148,7 @@ impl FEngineVersion {
     }
 
     /// Write FEngineVersion to a binary file
-    pub(crate) fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u16::<LittleEndian>(self.major)?;
         cursor.write_u16::<LittleEndian>(self.minor)?;
         cursor.write_u16::<LittleEndian>(self.patch)?;
@@ -187,7 +187,7 @@ impl FCustomVersion {
     }
 
     /// Write FCustomVersion to a binary file
-    pub(crate) fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         let _ = cursor.write(&self.key.0)?;
         cursor.write_i32::<LittleEndian>(self.version)?;
         Ok(())
@@ -317,7 +317,7 @@ impl GvasHeader {
     /// println!("{:#?}", writer.get_ref());
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_i32::<LittleEndian>(self.file_type_tag)?;
         cursor.write_i32::<LittleEndian>(self.save_game_file_version)?;
         cursor.write_i32::<LittleEndian>(self.package_file_ue4_version)?;
@@ -478,7 +478,7 @@ impl GvasFile {
     /// println!("{:#?}", writer.get_ref());
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub fn write<W: Write + Seek>(&self, cursor: &mut W) -> Result<(), Error> {
         self.header.write(cursor)?;
 
         for (name, property) in &self.properties {

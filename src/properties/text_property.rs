@@ -1,4 +1,7 @@
-use std::{fmt::Debug, io::Cursor};
+use std::{
+    fmt::Debug,
+    io::{Cursor, Seek, Write},
+};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -50,7 +53,7 @@ macro_rules! validate {
         if !$cond {
             Err(DeserializeError::InvalidProperty(
                 format!($($arg)+),
-                $cursor.position(),
+                $cursor.stream_position()?,
             ))?
         }
     }};
@@ -154,7 +157,7 @@ impl TextProperty {
             // Unknown text
             Err(DeserializeError::InvalidProperty(
                 format!("Unexpected component_type {}", component_type),
-                cursor.position(),
+                cursor.stream_position()?,
             ))?
         }
     }
@@ -171,7 +174,7 @@ impl Debug for TextProperty {
 }
 
 impl PropertyTrait for TextProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             return Err(
                 SerializeError::invalid_value("TextProperty only supported in arrays").into(),

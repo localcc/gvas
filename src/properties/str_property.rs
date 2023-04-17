@@ -1,4 +1,4 @@
-use std::io::{Cursor, Read, Write};
+use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
@@ -38,7 +38,7 @@ impl StrProperty {
 }
 
 impl PropertyTrait for StrProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("StrProperty")?;
             let property_length = match &self.value {

@@ -74,7 +74,7 @@ impl StructProperty {
                 Some(t) => t,
                 None => Err(DeserializeError::missing_argument(
                     "type_name",
-                    cursor.position(),
+                    cursor.stream_position()?,
                 ))?,
             },
         };
@@ -170,12 +170,12 @@ impl StructProperty {
 }
 
 impl PropertyTrait for StructProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         let mut begin = 0;
         let mut write_begin = 0;
         if include_header {
             cursor.write_string("StructProperty")?;
-            begin = cursor.position();
+            begin = cursor.stream_position()?;
             cursor.write_u64::<LittleEndian>(0)?;
             cursor.write_string(match &self.value {
                 StructPropertyValue::Vector(_) => "Vector",
@@ -188,7 +188,7 @@ impl PropertyTrait for StructProperty {
             })?;
             cursor.write_all(&self.guid.0)?;
             cursor.write_all(&[0u8; 1])?;
-            write_begin = cursor.position();
+            write_begin = cursor.stream_position()?;
         }
 
         match &self.value {
@@ -232,7 +232,7 @@ impl PropertyTrait for StructProperty {
         };
 
         if include_header {
-            let write_end = cursor.position();
+            let write_end = cursor.stream_position()?;
             cursor.seek(SeekFrom::Start(begin))?;
             cursor.write_u64::<LittleEndian>(write_end - write_begin)?;
             cursor.seek(SeekFrom::Start(write_end))?;
