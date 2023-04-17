@@ -5,6 +5,7 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
+use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
@@ -203,11 +204,8 @@ impl BoolProperty {
             check_size!(cursor, 0);
             indicator = cursor.read_u8()?;
         }
-        let val = cursor.read_u8()?;
-        Ok(BoolProperty {
-            value: val > 0,
-            indicator,
-        })
+        let value = cursor.read_bool()?;
+        Ok(BoolProperty { value, indicator })
     }
 }
 
@@ -224,10 +222,7 @@ impl PropertyTrait for BoolProperty {
             cursor.write_i64::<LittleEndian>(0)?;
             cursor.write_u8(self.indicator)?;
         }
-        cursor.write_u8(match self.value {
-            true => 1,
-            false => 0,
-        })?;
+        cursor.write_bool(self.value)?;
         Ok(())
     }
 }
