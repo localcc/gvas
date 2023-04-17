@@ -1,9 +1,9 @@
-use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{Read, Seek, SeekFrom, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
-    cursor_ext::CursorExt,
+    cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
 };
 
@@ -28,7 +28,7 @@ impl EnumProperty {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let _length = cursor.read_u64::<LittleEndian>()?;
 
         let read_enum_type = cursor.read_string()?;
@@ -44,7 +44,7 @@ impl EnumProperty {
             } else {
                 return Err(DeserializeError::InvalidEnumType(
                     read_enum_type,
-                    cursor.position(),
+                    cursor.stream_position()?,
                 ))?;
             }
             if let Some(e) = split.next() {
@@ -52,7 +52,7 @@ impl EnumProperty {
             } else {
                 return Err(DeserializeError::InvalidEnumType(
                     read_enum_type,
-                    cursor.position(),
+                    cursor.stream_position()?,
                 ))?;
             }
         } else {
@@ -69,12 +69,12 @@ impl EnumProperty {
 }
 
 impl PropertyTrait for EnumProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("EnumProperty")?;
         }
 
-        let begin = cursor.position();
+        let begin = cursor.stream_position()?;
         cursor.write_u64::<LittleEndian>(0)?;
 
         if self.compact_name {
@@ -84,9 +84,9 @@ impl PropertyTrait for EnumProperty {
             cursor.write_string(&self.enum_type)?;
             cursor.write_all(&[0u8; 1])?;
 
-            let value_begin = cursor.position();
+            let value_begin = cursor.stream_position()?;
             cursor.write_string(&self.value)?;
-            let value_end = cursor.position();
+            let value_end = cursor.stream_position()?;
 
             cursor.seek(SeekFrom::Start(begin))?;
             cursor.write_u64::<LittleEndian>(value_end - value_begin)?;

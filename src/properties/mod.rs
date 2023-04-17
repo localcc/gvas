@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fmt::Debug, hash::Hash, io::Cursor};
+use std::{
+    collections::HashMap,
+    fmt::Debug,
+    hash::Hash,
+    io::{Read, Seek, Write},
+};
 
 use enum_dispatch::enum_dispatch;
 
@@ -66,7 +71,7 @@ macro_rules! make_matcher {
 #[enum_dispatch]
 pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
     /// Serialize.
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error>;
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error>;
 }
 
 /// GVAS property types.
@@ -122,8 +127,8 @@ pub enum Property {
 
 impl Property {
     /// Creates a new `Property` instance.
-    pub fn new(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub fn new<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
         value_type: &str,
@@ -154,7 +159,7 @@ impl Property {
                         Err(DeserializeError::MissingHint(
                             value_type.to_string(),
                             struct_path,
-                            cursor.position(),
+                            cursor.stream_position()?,
                         ))?
                     };
 
@@ -188,10 +193,7 @@ impl Property {
                     .into());
                 }
 
-                Err(DeserializeError::invalid_property(
-                    value_type,
-                    cursor.position(),
-                ))?
+                Err(DeserializeError::invalid_property(value_type, cursor))?
             }
         }
     }

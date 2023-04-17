@@ -2,13 +2,13 @@ use std::{
     collections::HashMap,
     fmt::Debug,
     hash::Hash,
-    io::{Cursor, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
-    cursor_ext::CursorExt,
+    cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
     make_matcher,
     scoped_stack_entry::ScopedStackEntry,
@@ -57,8 +57,8 @@ impl StructProperty {
         StructProperty { guid, value }
     }
 
-    fn read(
-        cursor: &mut Cursor<Vec<u8>>,
+    fn read<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
         include_header: bool,
@@ -72,10 +72,7 @@ impl StructProperty {
             true => cursor.read_string()?,
             false => match type_name {
                 Some(t) => t,
-                None => Err(DeserializeError::missing_argument(
-                    "type_name",
-                    cursor.position(),
-                ))?,
+                None => Err(DeserializeError::missing_argument("type_name", cursor))?,
             },
         };
 
@@ -145,16 +142,16 @@ impl StructProperty {
         })
     }
 
-    pub(crate) fn read_with_header(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_header<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
     ) -> Result<Self, Error> {
         Self::read(cursor, hints, properties_stack, true, None)
     }
 
-    pub(crate) fn read_with_type_name(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_type_name<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
         type_name: &str,
@@ -170,12 +167,12 @@ impl StructProperty {
 }
 
 impl PropertyTrait for StructProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         let mut begin = 0;
         let mut write_begin = 0;
         if include_header {
             cursor.write_string("StructProperty")?;
-            begin = cursor.position();
+            begin = cursor.stream_position()?;
             cursor.write_u64::<LittleEndian>(0)?;
             cursor.write_string(match &self.value {
                 StructPropertyValue::Vector(_) => "Vector",
@@ -188,7 +185,7 @@ impl PropertyTrait for StructProperty {
             })?;
             cursor.write_all(&self.guid.0)?;
             cursor.write_all(&[0u8; 1])?;
-            write_begin = cursor.position();
+            write_begin = cursor.stream_position()?;
         }
 
         match &self.value {
@@ -232,7 +229,7 @@ impl PropertyTrait for StructProperty {
         };
 
         if include_header {
-            let write_end = cursor.position();
+            let write_end = cursor.stream_position()?;
             cursor.seek(SeekFrom::Start(begin))?;
             cursor.write_u64::<LittleEndian>(write_end - write_begin)?;
             cursor.seek(SeekFrom::Start(write_end))?;

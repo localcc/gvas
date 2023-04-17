@@ -1,13 +1,14 @@
 use std::{
     fmt::Debug,
-    io::{Cursor, Read, Write},
+    io::{Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
+use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::{
-    cursor_ext::CursorExt,
+    cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
 };
 
@@ -20,7 +21,7 @@ macro_rules! check_size {
             Err(DeserializeError::InvalidValueSize(
                 $expected,
                 value_size,
-                $cursor.position(),
+                $cursor.stream_position()?,
             ))?
         }
     };
@@ -46,8 +47,8 @@ macro_rules! impl_int_property {
                 $name { value }
             }
 
-            pub(crate) fn read(
-                cursor: &mut Cursor<Vec<u8>>,
+            pub(crate) fn read<R: Read + Seek>(
+                cursor: &mut R,
                 include_header: bool,
             ) -> Result<Self, Error> {
                 if include_header {
@@ -67,9 +68,9 @@ macro_rules! impl_int_property {
         }
 
         impl PropertyTrait for $name {
-            fn write(
+            fn write<W: Write + Seek>(
                 &self,
-                cursor: &mut Cursor<Vec<u8>>,
+                cursor: &mut W,
                 include_header: bool,
             ) -> Result<(), Error> {
                 if include_header {
@@ -98,7 +99,10 @@ impl Int8Property {
         Int8Property { value }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 1);
             cursor.read_exact(&mut [0u8; 1])?;
@@ -116,7 +120,7 @@ impl Debug for Int8Property {
 }
 
 impl PropertyTrait for Int8Property {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("Int8Property")?;
             cursor.write_i64::<LittleEndian>(1)?;
@@ -143,7 +147,10 @@ impl ByteProperty {
         ByteProperty { name, value }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         let mut name = None;
         if include_header {
             check_size!(cursor, 1);
@@ -164,7 +171,7 @@ impl Debug for ByteProperty {
 }
 
 impl PropertyTrait for ByteProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("ByteProperty")?;
             cursor.write_i64::<LittleEndian>(1)?;
@@ -197,17 +204,17 @@ impl BoolProperty {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         let mut indicator = 0u8;
         if include_header {
             check_size!(cursor, 0);
             indicator = cursor.read_u8()?;
         }
-        let val = cursor.read_u8()?;
-        Ok(BoolProperty {
-            value: val > 0,
-            indicator,
-        })
+        let value = cursor.read_bool()?;
+        Ok(BoolProperty { value, indicator })
     }
 }
 
@@ -218,16 +225,13 @@ impl Debug for BoolProperty {
 }
 
 impl PropertyTrait for BoolProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("BoolProperty")?;
             cursor.write_i64::<LittleEndian>(0)?;
             cursor.write_u8(self.indicator)?;
         }
-        cursor.write_u8(match self.value {
-            true => 1,
-            false => 0,
-        })?;
+        cursor.write_bool(self.value)?;
         Ok(())
     }
 }
@@ -248,7 +252,10 @@ impl FloatProperty {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 4);
             cursor.read_exact(&mut [0u8; 1])?;
@@ -266,7 +273,7 @@ impl Debug for FloatProperty {
 }
 
 impl PropertyTrait for FloatProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("FloatProperty")?;
             cursor.write_i64::<LittleEndian>(4)?;
@@ -293,7 +300,10 @@ impl DoubleProperty {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 8);
             cursor.read_exact(&mut [0u8; 1])?;
@@ -311,7 +321,7 @@ impl Debug for DoubleProperty {
 }
 
 impl PropertyTrait for DoubleProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("DoubleProperty")?;
             cursor.write_i64::<LittleEndian>(8)?;

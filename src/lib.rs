@@ -10,16 +10,12 @@
 //! use gvas::{error::Error, GvasFile};
 //! use std::{
 //!     fs::File,
-//!     io::{Cursor, Read},
+//!     io::Read,
 //!     path::Path,
 //! };
 //!
 //! let mut file = File::open("save.sav")?;
-//! let mut data = Vec::new();
-//! file.read_to_end(&mut data)?;
-//!
-//! let mut cursor = Cursor::new(data);
-//! let gvas_file = GvasFile::read(&mut cursor);
+//! let gvas_file = GvasFile::read(&mut file);
 //!
 //! println!("{:#?}", gvas_file);
 //! # Ok::<(), Error>(())
@@ -50,19 +46,16 @@
 //! use std::{
 //!     collections::HashMap,
 //!     fs::File,
-//!     io::{Cursor, Read},
+//!     io::Read,
 //!     path::Path,
 //! };
 //!
 //! let mut file = File::open("save.sav")?;
-//! let mut data = Vec::new();
-//! file.read_to_end(&mut data)?;
 //!
 //! let mut hints = HashMap::new();
 //! hints.insert("UnLockedMissionParameters.MapProperty.Key.StructProperty".to_string(), "Guid".to_string());
 //!
-//! let mut cursor = Cursor::new(data);
-//! let gvas_file = GvasFile::read_with_hints(&mut cursor, &hints);
+//! let gvas_file = GvasFile::read_with_hints(&mut file, &hints);
 //!
 //! println!("{:#?}", gvas_file);
 //! # Ok::<(), Error>(())
@@ -81,11 +74,11 @@ pub mod types;
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
-    io::{Cursor, Read, Write},
+    io::{Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use cursor_ext::CursorExt;
+use cursor_ext::{ReadExt, WriteExt};
 use error::Error;
 use indexmap::IndexMap;
 use properties::{Property, PropertyTrait};
@@ -132,7 +125,7 @@ impl FEngineVersion {
     }
 
     /// Read FEngineVersion from a binary file
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let major = cursor.read_u16::<LittleEndian>()?;
         let minor = cursor.read_u16::<LittleEndian>()?;
         let patch = cursor.read_u16::<LittleEndian>()?;
@@ -148,7 +141,7 @@ impl FEngineVersion {
     }
 
     /// Write FEngineVersion to a binary file
-    pub(crate) fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u16::<LittleEndian>(self.major)?;
         cursor.write_u16::<LittleEndian>(self.minor)?;
         cursor.write_u16::<LittleEndian>(self.patch)?;
@@ -175,7 +168,7 @@ impl FCustomVersion {
     }
 
     /// Read FCustomVersion from a binary file
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let mut guid = [0u8; 16];
         cursor.read_exact(&mut guid)?;
         let version = cursor.read_i32::<LittleEndian>()?;
@@ -187,7 +180,7 @@ impl FCustomVersion {
     }
 
     /// Write FCustomVersion to a binary file
-    pub(crate) fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         let _ = cursor.write(&self.key.0)?;
         cursor.write_i32::<LittleEndian>(self.version)?;
         Ok(())
@@ -251,21 +244,18 @@ impl GvasHeader {
     /// use gvas::{error::Error, GvasHeader};
     /// use std::{
     ///     fs::File,
-    ///     io::{Cursor, Read},
+    ///     io::Read,
     ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
     ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_header = GvasHeader::read(&mut cursor)?;
+    /// let gvas_header = GvasHeader::read(&mut file)?;
     ///
     /// println!("{:#?}", gvas_header);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let file_type_tag = cursor.read_i32::<LittleEndian>()?;
         if file_type_tag != FILE_TYPE_GVAS {
             Err(DeserializeError::InvalidFileType(file_type_tag))?
@@ -306,18 +296,14 @@ impl GvasHeader {
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
-    ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_header = GvasHeader::read(&mut cursor)?;
+    /// let gvas_header = GvasHeader::read(&mut file)?;
     ///
     /// let mut writer = Cursor::new(Vec::new());
     /// gvas_header.write(&mut writer)?;
     /// println!("{:#?}", writer.get_ref());
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_i32::<LittleEndian>(self.file_type_tag)?;
         cursor.write_i32::<LittleEndian>(self.save_game_file_version)?;
         cursor.write_i32::<LittleEndian>(self.package_file_ue4_version)?;
@@ -362,21 +348,17 @@ impl GvasFile {
     /// use gvas::{error::Error, GvasFile};
     /// use std::{
     ///     fs::File,
-    ///     io::{Cursor, Read},
+    ///     io::Read,
     ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
-    ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read(&mut cursor);
+    /// let gvas_file = GvasFile::read(&mut file);
     ///
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let hints = HashMap::new();
         Self::read_with_hints(cursor, &hints)
     }
@@ -398,13 +380,11 @@ impl GvasFile {
     /// use std::{
     ///     collections::HashMap,
     ///     fs::File,
-    ///     io::{Cursor, Read},
+    ///     io::Read,
     ///     path::Path,
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
     ///
     /// let mut hints = HashMap::new();
     /// hints.insert(
@@ -412,14 +392,13 @@ impl GvasFile {
     ///     "Guid".to_string(),
     /// );
     ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read_with_hints(&mut cursor, &hints);
+    /// let gvas_file = GvasFile::read_with_hints(&mut file, &hints);
     ///
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read_with_hints(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub fn read_with_hints<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
     ) -> Result<Self, Error> {
         let header = GvasHeader::read(cursor)?;
@@ -467,18 +446,14 @@ impl GvasFile {
     /// };
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let mut data = Vec::new();
-    /// file.read_to_end(&mut data)?;
-    ///
-    /// let mut cursor = Cursor::new(data);
-    /// let gvas_file = GvasFile::read(&mut cursor)?;
+    /// let gvas_file = GvasFile::read(&mut file)?;
     ///
     /// let mut writer = Cursor::new(Vec::new());
     /// gvas_file.write(&mut writer)?;
     /// println!("{:#?}", writer.get_ref());
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn write(&self, cursor: &mut Cursor<Vec<u8>>) -> Result<(), Error> {
+    pub fn write<W: Write + Seek>(&self, cursor: &mut W) -> Result<(), Error> {
         self.header.write(cursor)?;
 
         for (name, property) in &self.properties {

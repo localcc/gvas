@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     hash::Hash,
-    io::{Cursor, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -9,7 +9,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use indexmap::IndexMap;
 
 use crate::{
-    cursor_ext::CursorExt,
+    cursor_ext::{ReadExt, WriteExt},
     error::{Error, SerializeError},
     scoped_stack_entry::ScopedStackEntry,
 };
@@ -47,8 +47,8 @@ impl MapProperty {
         }
     }
 
-    pub(crate) fn read(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
     ) -> Result<Self, Error> {
@@ -85,7 +85,7 @@ impl MapProperty {
 }
 
 impl PropertyTrait for MapProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             return Err(Error::from(SerializeError::InvalidValue(String::from(
                 "Nested maps are not supported",
@@ -94,7 +94,7 @@ impl PropertyTrait for MapProperty {
 
         cursor.write_string("MapProperty")?;
 
-        let begin = cursor.position();
+        let begin = cursor.stream_position()?;
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.key_type)?;
@@ -105,14 +105,14 @@ impl PropertyTrait for MapProperty {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_i32::<LittleEndian>(self.value.len() as i32)?;
 
-        let write_begin = cursor.position();
+        let write_begin = cursor.stream_position()?;
 
         for (key, value) in &self.value {
             key.write(cursor, false)?;
             value.write(cursor, false)?;
         }
 
-        let end = cursor.position();
+        let end = cursor.stream_position()?;
 
         cursor.seek(SeekFrom::Start(begin))?;
         cursor.write_u64::<LittleEndian>(end - write_begin + 8)?;

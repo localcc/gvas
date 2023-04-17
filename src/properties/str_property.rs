@@ -1,9 +1,9 @@
-use std::io::{Cursor, Read, Write};
+use std::io::{Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{cursor_ext::WriteExt, error::Error};
 
 use super::PropertyTrait;
 
@@ -27,7 +27,10 @@ impl StrProperty {
         StrProperty { value }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         if include_header {
             let _length = cursor.read_u64::<LittleEndian>()?;
             cursor.read_exact(&mut [0u8; 1])?;
@@ -38,7 +41,7 @@ impl StrProperty {
 }
 
 impl PropertyTrait for StrProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("StrProperty")?;
             let property_length = match &self.value {

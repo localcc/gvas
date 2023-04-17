@@ -3,7 +3,7 @@ mod test_file;
 use std::{collections::HashMap, io::Cursor};
 
 use gvas::{
-    cursor_ext::CursorExt,
+    cursor_ext::ReadExt,
     properties::{
         array_property::ArrayProperty,
         enum_property::EnumProperty,

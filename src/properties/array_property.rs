@@ -1,13 +1,13 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    io::{Cursor, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
-    cursor_ext::CursorExt,
+    cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
     types::Guid,
 };
@@ -39,7 +39,7 @@ macro_rules! validate {
         if !$cond {
             Err(DeserializeError::InvalidProperty(
                 format!($($arg)+),
-                $cursor.position(),
+                $cursor.stream_position()?,
             ))?
         }
     }};
@@ -66,8 +66,8 @@ impl ArrayProperty {
         }
     }
 
-    pub(crate) fn read(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
     ) -> Result<Self, Error> {
@@ -75,7 +75,7 @@ impl ArrayProperty {
 
         let property_type = cursor.read_string()?;
         cursor.read_exact(&mut [0u8; 1])?;
-        let start_position = cursor.position();
+        let start_position = cursor.stream_position()?;
 
         let property_count = cursor.read_i32::<LittleEndian>()? as usize;
         let mut properties: Vec<Property> = Vec::with_capacity(property_count);
@@ -94,7 +94,7 @@ impl ArrayProperty {
                 cursor.read_exact(&mut struct_guid)?;
                 cursor.read_exact(&mut [0u8; 1])?;
 
-                let properties_start = cursor.position();
+                let properties_start = cursor.stream_position()?;
                 for _ in 0..property_count {
                     properties.push(
                         StructProperty::read_with_type_name(
@@ -106,7 +106,7 @@ impl ArrayProperty {
                         .into(),
                     );
                 }
-                let properties_end = cursor.position();
+                let properties_end = cursor.stream_position()?;
                 validate!(
                     cursor,
                     properties_end == properties_start + properties_size,
@@ -132,7 +132,7 @@ impl ArrayProperty {
                 }
             }
         };
-        let end_position = cursor.position();
+        let end_position = cursor.stream_position()?;
         validate!(
             cursor,
             end_position == start_position + length,
@@ -149,19 +149,19 @@ impl ArrayProperty {
 }
 
 impl PropertyTrait for ArrayProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             return Err(SerializeError::invalid_value("Nested arrays not supported").into());
         }
 
         cursor.write_string("ArrayProperty")?;
 
-        let begin = cursor.position();
+        let begin = cursor.stream_position()?;
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.property_type)?;
         let _ = cursor.write(&[0u8; 1])?;
-        let begin_write = cursor.position();
+        let begin_write = cursor.stream_position()?;
 
         cursor.write_i32::<LittleEndian>(self.properties.len() as i32)?;
 
@@ -176,12 +176,12 @@ impl PropertyTrait for ArrayProperty {
                 cursor.write_string(&array_struct_info.field_name)?;
                 cursor.write_string(&self.property_type)?;
 
-                let len_position = cursor.position();
+                let len_position = cursor.stream_position()?;
                 cursor.write_u64::<LittleEndian>(0)?;
                 cursor.write_string(&array_struct_info.type_name)?;
                 let _ = cursor.write(&array_struct_info.guid.0)?;
                 let _ = cursor.write(&[0u8; 1])?;
-                let begin_without_name = cursor.position();
+                let begin_without_name = cursor.stream_position()?;
 
                 for property in &self.properties {
                     let res: Result<(), Error> = match property {
@@ -196,7 +196,7 @@ impl PropertyTrait for ArrayProperty {
                     };
                     res?;
                 }
-                let end_without_name = cursor.position();
+                let end_without_name = cursor.stream_position()?;
                 cursor.seek(SeekFrom::Start(len_position))?;
                 cursor.write_u64::<LittleEndian>(end_without_name - begin_without_name)?;
                 cursor.seek(SeekFrom::Start(end_without_name))?;
@@ -208,7 +208,7 @@ impl PropertyTrait for ArrayProperty {
             }
         }
 
-        let end_write = cursor.position();
+        let end_write = cursor.stream_position()?;
         cursor.seek(SeekFrom::Start(begin))?;
         cursor.write_u64::<LittleEndian>(end_write - begin_write)?;
         cursor.seek(SeekFrom::Start(end_write))?;

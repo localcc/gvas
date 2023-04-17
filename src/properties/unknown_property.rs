@@ -1,8 +1,8 @@
-use std::io::{Cursor, Read, Write};
+use std::io::{Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{cursor_ext::WriteExt, error::Error};
 
 use super::PropertyTrait;
 
@@ -20,8 +20,8 @@ impl UnknownProperty {
         UnknownProperty { property_name, raw }
     }
 
-    pub(crate) fn read_with_length(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_length<R: Read + Seek>(
+        cursor: &mut R,
         property_name: String,
         length: u64,
     ) -> Result<Self, Error> {
@@ -34,8 +34,8 @@ impl UnknownProperty {
         })
     }
 
-    pub(crate) fn read_with_header(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_header<R: Read + Seek>(
+        cursor: &mut R,
         property_name: String,
     ) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
@@ -52,7 +52,7 @@ impl UnknownProperty {
 }
 
 impl PropertyTrait for UnknownProperty {
-    fn write(&self, cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string(&self.property_name)?;
             cursor.write_u64::<LittleEndian>(self.raw.len() as u64)?;
