@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     fmt::Debug,
     hash::Hash,
-    io::{Cursor, Seek, Write},
+    io::{Read, Seek, Write},
 };
 
 use enum_dispatch::enum_dispatch;
@@ -127,8 +127,8 @@ pub enum Property {
 
 impl Property {
     /// Creates a new `Property` instance.
-    pub fn new(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub fn new<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
         value_type: &str,
@@ -159,7 +159,7 @@ impl Property {
                         Err(DeserializeError::MissingHint(
                             value_type.to_string(),
                             struct_path,
-                            cursor.position(),
+                            cursor.stream_position()?,
                         ))?
                     };
 
@@ -195,7 +195,7 @@ impl Property {
 
                 Err(DeserializeError::invalid_property(
                     value_type,
-                    cursor.position(),
+                    cursor.stream_position()?,
                 ))?
             }
         }

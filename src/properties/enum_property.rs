@@ -1,4 +1,4 @@
-use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{Read, Seek, SeekFrom, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -28,7 +28,7 @@ impl EnumProperty {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let _length = cursor.read_u64::<LittleEndian>()?;
 
         let read_enum_type = cursor.read_string()?;
@@ -44,7 +44,7 @@ impl EnumProperty {
             } else {
                 return Err(DeserializeError::InvalidEnumType(
                     read_enum_type,
-                    cursor.position(),
+                    cursor.stream_position()?,
                 ))?;
             }
             if let Some(e) = split.next() {
@@ -52,7 +52,7 @@ impl EnumProperty {
             } else {
                 return Err(DeserializeError::InvalidEnumType(
                     read_enum_type,
-                    cursor.position(),
+                    cursor.stream_position()?,
                 ))?;
             }
         } else {

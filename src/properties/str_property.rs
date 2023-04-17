@@ -1,4 +1,4 @@
-use std::io::{Cursor, Read, Seek, Write};
+use std::io::{Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
@@ -27,7 +27,10 @@ impl StrProperty {
         StrProperty { value }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         if include_header {
             let _length = cursor.read_u64::<LittleEndian>()?;
             cursor.read_exact(&mut [0u8; 1])?;

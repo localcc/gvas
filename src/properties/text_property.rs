@@ -1,6 +1,6 @@
 use std::{
     fmt::Debug,
-    io::{Cursor, Seek, Write},
+    io::{Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -71,7 +71,10 @@ impl TextProperty {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>, include_header: bool) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
         validate!(
             cursor,
             !include_header,

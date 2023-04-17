@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     fmt::Debug,
     hash::Hash,
-    io::{Cursor, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -57,8 +57,8 @@ impl StructProperty {
         StructProperty { guid, value }
     }
 
-    fn read(
-        cursor: &mut Cursor<Vec<u8>>,
+    fn read<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
         include_header: bool,
@@ -145,16 +145,16 @@ impl StructProperty {
         })
     }
 
-    pub(crate) fn read_with_header(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_header<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
     ) -> Result<Self, Error> {
         Self::read(cursor, hints, properties_stack, true, None)
     }
 
-    pub(crate) fn read_with_type_name(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_type_name<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
         type_name: &str,

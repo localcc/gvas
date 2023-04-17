@@ -81,7 +81,7 @@ pub mod types;
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
-    io::{Cursor, Read, Seek, Write},
+    io::{Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -132,7 +132,7 @@ impl FEngineVersion {
     }
 
     /// Read FEngineVersion from a binary file
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let major = cursor.read_u16::<LittleEndian>()?;
         let minor = cursor.read_u16::<LittleEndian>()?;
         let patch = cursor.read_u16::<LittleEndian>()?;
@@ -175,7 +175,7 @@ impl FCustomVersion {
     }
 
     /// Read FCustomVersion from a binary file
-    pub(crate) fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let mut guid = [0u8; 16];
         cursor.read_exact(&mut guid)?;
         let version = cursor.read_i32::<LittleEndian>()?;
@@ -265,7 +265,7 @@ impl GvasHeader {
     /// println!("{:#?}", gvas_header);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let file_type_tag = cursor.read_i32::<LittleEndian>()?;
         if file_type_tag != FILE_TYPE_GVAS {
             Err(DeserializeError::InvalidFileType(file_type_tag))?
@@ -376,7 +376,7 @@ impl GvasFile {
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read(cursor: &mut Cursor<Vec<u8>>) -> Result<Self, Error> {
+    pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let hints = HashMap::new();
         Self::read_with_hints(cursor, &hints)
     }
@@ -418,8 +418,8 @@ impl GvasFile {
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read_with_hints(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub fn read_with_hints<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
     ) -> Result<Self, Error> {
         let header = GvasHeader::read(cursor)?;

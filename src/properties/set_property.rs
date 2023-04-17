@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{Cursor, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -34,8 +34,8 @@ impl SetProperty {
         }
     }
 
-    pub(crate) fn read(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
     ) -> Result<Self, Error> {

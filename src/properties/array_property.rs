@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    io::{Cursor, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -39,7 +39,7 @@ macro_rules! validate {
         if !$cond {
             Err(DeserializeError::InvalidProperty(
                 format!($($arg)+),
-                $cursor.position(),
+                $cursor.stream_position()?,
             ))?
         }
     }};
@@ -66,8 +66,8 @@ impl ArrayProperty {
         }
     }
 
-    pub(crate) fn read(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
         hints: &HashMap<String, String>,
         properties_stack: &mut Vec<String>,
     ) -> Result<Self, Error> {
@@ -75,7 +75,7 @@ impl ArrayProperty {
 
         let property_type = cursor.read_string()?;
         cursor.read_exact(&mut [0u8; 1])?;
-        let start_position = cursor.position();
+        let start_position = cursor.stream_position()?;
 
         let property_count = cursor.read_i32::<LittleEndian>()? as usize;
         let mut properties: Vec<Property> = Vec::with_capacity(property_count);
@@ -94,7 +94,7 @@ impl ArrayProperty {
                 cursor.read_exact(&mut struct_guid)?;
                 cursor.read_exact(&mut [0u8; 1])?;
 
-                let properties_start = cursor.position();
+                let properties_start = cursor.stream_position()?;
                 for _ in 0..property_count {
                     properties.push(
                         StructProperty::read_with_type_name(
@@ -106,7 +106,7 @@ impl ArrayProperty {
                         .into(),
                     );
                 }
-                let properties_end = cursor.position();
+                let properties_end = cursor.stream_position()?;
                 validate!(
                     cursor,
                     properties_end == properties_start + properties_size,
@@ -132,7 +132,7 @@ impl ArrayProperty {
                 }
             }
         };
-        let end_position = cursor.position();
+        let end_position = cursor.stream_position()?;
         validate!(
             cursor,
             end_position == start_position + length,

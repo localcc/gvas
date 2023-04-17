@@ -1,4 +1,4 @@
-use std::io::{Cursor, Read, Seek, Write};
+use std::io::{Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -20,8 +20,8 @@ impl UnknownProperty {
         UnknownProperty { property_name, raw }
     }
 
-    pub(crate) fn read_with_length(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_length<R: Read + Seek>(
+        cursor: &mut R,
         property_name: String,
         length: u64,
     ) -> Result<Self, Error> {
@@ -34,8 +34,8 @@ impl UnknownProperty {
         })
     }
 
-    pub(crate) fn read_with_header(
-        cursor: &mut Cursor<Vec<u8>>,
+    pub(crate) fn read_with_header<R: Read + Seek>(
+        cursor: &mut R,
         property_name: String,
     ) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
