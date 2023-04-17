@@ -3,7 +3,7 @@ use std::{fmt::Debug, io::Cursor};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
-    cursor_ext::CursorExt,
+    cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
 };
 

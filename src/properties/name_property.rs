@@ -2,7 +2,10 @@ use std::io::{Cursor, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{
+    cursor_ext::{ReadExt, WriteExt},
+    error::Error,
+};
 
 use super::PropertyTrait;
 

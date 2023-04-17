@@ -3,7 +3,7 @@ use std::io::{Cursor, Read, Write};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
-use crate::{cursor_ext::CursorExt, error::Error};
+use crate::{cursor_ext::WriteExt, error::Error};
 
 use super::PropertyTrait;
 

@@ -1,6 +1,9 @@
 use std::io::Cursor;
 
-use gvas::{cursor_ext::CursorExt, error::Error};
+use gvas::{
+    cursor_ext::{ReadExt, WriteExt},
+    error::Error,
+};
 
 #[test]
 fn test_write_string() -> Result<(), Error> {

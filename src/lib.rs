@@ -85,7 +85,7 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use cursor_ext::CursorExt;
+use cursor_ext::{ReadExt, WriteExt};
 use error::Error;
 use indexmap::IndexMap;
 use properties::{Property, PropertyTrait};
