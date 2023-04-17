@@ -72,10 +72,7 @@ impl StructProperty {
             true => cursor.read_string()?,
             false => match type_name {
                 Some(t) => t,
-                None => Err(DeserializeError::missing_argument(
-                    "type_name",
-                    cursor.stream_position()?,
-                ))?,
+                None => Err(DeserializeError::missing_argument("type_name", cursor))?,
             },
         };
 

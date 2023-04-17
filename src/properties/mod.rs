@@ -193,10 +193,7 @@ impl Property {
                     .into());
                 }
 
-                Err(DeserializeError::invalid_property(
-                    value_type,
-                    cursor.stream_position()?,
-                ))?
+                Err(DeserializeError::invalid_property(value_type, cursor))?
             }
         }
     }

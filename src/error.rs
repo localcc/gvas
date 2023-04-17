@@ -31,11 +31,14 @@ pub enum DeserializeError {
 
 impl DeserializeError {
     /// A helper for creating `MissingArgument` errors
-    pub fn missing_argument(argument_name: &str, position: u64) -> Self {
+    pub fn missing_argument<S: io::Seek>(argument_name: &str, stream: &mut S) -> Self {
+        let position = stream.stream_position().unwrap_or_default();
         Self::MissingArgument(argument_name.to_string(), position)
     }
+
     /// A helper for creating `InvalidProperty` errors
-    pub fn invalid_property(reason: &str, position: u64) -> Self {
+    pub fn invalid_property<S: io::Seek>(reason: &str, stream: &mut S) -> Self {
+        let position = stream.stream_position().unwrap_or_default();
         Self::InvalidProperty(reason.to_string(), position)
     }
 }
