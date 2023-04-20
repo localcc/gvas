@@ -80,7 +80,7 @@ test_property!(test_str, StrProperty, StrProperty::from("test string"));
 test_property!(
     test_enum,
     EnumProperty,
-    EnumProperty::new("type".into(), "value".into(), true)
+    EnumProperty::new(String::from("type"), String::from("value"))
 );
 
 // StructProperty
