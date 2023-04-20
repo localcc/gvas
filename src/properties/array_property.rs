@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -152,20 +152,28 @@ impl ArrayProperty {
 }
 
 impl PropertyTrait for ArrayProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            return Err(SerializeError::invalid_value("Nested arrays not supported").into());
+            // return self.write_body(cursor);
+            Err(SerializeError::invalid_value("Nested arrays not supported"))?
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
         cursor.write_string("ArrayProperty")?;
-
-        let begin = cursor.stream_position()?;
-        cursor.write_u64::<LittleEndian>(0)?;
-
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
         cursor.write_string(&self.property_type)?;
         cursor.write_u8(0)?;
-        let begin_write = cursor.stream_position()?;
+        cursor.write_all(buf)?;
 
+        Ok(())
+    }
+}
+
+impl ArrayProperty {
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
 
         match self.property_type.as_str() {
@@ -179,30 +187,15 @@ impl PropertyTrait for ArrayProperty {
                 cursor.write_string(&array_struct_info.field_name)?;
                 cursor.write_string(&self.property_type)?;
 
-                let len_position = cursor.stream_position()?;
-                cursor.write_u64::<LittleEndian>(0)?;
+                let buf = &mut Cursor::new(Vec::new());
+                self.write_properties(buf)?;
+                let buf = buf.get_ref();
+
+                cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
                 cursor.write_string(&array_struct_info.type_name)?;
                 let _ = cursor.write(&array_struct_info.guid.0)?;
                 cursor.write_u8(0)?;
-                let begin_without_name = cursor.stream_position()?;
-
-                for property in &self.properties {
-                    let res: Result<(), Error> = match property {
-                        Property::StructProperty(e) => {
-                            e.write(cursor, false)?;
-                            Ok(())
-                        }
-                        _ => Err(SerializeError::invalid_value(
-                            "Array property_type doesn't match property inside array",
-                        )
-                        .into()),
-                    };
-                    res?;
-                }
-                let end_without_name = cursor.stream_position()?;
-                cursor.seek(SeekFrom::Start(len_position))?;
-                cursor.write_u64::<LittleEndian>(end_without_name - begin_without_name)?;
-                cursor.seek(SeekFrom::Start(end_without_name))?;
+                cursor.write_all(buf)?;
             }
             _ => {
                 for property in &self.properties {
@@ -211,10 +204,22 @@ impl PropertyTrait for ArrayProperty {
             }
         }
 
-        let end_write = cursor.stream_position()?;
-        cursor.seek(SeekFrom::Start(begin))?;
-        cursor.write_u64::<LittleEndian>(end_write - begin_write)?;
-        cursor.seek(SeekFrom::Start(end_write))?;
+        Ok(())
+    }
+
+    fn write_properties<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        for property in &self.properties {
+            let res: Result<(), Error> = match property {
+                Property::StructProperty(e) => {
+                    e.write(cursor, false)?;
+                    Ok(())
+                }
+                _ => Err(SerializeError::invalid_value(
+                    "Array property_type doesn't match property inside array",
+                ))?,
+            };
+            res?;
+        }
         Ok(())
     }
 }

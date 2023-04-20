@@ -180,11 +180,11 @@ impl Debug for TextProperty {
 }
 
 impl PropertyTrait for TextProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
-            return Err(
-                SerializeError::invalid_value("TextProperty only supported in arrays").into(),
-            );
+            Err(SerializeError::invalid_value(
+                "TextProperty only supported in arrays",
+            ))?
         }
 
         match self {

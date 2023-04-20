@@ -32,7 +32,7 @@ impl NameProperty {
 }
 
 impl PropertyTrait for NameProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("NameProperty")?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size

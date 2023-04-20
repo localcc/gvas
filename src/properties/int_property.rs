@@ -1,6 +1,6 @@
 use std::{
     fmt::Debug,
-    io::{Read, Seek, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -9,7 +9,7 @@ use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{DeserializeError, Error, SerializeError},
+    error::{DeserializeError, Error},
 };
 
 use super::PropertyTrait;
@@ -68,17 +68,28 @@ macro_rules! impl_int_property {
         }
 
         impl PropertyTrait for $name {
-            fn write<W: Write + Seek>(
-                &self,
-                cursor: &mut W,
-                include_header: bool,
-            ) -> Result<(), Error> {
-                if include_header {
-                    cursor.write_string(stringify!($name))?;
-                    cursor.write_i64::<LittleEndian>($size)?;
-                    cursor.write_u8(0)?;
+            fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+                if !include_header {
+                    return self.write_body(cursor);
                 }
+
+                let buf = &mut Cursor::new(Vec::new());
+                self.write_body(buf)?;
+                let buf = buf.get_ref();
+
+                cursor.write_string(stringify!($name))?;
+                cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+                cursor.write_u8(0)?;
+                cursor.write_all(buf)?;
+
+                Ok(())
+            }
+        }
+
+        impl $name {
+            fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
                 cursor.$write_method::<LittleEndian>(self.value)?;
+
                 Ok(())
             }
         }
@@ -120,7 +131,7 @@ impl Debug for Int8Property {
 }
 
 impl PropertyTrait for Int8Property {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("Int8Property")?;
             cursor.write_u64::<LittleEndian>(1)?;
@@ -171,13 +182,11 @@ impl Debug for ByteProperty {
 }
 
 impl PropertyTrait for ByteProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("ByteProperty")?;
             cursor.write_u64::<LittleEndian>(1)?;
-            cursor.write_string(self.name.as_ref().ok_or_else(|| {
-                SerializeError::InvalidValue(String::from("self.name None expected Some(...)"))
-            })?)?;
+            cursor.write_fstring(self.name.as_deref())?;
             cursor.write_u8(0)?;
         }
         cursor.write_u8(self.value)?;
@@ -225,7 +234,7 @@ impl Debug for BoolProperty {
 }
 
 impl PropertyTrait for BoolProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("BoolProperty")?;
             cursor.write_u64::<LittleEndian>(0)?;
@@ -273,7 +282,7 @@ impl Debug for FloatProperty {
 }
 
 impl PropertyTrait for FloatProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("FloatProperty")?;
             cursor.write_u64::<LittleEndian>(4)?;
@@ -321,7 +330,7 @@ impl Debug for DoubleProperty {
 }
 
 impl PropertyTrait for DoubleProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("DoubleProperty")?;
             cursor.write_u64::<LittleEndian>(8)?;

@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     fmt::Debug,
     hash::Hash,
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -170,27 +170,38 @@ impl StructProperty {
 }
 
 impl PropertyTrait for StructProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
-        let mut begin = 0;
-        let mut write_begin = 0;
-        if include_header {
-            cursor.write_string("StructProperty")?;
-            begin = cursor.stream_position()?;
-            cursor.write_u64::<LittleEndian>(0)?;
-            cursor.write_string(match &self.value {
-                StructPropertyValue::Vector(_) => "Vector",
-                StructPropertyValue::Rotator(_) => "Rotator",
-                StructPropertyValue::Quat(_) => "Quat",
-                StructPropertyValue::DateTime(_) => "DateTime",
-                StructPropertyValue::Guid(_) => "Guid",
-                StructPropertyValue::IntPoint(_) => "IntPoint",
-                StructPropertyValue::CustomStruct(type_name, _) => type_name,
-            })?;
-            cursor.write_all(&self.guid.0)?;
-            cursor.write_u8(0)?;
-            write_begin = cursor.stream_position()?;
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+        if !include_header {
+            return self.write_body(cursor);
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        let property_name = match &self.value {
+            StructPropertyValue::Vector(_) => "Vector",
+            StructPropertyValue::Rotator(_) => "Rotator",
+            StructPropertyValue::Quat(_) => "Quat",
+            StructPropertyValue::DateTime(_) => "DateTime",
+            StructPropertyValue::Guid(_) => "Guid",
+            StructPropertyValue::IntPoint(_) => "IntPoint",
+            StructPropertyValue::CustomStruct(type_name, _) => type_name,
+        };
+
+        cursor.write_string("StructProperty")?;
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+        cursor.write_string(property_name)?;
+        cursor.write_all(&self.guid.0)?;
+        cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
+
+        Ok(())
+    }
+}
+
+impl StructProperty {
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         match &self.value {
             StructPropertyValue::Vector(vector) => {
                 FloatProperty::new(f32::from(vector.x)).write(cursor, false)?;
@@ -230,13 +241,6 @@ impl PropertyTrait for StructProperty {
                 cursor.write_string("None")?;
             }
         };
-
-        if include_header {
-            let write_end = cursor.stream_position()?;
-            cursor.seek(SeekFrom::Start(begin))?;
-            cursor.write_u64::<LittleEndian>(write_end - write_begin)?;
-            cursor.seek(SeekFrom::Start(write_end))?;
-        }
 
         Ok(())
     }

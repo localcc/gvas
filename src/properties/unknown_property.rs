@@ -1,4 +1,4 @@
-use std::io::{Read, Seek, Write};
+use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -52,13 +52,26 @@ impl UnknownProperty {
 }
 
 impl PropertyTrait for UnknownProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string(&self.property_name)?;
-            cursor.write_u64::<LittleEndian>(self.raw.len() as u64)?;
-            cursor.write_u8(0)?;
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+        if !include_header {
+            return self.write_body(cursor);
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        cursor.write_string(&self.property_name)?;
+        cursor.write_u64::<LittleEndian>(self.raw.len() as u64)?;
+        cursor.write_all(&[0u8; 1])?;
+        cursor.write_all(buf)?;
+
+        Ok(())
+    }
+}
+
+impl UnknownProperty {
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_all(&self.raw)?;
 
         Ok(())

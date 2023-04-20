@@ -1,4 +1,4 @@
-use std::io::{Read, Seek, Write};
+use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
@@ -41,17 +41,26 @@ impl StrProperty {
 }
 
 impl PropertyTrait for StrProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string("StrProperty")?;
-            let property_length = match &self.value {
-                Some(value) => value.len() + 1 + 4, // 1 is null-byte, 4 is string length field size
-                None => 4,                          // 4 is string length field size
-            };
-            cursor.write_u64::<LittleEndian>(property_length as u64)?;
-            cursor.write_u8(0)?;
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+        if !include_header {
+            return self.write_body(cursor);
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        cursor.write_string("StrProperty")?;
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+        cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
+
+        Ok(())
+    }
+}
+
+impl StrProperty {
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_fstring(self.value.as_deref())?;
 
         Ok(())
