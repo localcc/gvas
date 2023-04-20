@@ -60,7 +60,7 @@ impl MapProperty {
         cursor.read_exact(&mut [0u8; 1])?;
 
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
-        let element_count = cursor.read_i32::<LittleEndian>()?;
+        let element_count = cursor.read_u32::<LittleEndian>()?;
 
         let mut map = IndexMap::new();
         for _ in 0..element_count {
@@ -100,10 +100,10 @@ impl PropertyTrait for MapProperty {
         cursor.write_string(&self.key_type)?;
         cursor.write_string(&self.value_type)?;
 
-        cursor.write_all(&[0u8; 1])?;
+        cursor.write_u8(0)?;
 
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
-        cursor.write_i32::<LittleEndian>(self.value.len() as i32)?;
+        cursor.write_u32::<LittleEndian>(self.value.len() as u32)?;
 
         let write_begin = cursor.stream_position()?;
 

@@ -154,12 +154,12 @@ pub struct FCustomVersion {
     /// Key
     pub key: Guid,
     /// Value
-    pub version: i32,
+    pub version: u32,
 }
 
 impl FCustomVersion {
     /// Creates a new instance of `FCustomVersion`
-    pub fn new(key: Guid, version: i32) -> Self {
+    pub fn new(key: Guid, version: u32) -> Self {
         FCustomVersion { key, version }
     }
 
@@ -167,7 +167,7 @@ impl FCustomVersion {
     pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let mut guid = [0u8; 16];
         cursor.read_exact(&mut guid)?;
-        let version = cursor.read_i32::<LittleEndian>()?;
+        let version = cursor.read_u32::<LittleEndian>()?;
 
         Ok(FCustomVersion {
             key: Guid::new(guid),
@@ -178,28 +178,28 @@ impl FCustomVersion {
     /// Write FCustomVersion to a binary file
     pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         let _ = cursor.write(&self.key.0)?;
-        cursor.write_i32::<LittleEndian>(self.version)?;
+        cursor.write_u32::<LittleEndian>(self.version)?;
         Ok(())
     }
 }
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.
-pub const FILE_TYPE_GVAS: i32 = i32::from_le_bytes([b'G', b'V', b'A', b'S']);
+pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
 
 /// Stores information about GVAS file, engine version, etc.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasHeader {
     /// The literal 'GVAS'.
-    pub file_type_tag: i32,
+    pub file_type_tag: u32,
     /// Save game file version.
-    pub save_game_file_version: i32,
+    pub save_game_file_version: u32,
     /// File format version.
-    pub package_file_ue4_version: i32,
+    pub package_file_ue4_version: u32,
     /// Unreal Engine version.
     pub engine_version: FEngineVersion,
     /// Custom version format.
-    pub custom_version_format: i32,
+    pub custom_version_format: u32,
     /// Custom versions.
     pub custom_versions: Vec<FCustomVersion>,
     /// Save game class name.
@@ -209,11 +209,11 @@ pub struct GvasHeader {
 impl GvasHeader {
     /// Creates a new instance of `GvasHeader`
     pub fn new(
-        file_type_tag: i32,
-        save_game_file_version: i32,
-        package_file_ue4_version: i32,
+        file_type_tag: u32,
+        save_game_file_version: u32,
+        package_file_ue4_version: u32,
         engine_version: FEngineVersion,
-        custom_version_format: i32,
+        custom_version_format: u32,
         custom_versions: Vec<FCustomVersion>,
         save_game_class_name: String,
     ) -> Self {
@@ -250,16 +250,16 @@ impl GvasHeader {
     /// # Ok::<(), Error>(())
     /// ```
     pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
-        let file_type_tag = cursor.read_i32::<LittleEndian>()?;
+        let file_type_tag = cursor.read_u32::<LittleEndian>()?;
         if file_type_tag != FILE_TYPE_GVAS {
             Err(DeserializeError::InvalidFileType(file_type_tag))?
         }
-        let save_game_file_version = cursor.read_i32::<LittleEndian>()?;
-        let package_file_ue4_version = cursor.read_i32::<LittleEndian>()?;
+        let save_game_file_version = cursor.read_u32::<LittleEndian>()?;
+        let package_file_ue4_version = cursor.read_u32::<LittleEndian>()?;
         let engine_version = FEngineVersion::read(cursor)?;
-        let custom_version_format = cursor.read_i32::<LittleEndian>()?;
+        let custom_version_format = cursor.read_u32::<LittleEndian>()?;
 
-        let custom_versions_len = cursor.read_i32::<LittleEndian>()? as usize;
+        let custom_versions_len = cursor.read_u32::<LittleEndian>()? as usize;
         let mut custom_versions = Vec::with_capacity(custom_versions_len);
         for _ in 0..custom_versions_len {
             custom_versions.push(FCustomVersion::read(cursor)?);
@@ -297,12 +297,12 @@ impl GvasHeader {
     /// # Ok::<(), Error>(())
     /// ```
     pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_i32::<LittleEndian>(self.file_type_tag)?;
-        cursor.write_i32::<LittleEndian>(self.save_game_file_version)?;
-        cursor.write_i32::<LittleEndian>(self.package_file_ue4_version)?;
+        cursor.write_u32::<LittleEndian>(self.file_type_tag)?;
+        cursor.write_u32::<LittleEndian>(self.save_game_file_version)?;
+        cursor.write_u32::<LittleEndian>(self.package_file_ue4_version)?;
         self.engine_version.write(cursor)?;
-        cursor.write_i32::<LittleEndian>(self.custom_version_format)?;
-        cursor.write_i32::<LittleEndian>(self.custom_versions.len() as i32)?;
+        cursor.write_u32::<LittleEndian>(self.custom_version_format)?;
+        cursor.write_u32::<LittleEndian>(self.custom_versions.len() as u32)?;
 
         for custom_version in &self.custom_versions {
             custom_version.write(cursor)?;

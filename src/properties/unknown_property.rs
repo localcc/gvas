@@ -56,7 +56,7 @@ impl PropertyTrait for UnknownProperty {
         if include_header {
             cursor.write_string(&self.property_name)?;
             cursor.write_u64::<LittleEndian>(self.raw.len() as u64)?;
-            cursor.write_all(&[0u8; 1])?;
+            cursor.write_u8(0)?;
         }
 
         cursor.write_all(&self.raw)?;

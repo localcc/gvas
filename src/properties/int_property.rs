@@ -76,7 +76,7 @@ macro_rules! impl_int_property {
                 if include_header {
                     cursor.write_string(stringify!($name))?;
                     cursor.write_i64::<LittleEndian>($size)?;
-                    let _ = cursor.write(&[0u8; 1])?;
+                    cursor.write_u8(0)?;
                 }
                 cursor.$write_method::<LittleEndian>(self.value)?;
                 Ok(())
@@ -123,8 +123,8 @@ impl PropertyTrait for Int8Property {
     fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("Int8Property")?;
-            cursor.write_i64::<LittleEndian>(1)?;
-            let _ = cursor.write(&[0u8; 1])?;
+            cursor.write_u64::<LittleEndian>(1)?;
+            cursor.write_u8(0)?;
         }
         cursor.write_i8(self.value)?;
         Ok(())
@@ -174,11 +174,11 @@ impl PropertyTrait for ByteProperty {
     fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("ByteProperty")?;
-            cursor.write_i64::<LittleEndian>(1)?;
+            cursor.write_u64::<LittleEndian>(1)?;
             cursor.write_string(self.name.as_ref().ok_or_else(|| {
                 SerializeError::InvalidValue(String::from("self.name None expected Some(...)"))
             })?)?;
-            let _ = cursor.write(&[0u8; 1])?;
+            cursor.write_u8(0)?;
         }
         cursor.write_u8(self.value)?;
         Ok(())
@@ -228,7 +228,7 @@ impl PropertyTrait for BoolProperty {
     fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("BoolProperty")?;
-            cursor.write_i64::<LittleEndian>(0)?;
+            cursor.write_u64::<LittleEndian>(0)?;
             cursor.write_u8(self.indicator)?;
         }
         cursor.write_bool(self.value)?;
@@ -276,8 +276,8 @@ impl PropertyTrait for FloatProperty {
     fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("FloatProperty")?;
-            cursor.write_i64::<LittleEndian>(4)?;
-            let _ = cursor.write(&[0u8; 1])?;
+            cursor.write_u64::<LittleEndian>(4)?;
+            cursor.write_u8(0)?;
         }
         cursor.write_f32::<LittleEndian>(self.value.0)?;
         Ok(())
@@ -324,8 +324,8 @@ impl PropertyTrait for DoubleProperty {
     fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("DoubleProperty")?;
-            cursor.write_i64::<LittleEndian>(8)?;
-            let _ = cursor.write(&[0u8; 1])?;
+            cursor.write_u64::<LittleEndian>(8)?;
+            cursor.write_u8(0)?;
         }
         cursor.write_f64::<LittleEndian>(self.value.0)?;
         Ok(())

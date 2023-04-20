@@ -187,7 +187,7 @@ impl PropertyTrait for StructProperty {
                 StructPropertyValue::CustomStruct(type_name, _) => type_name,
             })?;
             cursor.write_all(&self.guid.0)?;
-            cursor.write_all(&[0u8; 1])?;
+            cursor.write_u8(0)?;
             write_begin = cursor.stream_position()?;
         }
 

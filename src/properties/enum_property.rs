@@ -53,7 +53,7 @@ impl PropertyTrait for EnumProperty {
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.enum_type)?;
-        cursor.write_all(&[0u8; 1])?;
+        cursor.write_u8(0)?;
 
         let value_begin = cursor.stream_position()?;
         cursor.write_string(&self.value)?;

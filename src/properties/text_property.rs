@@ -217,7 +217,7 @@ impl PropertyTrait for TextProperty {
             TextProperty::Simple(values) => {
                 cursor.write_u32::<LittleEndian>(2)?;
                 cursor.write_u8(255)?;
-                cursor.write_i32::<LittleEndian>(values.len() as i32)?;
+                cursor.write_u32::<LittleEndian>(values.len() as u32)?;
                 for value in values {
                     cursor.write_string(value)?;
                 }
