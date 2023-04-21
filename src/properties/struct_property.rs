@@ -56,6 +56,7 @@ pub enum StructPropertyValue {
 
 impl StructProperty {
     /// Creates a new `StructProperty` instance.
+    #[inline]
     pub fn new(guid: Guid, value: StructPropertyValue) -> Self {
         StructProperty { guid, value }
     }
@@ -139,6 +140,7 @@ impl StructProperty {
         Ok(StructProperty { guid, value })
     }
 
+    #[inline]
     pub(crate) fn read_with_header<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -147,6 +149,7 @@ impl StructProperty {
         Self::read(cursor, hints, properties_stack, true, None)
     }
 
+    #[inline]
     pub(crate) fn read_with_type_name<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -195,6 +198,7 @@ impl PropertyTrait for StructProperty {
 }
 
 impl StructProperty {
+    #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         match &self.value {
             StructPropertyValue::Vector(vector) => {
@@ -237,36 +241,42 @@ impl StructProperty {
 }
 
 impl From<Vector> for StructProperty {
+    #[inline]
     fn from(vector: Vector) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Vector(vector))
     }
 }
 
 impl From<Rotator> for StructProperty {
+    #[inline]
     fn from(rotator: Rotator) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Rotator(rotator))
     }
 }
 
 impl From<Quat> for StructProperty {
+    #[inline]
     fn from(quat: Quat) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Quat(quat))
     }
 }
 
 impl From<DateTime> for StructProperty {
+    #[inline]
     fn from(date_time: DateTime) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::DateTime(date_time))
     }
 }
 
 impl From<IntPoint> for StructProperty {
+    #[inline]
     fn from(int_point: IntPoint) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::IntPoint(int_point))
     }
 }
 
 impl From<Guid> for StructProperty {
+    #[inline]
     fn from(guid: Guid) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Guid(guid))
     }

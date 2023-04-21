@@ -16,10 +16,12 @@ pub struct UnknownProperty {
 
 impl UnknownProperty {
     /// Creates a new `UnknownProperty` instance.
+    #[inline]
     pub fn new(property_name: String, raw: Vec<u8>) -> Self {
         UnknownProperty { property_name, raw }
     }
 
+    #[inline]
     pub(crate) fn read_with_length<R: Read + Seek>(
         cursor: &mut R,
         property_name: String,
@@ -34,6 +36,7 @@ impl UnknownProperty {
         })
     }
 
+    #[inline]
     pub(crate) fn read_with_header<R: Read + Seek>(
         cursor: &mut R,
         property_name: String,
@@ -47,6 +50,7 @@ impl UnknownProperty {
 }
 
 impl PropertyTrait for UnknownProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             return self.write_body(cursor);
@@ -66,6 +70,7 @@ impl PropertyTrait for UnknownProperty {
 }
 
 impl UnknownProperty {
+    #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_all(&self.raw)?;
 

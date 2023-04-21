@@ -26,6 +26,7 @@ pub struct SetProperty {
 
 impl SetProperty {
     /// Creates a new `SetProperty` instance.
+    #[inline]
     pub fn new(property_type: String, allocation_flags: u32, properties: Vec<Property>) -> Self {
         SetProperty {
             property_type,
@@ -34,6 +35,7 @@ impl SetProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -72,6 +74,7 @@ impl SetProperty {
 }
 
 impl PropertyTrait for SetProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             // return self.write_body(writer);
@@ -95,6 +98,7 @@ impl PropertyTrait for SetProperty {
 }
 
 impl SetProperty {
+    #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;

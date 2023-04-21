@@ -33,6 +33,7 @@ pub struct MapProperty {
 
 impl MapProperty {
     /// Creates a new `MapProperty` instance.
+    #[inline]
     pub fn new(
         key_type: String,
         value_type: String,
@@ -47,6 +48,7 @@ impl MapProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -86,6 +88,7 @@ impl MapProperty {
 }
 
 impl PropertyTrait for MapProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             return Err(SerializeError::invalid_value(

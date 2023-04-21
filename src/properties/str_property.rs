@@ -16,6 +16,7 @@ pub struct StrProperty {
 }
 
 impl From<&str> for StrProperty {
+    #[inline]
     fn from(value: &str) -> Self {
         StrProperty::new(Some(value.into()))
     }
@@ -23,10 +24,12 @@ impl From<&str> for StrProperty {
 
 impl StrProperty {
     /// Creates a new `StrProperty` instance.
+    #[inline]
     pub fn new(value: Option<String>) -> Self {
         StrProperty { value }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -42,6 +45,7 @@ impl StrProperty {
 }
 
 impl PropertyTrait for StrProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             return self.write_body(cursor);
@@ -61,6 +65,7 @@ impl PropertyTrait for StrProperty {
 }
 
 impl StrProperty {
+    #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_fstring(self.value.as_deref())?;
 

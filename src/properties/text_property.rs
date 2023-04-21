@@ -64,6 +64,7 @@ macro_rules! validate {
 
 impl TextProperty {
     /// Creates a new `TextProperty` instance.
+    #[inline]
     pub fn new(value: Option<RichText>, values: Option<Vec<String>>) -> Self {
         if let Some(rich) = value {
             TextProperty::Rich(rich)
@@ -74,6 +75,7 @@ impl TextProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -180,6 +182,7 @@ impl Debug for TextProperty {
 }
 
 impl PropertyTrait for TextProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             Err(SerializeError::invalid_value(
@@ -230,6 +233,7 @@ impl PropertyTrait for TextProperty {
 
 impl RichText {
     /// Creates a new `RichText` instance.
+    #[inline]
     pub fn new(id: String, pattern: String, text_format: Vec<RichTextFormat>) -> Self {
         RichText {
             id,
@@ -241,6 +245,7 @@ impl RichText {
 
 impl RichTextFormat {
     /// Creates a new `RichTextFormat` instance.
+    #[inline]
     pub fn new(format_key: String, content_type: u32, values: Vec<String>) -> Self {
         RichTextFormat {
             format_key,

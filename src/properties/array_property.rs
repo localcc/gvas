@@ -50,6 +50,7 @@ macro_rules! validate {
 
 impl ArrayProperty {
     /// Creates a new `ArrayProperty` instance.
+    #[inline]
     pub fn new(
         property_type: String,
         struct_info: Option<(String, String, Guid)>,
@@ -69,6 +70,7 @@ impl ArrayProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -153,6 +155,7 @@ impl ArrayProperty {
 }
 
 impl PropertyTrait for ArrayProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             // return self.write_body(cursor);

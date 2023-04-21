@@ -19,10 +19,12 @@ pub struct EnumProperty {
 
 impl EnumProperty {
     /// Creates a new `EnumProperty` instance.
+    #[inline]
     pub fn new(enum_type: String, value: String) -> Self {
         EnumProperty { enum_type, value }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
 
@@ -46,6 +48,7 @@ impl EnumProperty {
 }
 
 impl PropertyTrait for EnumProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
             // return self.write_body(cursor);
@@ -69,6 +72,7 @@ impl PropertyTrait for EnumProperty {
 }
 
 impl EnumProperty {
+    #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_string(&self.value)?;
 

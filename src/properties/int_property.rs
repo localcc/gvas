@@ -43,10 +43,12 @@ macro_rules! impl_int_property {
             #[doc = "Creates a new `"]
             #[doc = stringify!($name)]
             #[doc = "` instance."]
+            #[inline]
             pub fn new(value: $ty) -> Self {
                 $name { value }
             }
 
+            #[inline]
             pub(crate) fn read<R: Read + Seek>(
                 cursor: &mut R,
                 include_header: bool,
@@ -69,6 +71,7 @@ macro_rules! impl_int_property {
         }
 
         impl PropertyTrait for $name {
+            #[inline]
             fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
                 if !include_header {
                     return self.write_body(cursor);
@@ -88,6 +91,7 @@ macro_rules! impl_int_property {
         }
 
         impl $name {
+            #[inline]
             fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
                 cursor.$write_method::<LittleEndian>(self.value)?;
 
@@ -107,10 +111,12 @@ pub struct Int8Property {
 
 impl Int8Property {
     /// Creates a new `Int8Property` instance.
+    #[inline]
     pub fn new(value: i8) -> Self {
         Int8Property { value }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -133,6 +139,7 @@ impl Debug for Int8Property {
 }
 
 impl PropertyTrait for Int8Property {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("Int8Property")?;
@@ -156,10 +163,12 @@ pub struct ByteProperty {
 
 impl ByteProperty {
     /// Creates a new `ByteProperty` instance.
+    #[inline]
     pub fn new(name: Option<String>, value: u8) -> Self {
         ByteProperty { name, value }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -185,6 +194,7 @@ impl Debug for ByteProperty {
 }
 
 impl PropertyTrait for ByteProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("ByteProperty")?;
@@ -209,6 +219,7 @@ pub struct BoolProperty {
 
 impl BoolProperty {
     /// Creates a new `BoolProperty` instance.
+    #[inline]
     pub fn new(value: bool) -> Self {
         BoolProperty {
             value,
@@ -216,6 +227,7 @@ impl BoolProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -237,6 +249,7 @@ impl Debug for BoolProperty {
 }
 
 impl PropertyTrait for BoolProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("BoolProperty")?;
@@ -258,12 +271,14 @@ pub struct FloatProperty {
 
 impl FloatProperty {
     /// Creates a new `FloatProperty` instance.
+    #[inline]
     pub fn new(value: f32) -> Self {
         FloatProperty {
             value: OrderedFloat(value),
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -286,6 +301,7 @@ impl Debug for FloatProperty {
 }
 
 impl PropertyTrait for FloatProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("FloatProperty")?;
@@ -307,12 +323,14 @@ pub struct DoubleProperty {
 
 impl DoubleProperty {
     /// Creates a new `DoubleProperty` instance.
+    #[inline]
     pub fn new(value: f64) -> Self {
         DoubleProperty {
             value: OrderedFloat(value),
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -335,6 +353,7 @@ impl Debug for DoubleProperty {
 }
 
 impl PropertyTrait for DoubleProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("DoubleProperty")?;

@@ -18,6 +18,7 @@ pub struct NameProperty {
 }
 
 impl NameProperty {
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -33,6 +34,7 @@ impl NameProperty {
 }
 
 impl PropertyTrait for NameProperty {
+    #[inline]
     fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("NameProperty")?;

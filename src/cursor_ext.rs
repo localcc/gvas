@@ -24,6 +24,7 @@ pub trait WriteExt {
 }
 
 impl<R: Read + Seek> ReadExt for R {
+    #[inline]
     fn read_string(&mut self) -> Result<String, Error> {
         match self.read_fstring()? {
             Some(str) => Ok(str),
@@ -31,6 +32,7 @@ impl<R: Read + Seek> ReadExt for R {
         }
     }
 
+    #[inline]
     fn read_guid(&mut self) -> Result<Guid, Error> {
         let mut guid = Guid::default();
         self.read_exact(&mut guid.0)?;
@@ -39,10 +41,12 @@ impl<R: Read + Seek> ReadExt for R {
 }
 
 impl<W: Write> WriteExt for W {
+    #[inline]
     fn write_string(&mut self, v: &str) -> Result<usize, Error> {
         Ok(self.write_fstring(Some(v))?)
     }
 
+    #[inline]
     fn write_guid(&mut self, v: &Guid) -> Result<(), Error> {
         Ok(self.write_all(&v.0)?)
     }

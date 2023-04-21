@@ -110,6 +110,7 @@ impl Display for FEngineVersion {
 
 impl FEngineVersion {
     /// Creates a new instance of `FEngineVersion`
+    #[inline]
     pub fn new(major: u16, minor: u16, patch: u16, change_list: u32, branch: String) -> Self {
         FEngineVersion {
             major,
@@ -159,6 +160,7 @@ pub struct FCustomVersion {
 
 impl FCustomVersion {
     /// Creates a new instance of `FCustomVersion`
+    #[inline]
     pub fn new(key: Guid, version: u32) -> Self {
         FCustomVersion { key, version }
     }
@@ -204,6 +206,7 @@ pub struct GvasHeader {
 
 impl GvasHeader {
     /// Creates a new instance of `GvasHeader`
+    #[inline]
     pub fn new(
         file_type_tag: u32,
         save_game_file_version: u32,
