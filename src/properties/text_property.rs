@@ -17,7 +17,10 @@ use super::PropertyTrait;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TextProperty {
     /// An empty `TextProperty`.
-    Empty(),
+    Empty(
+        // Workaround for https://github.com/serde-rs/json/issues/664
+        [u8; 0],
+    ),
     /// A rich `TextProperty`.
     Rich(RichText),
     /// A simple `TextProperty`.
@@ -67,7 +70,7 @@ impl TextProperty {
         } else if let Some(simple) = values {
             TextProperty::Simple(simple)
         } else {
-            TextProperty::Empty()
+            TextProperty::Empty([])
         }
     }
 
@@ -104,7 +107,7 @@ impl TextProperty {
             let count = cursor.read_u32::<LittleEndian>()?;
             validate!(cursor, count == 0, "Unexpected count {count}");
 
-            Ok(TextProperty::Empty())
+            Ok(TextProperty::Empty([]))
         } else if component_type == 1 {
             // Rich text
             let num_flags = cursor.read_u8()?;
@@ -171,7 +174,7 @@ impl Debug for TextProperty {
         match self {
             TextProperty::Rich(value) => value.fmt(f),
             TextProperty::Simple(values) => f.debug_list().entries(values).finish(),
-            TextProperty::Empty() => f.write_str("Empty"),
+            TextProperty::Empty(_) => f.write_str("Empty"),
         }
     }
 }
@@ -185,7 +188,7 @@ impl PropertyTrait for TextProperty {
         }
 
         match self {
-            TextProperty::Empty() => {
+            TextProperty::Empty(_) => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u8(255)?;
                 cursor.write_u32::<LittleEndian>(0)?;
