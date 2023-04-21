@@ -39,15 +39,10 @@ impl UnknownProperty {
         property_name: String,
     ) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
-        cursor.read_exact(&mut [0u8; 1])?;
+        let separator = cursor.read_u8()?;
+        assert_eq!(separator, 0);
 
-        let mut data = vec![0u8; length as usize];
-        cursor.read_exact(&mut data)?;
-
-        Ok(UnknownProperty {
-            property_name,
-            raw: data,
-        })
+        UnknownProperty::read_with_length(cursor, property_name, length)
     }
 }
 

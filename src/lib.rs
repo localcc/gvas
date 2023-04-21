@@ -165,19 +165,15 @@ impl FCustomVersion {
 
     /// Read FCustomVersion from a binary file
     pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
-        let mut guid = [0u8; 16];
-        cursor.read_exact(&mut guid)?;
+        let key = cursor.read_guid()?;
         let version = cursor.read_u32::<LittleEndian>()?;
 
-        Ok(FCustomVersion {
-            key: Guid::new(guid),
-            version,
-        })
+        Ok(FCustomVersion { key, version })
     }
 
     /// Write FCustomVersion to a binary file
     pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        let _ = cursor.write(&self.key.0)?;
+        cursor.write_guid(&self.key)?;
         cursor.write_u32::<LittleEndian>(self.version)?;
         Ok(())
     }

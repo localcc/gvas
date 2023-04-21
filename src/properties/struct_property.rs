@@ -80,16 +80,13 @@ impl StructProperty {
         };
 
         let guid = match include_header {
-            true => {
-                let mut guid = [0u8; 16];
-                cursor.read_exact(&mut guid)?;
-                guid
-            }
-            false => [0u8; 16],
+            true => cursor.read_guid()?,
+            false => Guid::default(),
         };
 
         if include_header {
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
 
         let value = match type_name.as_str() {
@@ -139,10 +136,7 @@ impl StructProperty {
             }
         };
 
-        Ok(StructProperty {
-            guid: Guid::new(guid),
-            value,
-        })
+        Ok(StructProperty { guid, value })
     }
 
     pub(crate) fn read_with_header<R: Read + Seek>(
@@ -192,7 +186,7 @@ impl PropertyTrait for StructProperty {
         cursor.write_string("StructProperty")?;
         cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
         cursor.write_string(property_name)?;
-        cursor.write_all(&self.guid.0)?;
+        cursor.write_guid(&self.guid)?;
         cursor.write_u8(0)?;
         cursor.write_all(buf)?;
 
@@ -227,11 +221,7 @@ impl StructProperty {
                 IntProperty::new(int_point.y).write(cursor, false)?;
             }
             StructPropertyValue::Guid(guid) => {
-                let (a, b, c, d) = guid.to_owned().into();
-                UInt32Property::new(a).write(cursor, false)?;
-                UInt32Property::new(b).write(cursor, false)?;
-                UInt32Property::new(c).write(cursor, false)?;
-                UInt32Property::new(d).write(cursor, false)?;
+                cursor.write_guid(guid)?;
             }
             StructPropertyValue::CustomStruct(_, properties) => {
                 for (key, value) in properties {

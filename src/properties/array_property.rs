@@ -77,7 +77,8 @@ impl ArrayProperty {
         let length = cursor.read_u64::<LittleEndian>()?;
 
         let property_type = cursor.read_string()?;
-        cursor.read_exact(&mut [0u8; 1])?;
+        let separator = cursor.read_u8()?;
+        assert_eq!(separator, 0);
         let start_position = cursor.stream_position()?;
 
         let property_count = cursor.read_u32::<LittleEndian>()? as usize;
@@ -93,9 +94,9 @@ impl ArrayProperty {
                 let properties_size = cursor.read_u64::<LittleEndian>()?;
 
                 let struct_name = cursor.read_string()?;
-                let mut struct_guid = [0u8; 16];
-                cursor.read_exact(&mut struct_guid)?;
-                cursor.read_exact(&mut [0u8; 1])?;
+                let guid = cursor.read_guid()?;
+                let separator = cursor.read_u8()?;
+                assert_eq!(separator, 0);
 
                 let properties_start = cursor.stream_position()?;
                 for _ in 0..property_count {
@@ -119,7 +120,7 @@ impl ArrayProperty {
                 array_struct_info = Some(ArrayStructInfo {
                     type_name: struct_name,
                     field_name,
-                    guid: Guid(struct_guid),
+                    guid,
                 });
             }
             _ => {
@@ -193,7 +194,7 @@ impl ArrayProperty {
 
                 cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
                 cursor.write_string(&array_struct_info.type_name)?;
-                let _ = cursor.write(&array_struct_info.guid.0)?;
+                cursor.write_guid(&array_struct_info.guid)?;
                 cursor.write_u8(0)?;
                 cursor.write_all(buf)?;
             }

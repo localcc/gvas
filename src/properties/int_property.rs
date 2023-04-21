@@ -53,7 +53,8 @@ macro_rules! impl_int_property {
             ) -> Result<Self, Error> {
                 if include_header {
                     check_size!(cursor, $size);
-                    cursor.read_exact(&mut [0u8; 1])?;
+                    let separator = cursor.read_u8()?;
+                    assert_eq!(separator, 0);
                 }
                 Ok(Self {
                     value: cursor.$read_method::<LittleEndian>()?,
@@ -116,7 +117,8 @@ impl Int8Property {
     ) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 1);
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         Ok(Int8Property {
             value: cursor.read_i8()?,
@@ -166,7 +168,8 @@ impl ByteProperty {
         if include_header {
             check_size!(cursor, 1);
             name = Some(cursor.read_string()?);
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         Ok(ByteProperty {
             name,
@@ -267,7 +270,8 @@ impl FloatProperty {
     ) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 4);
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         Ok(Self {
             value: OrderedFloat(cursor.read_f32::<LittleEndian>()?),
@@ -315,7 +319,8 @@ impl DoubleProperty {
     ) -> Result<Self, Error> {
         if include_header {
             check_size!(cursor, 8);
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         Ok(Self {
             value: OrderedFloat(cursor.read_f64::<LittleEndian>()?),

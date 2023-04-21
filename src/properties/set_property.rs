@@ -42,7 +42,8 @@ impl SetProperty {
         let length = cursor.read_u64::<LittleEndian>()?;
 
         let property_type = cursor.read_string()?;
-        cursor.read_exact(&mut [0u8; 1])?;
+        let separator = cursor.read_u8()?;
+        assert_eq!(separator, 0);
 
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
 

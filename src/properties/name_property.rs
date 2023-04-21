@@ -24,7 +24,8 @@ impl NameProperty {
     ) -> Result<Self, Error> {
         if include_header {
             let _length = cursor.read_u64::<LittleEndian>()?;
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         let value = cursor.read_string()?;
         Ok(NameProperty { value })
