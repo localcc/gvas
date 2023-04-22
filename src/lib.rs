@@ -188,10 +188,6 @@ pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasHeader {
-    /// The literal 'GVAS'.
-    pub file_type_tag: u32,
-    /// Save game file version.
-    pub save_game_file_version: u32,
     /// File format version.
     pub package_file_ue4_version: u32,
     /// Unreal Engine version.
@@ -208,8 +204,6 @@ impl GvasHeader {
     /// Creates a new instance of `GvasHeader`
     #[inline]
     pub fn new(
-        file_type_tag: u32,
-        save_game_file_version: u32,
         package_file_ue4_version: u32,
         engine_version: FEngineVersion,
         custom_version_format: u32,
@@ -217,8 +211,6 @@ impl GvasHeader {
         save_game_class_name: String,
     ) -> Self {
         GvasHeader {
-            file_type_tag,
-            save_game_file_version,
             package_file_ue4_version,
             engine_version,
             custom_version_format,
@@ -254,7 +246,18 @@ impl GvasHeader {
             Err(DeserializeError::InvalidFileType(file_type_tag))?
         }
         let save_game_file_version = cursor.read_u32::<LittleEndian>()?;
+        match save_game_file_version {
+            2 => GvasHeader::read_v2(cursor),
+            _ => Err(DeserializeError::InvalidGvasVersion(save_game_file_version))?,
+        }
+    }
+
+    fn read_v2<R: Read + Seek>(cursor: &mut R) -> Result<GvasHeader, Error> {
         let package_file_ue4_version = cursor.read_u32::<LittleEndian>()?;
+        match package_file_ue4_version {
+            0x205..=0x20A => {}
+            _ => Err(DeserializeError::InvalidFileType(package_file_ue4_version))?,
+        }
         let engine_version = FEngineVersion::read(cursor)?;
         let custom_version_format = cursor.read_u32::<LittleEndian>()?;
 
@@ -267,8 +270,6 @@ impl GvasHeader {
         let save_game_class_name = cursor.read_string()?;
 
         Ok(GvasHeader {
-            file_type_tag,
-            save_game_file_version,
             package_file_ue4_version,
             engine_version,
             custom_version_format,
@@ -296,8 +297,8 @@ impl GvasHeader {
     /// # Ok::<(), Error>(())
     /// ```
     pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_u32::<LittleEndian>(self.file_type_tag)?;
-        cursor.write_u32::<LittleEndian>(self.save_game_file_version)?;
+        cursor.write_u32::<LittleEndian>(FILE_TYPE_GVAS)?;
+        cursor.write_u32::<LittleEndian>(2)?;
         cursor.write_u32::<LittleEndian>(self.package_file_ue4_version)?;
         self.engine_version.write(cursor)?;
         cursor.write_u32::<LittleEndian>(self.custom_version_format)?;
