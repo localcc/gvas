@@ -7,7 +7,7 @@ use crate::{
     error::{DeserializeError, Error, SerializeError},
 };
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// A property that holds an enum value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -49,7 +49,12 @@ impl EnumProperty {
 
 impl PropertyTrait for EnumProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             // return self.write_body(cursor);
             Err(SerializeError::invalid_value(

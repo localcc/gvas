@@ -16,9 +16,9 @@ use gvas::{
         set_property::SetProperty,
         str_property::StrProperty,
         struct_property::StructProperty,
-        struct_types::Vector,
+        struct_types::VectorF,
         text_property::{RichText, RichTextFormat, TextProperty},
-        Property, PropertyTrait,
+        Property, PropertyOptions, PropertyTrait,
     },
     types::Guid,
 };
@@ -31,10 +31,16 @@ macro_rules! test_property {
         fn $function_name() {
             let property: $type = $property_value;
 
+            let mut options = PropertyOptions {
+                hints: &HashMap::new(),
+                properties_stack: &mut Vec::new(),
+                large_world_coordinates: false,
+            };
+
             // Export the property to a byte array
             let mut writer = Cursor::new(Vec::new());
             property
-                .write(&mut writer, true)
+                .write(&mut writer, true, &mut options)
                 .expect(concat!("Failed to serialize {}", stringify!($ty)));
 
             // Import the property from a byte array
@@ -43,15 +49,8 @@ macro_rules! test_property {
                 .read_string()
                 .expect(&format!("Read {}", stringify!(property)));
             assert_eq!(property_type, stringify!($type));
-            let imported = Property::new(
-                &mut reader,
-                &HashMap::new(),
-                &mut Vec::new(),
-                &property_type,
-                true,
-                None,
-            )
-            .expect(&format!("Reading {} from {:?}", property_type, reader));
+            let imported = Property::new(&mut reader, &property_type, true, &mut options, None)
+                .expect(&format!("Reading {} from {:?}", property_type, reader));
 
             assert_eq!(writer, reader);
             assert_eq!(Property::$type(property), imported);
@@ -87,7 +86,7 @@ test_property!(
 test_property!(
     test_struct,
     StructProperty,
-    StructProperty::from(Vector::new(0f32, 1f32, 2f32))
+    StructProperty::from(VectorF::new(0f32, 1f32, 2f32))
 );
 
 // ArrayProperty
@@ -121,8 +120,8 @@ test_property!(
             Guid::from(0u128)
         )),
         vec![
-            Property::from(StructProperty::from(Vector::new(0f32, 1f32, 2f32))),
-            Property::from(StructProperty::from(Vector::new(3f32, 4f32, 5f32))),
+            Property::from(StructProperty::from(VectorF::new(0f32, 1f32, 2f32))),
+            Property::from(StructProperty::from(VectorF::new(3f32, 4f32, 5f32))),
         ],
     )
 );

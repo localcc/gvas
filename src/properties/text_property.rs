@@ -10,7 +10,7 @@ use crate::{
     error::{DeserializeError, Error, SerializeError},
 };
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// A property that stores GVAS Text.
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -51,6 +51,8 @@ pub struct RichTextFormat {
     pub values: Vec<String>,
 }
 
+const RTF_UNKNOWN: u64 = 0x100000000;
+
 macro_rules! validate {
     ($cursor:expr, $cond:expr, $($arg:tt)+) => {{
         if !$cond {
@@ -79,6 +81,7 @@ impl TextProperty {
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
+        options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         validate!(
             cursor,
@@ -115,7 +118,17 @@ impl TextProperty {
             let num_flags = cursor.read_u8()?;
             validate!(cursor, num_flags == 8, "Unexpected num_flags {num_flags}");
             let flags = cursor.read_u64::<LittleEndian>()?;
-            validate!(cursor, flags == 0, "Unexpected flags {flags}");
+            let expect_flags = if options.large_world_coordinates {
+                RTF_UNKNOWN
+            } else {
+                0
+            };
+            validate!(cursor, flags == expect_flags, "Unexpected flags {flags:X}");
+
+            if flags == RTF_UNKNOWN {
+                let b = cursor.read_u8()?;
+                assert_eq!(b, 0);
+            }
 
             let id = cursor.read_string()?;
             let pattern = cursor.read_string()?;
@@ -183,7 +196,12 @@ impl Debug for TextProperty {
 
 impl PropertyTrait for TextProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             Err(SerializeError::invalid_value(
                 "TextProperty only supported in arrays",
@@ -201,7 +219,12 @@ impl PropertyTrait for TextProperty {
                 cursor.write_u32::<LittleEndian>(1)?;
                 cursor.write_u8(3)?;
                 cursor.write_u8(8)?;
-                cursor.write_u64::<LittleEndian>(0)?;
+                if options.large_world_coordinates {
+                    cursor.write_u64::<LittleEndian>(RTF_UNKNOWN)?;
+                    cursor.write_u8(0)?;
+                } else {
+                    cursor.write_u64::<LittleEndian>(0)?;
+                }
                 cursor.write_string(&value.id)?;
                 cursor.write_string(&value.pattern)?;
                 cursor.write_u32::<LittleEndian>(value.text_format.len() as u32)?;

@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     hash::Hash,
     io::{Cursor, Read, Seek, Write},
 };
@@ -14,7 +13,7 @@ use crate::{
     scoped_stack_entry::ScopedStackEntry,
 };
 
-use super::{Property, PropertyTrait};
+use super::{Property, PropertyOptions, PropertyTrait};
 
 /// A property that stores a map of properties to properties.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -51,8 +50,7 @@ impl MapProperty {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
-        hints: &HashMap<String, String>,
-        properties_stack: &mut Vec<String>,
+        options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         let _length = cursor.read_u64::<LittleEndian>()?;
 
@@ -67,12 +65,14 @@ impl MapProperty {
 
         let mut map = IndexMap::new();
         for _ in 0..element_count {
+            let properties_stack = &mut options.properties_stack;
             let key_stack_entry = ScopedStackEntry::new(properties_stack, "Key".to_string());
-            let key = Property::new(cursor, hints, properties_stack, &key_type, false, None)?;
+            let key = Property::new(cursor, &key_type, false, options, None)?;
             drop(key_stack_entry);
 
+            let properties_stack = &mut options.properties_stack;
             let value_stack_entry = ScopedStackEntry::new(properties_stack, "Value".to_string());
-            let value = Property::new(cursor, hints, properties_stack, &value_type, false, None)?;
+            let value = Property::new(cursor, &value_type, false, options, None)?;
             drop(value_stack_entry);
 
             map.insert(key, value);
@@ -89,7 +89,12 @@ impl MapProperty {
 
 impl PropertyTrait for MapProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             return Err(SerializeError::invalid_value(
                 "Nested maps are not supported",
@@ -97,7 +102,7 @@ impl PropertyTrait for MapProperty {
         }
 
         let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
+        self.write_body(buf, options)?;
         let buf = buf.get_ref();
 
         cursor.write_string("MapProperty")?;
@@ -112,13 +117,17 @@ impl PropertyTrait for MapProperty {
 }
 
 impl MapProperty {
-    fn write_body<W: Write + Seek>(&self, cursor: &mut W) -> Result<(), Error> {
+    fn write_body<W: Write + Seek>(
+        &self,
+        cursor: &mut W,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_u32::<LittleEndian>(self.value.len() as u32)?;
 
         for (key, value) in &self.value {
-            key.write(cursor, false)?;
-            value.write(cursor, false)?;
+            key.write(cursor, false, options)?;
+            value.write(cursor, false, options)?;
         }
 
         Ok(())

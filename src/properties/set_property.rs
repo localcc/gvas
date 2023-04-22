@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    io::{Cursor, Read, Seek, Write},
-};
+use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -10,7 +7,7 @@ use crate::{
     error::{Error, SerializeError},
 };
 
-use super::{Property, PropertyTrait};
+use super::{Property, PropertyOptions, PropertyTrait};
 
 /// A property that stores a set of properties.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -38,8 +35,7 @@ impl SetProperty {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
-        hints: &HashMap<String, String>,
-        properties_stack: &mut Vec<String>,
+        options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
 
@@ -57,10 +53,9 @@ impl SetProperty {
         for _ in 0..element_count {
             properties.push(Property::new(
                 cursor,
-                hints,
-                properties_stack,
                 &property_type,
                 false,
+                options,
                 Some(total_bytes_per_property),
             )?)
         }
@@ -75,7 +70,12 @@ impl SetProperty {
 
 impl PropertyTrait for SetProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             // return self.write_body(writer);
             Err(SerializeError::invalid_value(
@@ -84,7 +84,7 @@ impl PropertyTrait for SetProperty {
         }
 
         let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
+        self.write_body(buf, options)?;
         let buf = buf.get_ref();
 
         cursor.write_string("SetProperty")?;
@@ -99,11 +99,15 @@ impl PropertyTrait for SetProperty {
 
 impl SetProperty {
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
         for property in &self.properties {
-            property.write(cursor, false)?;
+            property.write(cursor, false, options)?;
         }
 
         Ok(())

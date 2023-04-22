@@ -26,8 +26,8 @@ fn read_delegate() {
 
     assert_eq!(
         file.header,
-        GvasHeader {
-            package_file_ue4_version: 517,
+        GvasHeader::Version2 {
+            package_file_version: 517,
             engine_version: FEngineVersion {
                 major: 4,
                 minor: 23,

@@ -11,12 +11,18 @@ fn test_file_err() {
     // Read GvasFile from Vec<u8>
     let mut reader = Cursor::new(buf);
     let err = GvasFile::read(&mut reader).expect_err("Expected file type error");
-    assert_eq!(err.to_string(), "Invalid file type 0");
+    assert_eq!(
+        err.to_string(),
+        "Invalid header: File type 0 not recognized"
+    );
 
     // Read GvasHeader from Vec<u8>
     let mut reader = Cursor::new(buf);
     let err = GvasHeader::read(&mut reader).expect_err("Expected file type error");
-    assert_eq!(err.to_string(), "Invalid file type 0");
+    assert_eq!(
+        err.to_string(),
+        "Invalid header: File type 0 not recognized"
+    );
 }
 
 #[test]
@@ -32,12 +38,18 @@ fn test_version_err() -> Result<(), Error> {
     // Read GvasFile from &[u8]
     let mut reader = Cursor::new(buf);
     let err = GvasFile::read(&mut reader).expect_err("Expected file type error");
-    assert_eq!(err.to_string(), "Invalid GVAS file version 2109876543");
+    assert_eq!(
+        err.to_string(),
+        "Invalid header: GVAS version 2109876543 not supported"
+    );
 
     // Read GvasHeader from &[u8]
     let mut reader = Cursor::new(buf);
-    let err = GvasFile::read(&mut reader).expect_err("Expected file type error");
-    assert_eq!(err.to_string(), "Invalid GVAS file version 2109876543");
+    let err = GvasHeader::read(&mut reader).expect_err("Expected file type error");
+    assert_eq!(
+        err.to_string(),
+        "Invalid header: GVAS version 2109876543 not supported"
+    );
 
     Ok(())
 }

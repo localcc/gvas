@@ -6,6 +6,9 @@ macro_rules! wrap_type {
     (f32) => {
         OrderedFloat<f32>
     };
+    (f64) => {
+        OrderedFloat<f64>
+    };
     ($type:ident) => {
         $type
     };
@@ -13,6 +16,9 @@ macro_rules! wrap_type {
 
 macro_rules! wrap_value {
     (f32, $name:ident) => {
+        OrderedFloat::from($name)
+    };
+    (f64, $name:ident) => {
         OrderedFloat::from($name)
     };
     ($type:ident, $name:ident) => {
@@ -62,8 +68,9 @@ macro_rules! make_struct {
         }
     };
 }
+
 make_struct!(
-    Vector,
+    VectorF,
     "A struct that stores a vector.",
     (x, f32, "X coordinate."),
     (y, f32, "Y coordinate."),
@@ -71,7 +78,15 @@ make_struct!(
 );
 
 make_struct!(
-    Rotator,
+    VectorD,
+    "A struct that stores a vector.",
+    (x, f64, "X coordinate."),
+    (y, f64, "Y coordinate."),
+    (z, f64, "Z coordinate."),
+);
+
+make_struct!(
+    RotatorF,
     "A struct that stores a rotator.",
     (pitch, f32, "Euclidean pitch."),
     (yaw, f32, "Euclidean yaw."),
@@ -79,12 +94,29 @@ make_struct!(
 );
 
 make_struct!(
-    Quat,
+    RotatorD,
+    "A struct that stores a rotator.",
+    (pitch, f64, "Euclidean pitch."),
+    (yaw, f64, "Euclidean yaw."),
+    (roll, f64, "Euclidean roll."),
+);
+
+make_struct!(
+    QuatF,
     "A struct that stores a quaternion.",
     (x, f32, "X component."),
     (y, f32, "Y component."),
     (z, f32, "Z component."),
     (w, f32, "Real component."),
+);
+
+make_struct!(
+    QuatD,
+    "A struct that stores a quaternion.",
+    (x, f64, "X component."),
+    (y, f64, "Y component."),
+    (z, f64, "Z component."),
+    (w, f64, "Real component."),
 );
 
 make_struct!(

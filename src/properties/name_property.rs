@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// A property that holds a name.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -35,7 +35,12 @@ impl NameProperty {
 
 impl PropertyTrait for NameProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("NameProperty")?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size

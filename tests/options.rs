@@ -43,8 +43,8 @@ fn test_options() {
     assert_eq!(
         file,
         GvasFile {
-            header: GvasHeader {
-                package_file_ue4_version: 518,
+            header: GvasHeader::Version2 {
+                package_file_version: 518,
                 engine_version: FEngineVersion {
                     major: 4,
                     minor: 25,
