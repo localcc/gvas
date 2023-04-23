@@ -113,10 +113,11 @@ impl ArrayProperty {
                     );
                 }
                 let properties_end = cursor.stream_position()?;
+                let actual_size = properties_end - properties_start;
                 validate!(
                     cursor,
-                    properties_end == properties_start + properties_size,
-                    "{properties_end} == {properties_start} + {properties_size}",
+                    actual_size == properties_size,
+                    "{actual_size} != {properties_size}",
                 );
 
                 array_struct_info = Some(ArrayStructInfo {
@@ -139,11 +140,8 @@ impl ArrayProperty {
             }
         };
         let end_position = cursor.stream_position()?;
-        validate!(
-            cursor,
-            end_position == start_position + length,
-            "{end_position} == {start_position} + {length}"
-        );
+        let actual = end_position - start_position;
+        validate!(cursor, actual == length, "{actual} != {length}");
 
         Ok(ArrayProperty {
             property_type,
