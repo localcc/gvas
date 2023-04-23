@@ -19,6 +19,8 @@ use super::{struct_property::StructProperty, Property, PropertyTrait};
 struct ArrayStructInfo {
     type_name: String,
     field_name: String,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Guid::is_zero"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     guid: Guid,
 }
 
@@ -31,6 +33,7 @@ pub struct ArrayProperty {
     /// An array of values.
     pub properties: Vec<Property>,
 
+    #[cfg_attr(feature = "serde", serde(flatten))]
     array_struct_info: Option<ArrayStructInfo>,
 }
 

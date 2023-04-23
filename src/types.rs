@@ -5,13 +5,18 @@ use std::{
 };
 
 /// Stores a 128-bit guid (globally unique identifier)
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, Hash)]
 pub struct Guid(pub [u8; 16]);
 
 impl Guid {
     /// Create new instance of Guid struct from a [0u8; 16] byte array
     pub fn new(guid: [u8; 16]) -> Self {
         Guid(guid)
+    }
+
+    /// Returns true if the guid is zero.
+    pub fn is_zero(&self) -> bool {
+        self.0.iter().all(|&x| x == 0)
     }
 }
 
@@ -117,7 +122,7 @@ impl Debug for Guid {
 
 impl Display for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.0.iter().all(|&x| x == 0) {
+        if self.is_zero() {
             write!(f, "0")?;
             return Ok(());
         }

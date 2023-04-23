@@ -26,8 +26,11 @@ use super::{
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StructProperty {
     /// The unique identifier of the property.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Guid::is_zero"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub guid: Guid,
     /// The value of the property.
+    #[cfg_attr(feature = "serde", serde(flatten))]
     pub value: StructPropertyValue,
 }
 
