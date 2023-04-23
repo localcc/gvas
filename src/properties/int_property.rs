@@ -213,18 +213,13 @@ impl PropertyTrait for ByteProperty {
 pub struct BoolProperty {
     /// Boolean value.
     pub value: bool,
-    /// Indicator value.
-    pub indicator: u8,
 }
 
 impl BoolProperty {
     /// Creates a new `BoolProperty` instance.
     #[inline]
     pub fn new(value: bool) -> Self {
-        BoolProperty {
-            value,
-            indicator: 0u8,
-        }
+        BoolProperty { value }
     }
 
     #[inline]
@@ -232,13 +227,15 @@ impl BoolProperty {
         cursor: &mut R,
         include_header: bool,
     ) -> Result<Self, Error> {
-        let mut indicator = 0u8;
         if include_header {
             check_size!(cursor, 0);
-            indicator = cursor.read_u8()?;
         }
         let value = cursor.read_bool()?;
-        Ok(BoolProperty { value, indicator })
+        if include_header {
+            let indicator = cursor.read_u8()?;
+            assert_eq!(indicator, 0);
+        }
+        Ok(BoolProperty { value })
     }
 }
 
@@ -254,9 +251,11 @@ impl PropertyTrait for BoolProperty {
         if include_header {
             cursor.write_string("BoolProperty")?;
             cursor.write_u64::<LittleEndian>(0)?;
-            cursor.write_u8(self.indicator)?;
         }
         cursor.write_bool(self.value)?;
+        if include_header {
+            cursor.write_u8(0)?;
+        }
         Ok(())
     }
 }
