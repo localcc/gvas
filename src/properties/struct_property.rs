@@ -121,9 +121,12 @@ impl StructProperty {
                 UInt32Property::read(cursor, false)?.value,
             ))),
             _ => {
-                let mut key_name = cursor.read_string()?;
                 let mut properties = Vec::new();
-                while &key_name != "None" {
+                loop {
+                    let key_name = cursor.read_string()?;
+                    if key_name == "None" {
+                        break;
+                    }
                     let value_type = cursor.read_string()?;
                     let _property_stack_entry =
                         ScopedStackEntry::new(properties_stack, key_name.clone());
@@ -131,7 +134,6 @@ impl StructProperty {
                     let property =
                         Property::new(cursor, hints, properties_stack, &value_type, true, None)?;
                     properties.push((key_name, property));
-                    key_name = cursor.read_string()?;
                 }
                 StructPropertyValue::CustomStruct(type_name, properties)
             }
