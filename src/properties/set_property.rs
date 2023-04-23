@@ -46,7 +46,7 @@ impl SetProperty {
 
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
 
-        let element_count = cursor.read_i32::<LittleEndian>()? as usize;
+        let element_count = cursor.read_u32::<LittleEndian>()? as usize;
         let mut properties: Vec<Property> = Vec::with_capacity(element_count);
 
         let total_bytes_per_property = (length - 8) / element_count as u64;
@@ -88,12 +88,12 @@ impl PropertyTrait for SetProperty {
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.property_type)?;
-        let _ = cursor.write(&[0u8; 1])?;
+        cursor.write_u8(0)?;
 
         let set_begin = cursor.stream_position()?;
 
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
-        cursor.write_i32::<LittleEndian>(self.properties.len() as i32)?;
+        cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
 
         for property in &self.properties {
             property.write(cursor, false)?;

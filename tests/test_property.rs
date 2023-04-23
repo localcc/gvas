@@ -35,7 +35,7 @@ macro_rules! test_property {
             let mut writer = Cursor::new(Vec::new());
             property
                 .write(&mut writer, true)
-                .expect(&format!("Failed to serialize {}", stringify!($ty)));
+                .expect(concat!("Failed to serialize {}", stringify!($ty)));
 
             // Import the property from a byte array
             let mut reader = Cursor::new(writer.get_ref().to_owned());
@@ -63,7 +63,7 @@ test_property!(test_int8, Int8Property, Int8Property::new(i8::MAX));
 test_property!(
     test_byte,
     ByteProperty,
-    ByteProperty::new(Some("Test ByteProperty".into()), u8::MAX)
+    ByteProperty::new(Some(String::from("Test ByteProperty")), u8::MAX)
 );
 test_property!(test_int16, Int16Property, Int16Property::new(i16::MAX));
 test_property!(test_uint16, UInt16Property, UInt16Property::new(u16::MAX));
@@ -94,14 +94,14 @@ test_property!(
 test_property!(
     test_array_empty,
     ArrayProperty,
-    ArrayProperty::new("FloatProperty".into(), None, vec![],)
+    ArrayProperty::new(String::from("FloatProperty"), None, vec![],)
 );
 
 test_property!(
     test_array_float,
     ArrayProperty,
     ArrayProperty::new(
-        "FloatProperty".into(),
+        String::from("FloatProperty"),
         None,
         vec![
             Property::from(FloatProperty::new(0f32)),
@@ -114,8 +114,12 @@ test_property!(
     test_array_vector,
     ArrayProperty,
     ArrayProperty::new(
-        "StructProperty".into(),
-        Some(("FieldName".to_string(), "Vector".into(), Guid::from(0u128))),
+        String::from("StructProperty"),
+        Some((
+            "FieldName".to_string(),
+            String::from("Vector"),
+            Guid::from(0u128)
+        )),
         vec![
             Property::from(StructProperty::from(Vector::new(0f32, 1f32, 2f32))),
             Property::from(StructProperty::from(Vector::new(3f32, 4f32, 5f32))),
@@ -128,22 +132,22 @@ test_property!(
     test_array_text,
     ArrayProperty,
     ArrayProperty::new(
-        "TextProperty".into(),
+        String::from("TextProperty"),
         None,
         vec![
             Property::from(TextProperty::new(None, None)),
             Property::from(TextProperty::new(
                 Some(RichText::new(
-                    "identifier".into(),
-                    "{0}<br>{1}".into(),
+                    String::from("identifier"),
+                    String::from("{0}<br>{1}"),
                     vec![
-                        RichTextFormat::new("0".into(), 0, vec!["line1".into()]),
-                        RichTextFormat::new("1".into(), 0, vec!["line2".into()]),
+                        RichTextFormat::new(String::from("0"), 0, vec![String::from("line1")]),
+                        RichTextFormat::new(String::from("1"), 0, vec![String::from("line2")]),
                     ]
                 )),
                 None
             )),
-            Property::from(TextProperty::new(None, Some(vec!["String".into()]))),
+            Property::from(TextProperty::new(None, Some(vec![String::from("String")]))),
         ]
     )
 );
@@ -153,7 +157,7 @@ test_property!(
     test_set,
     SetProperty,
     SetProperty::new(
-        "FloatProperty".into(),
+        String::from("FloatProperty"),
         0,
         vec![Property::from(FloatProperty::new(4321f32))]
     )
@@ -164,8 +168,8 @@ test_property!(
     test_map,
     MapProperty,
     MapProperty::new(
-        "StrProperty".into(),
-        "FloatProperty".into(),
+        String::from("StrProperty"),
+        String::from("FloatProperty"),
         0,
         IndexMap::from([
             (

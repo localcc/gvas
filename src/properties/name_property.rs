@@ -36,8 +36,8 @@ impl PropertyTrait for NameProperty {
         if include_header {
             cursor.write_string("NameProperty")?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size
-            cursor.write_i64::<LittleEndian>(property_length as i64)?;
-            let _ = cursor.write(&[0u8; 1])?;
+            cursor.write_u64::<LittleEndian>(property_length as u64)?;
+            cursor.write_u8(0)?;
         }
 
         cursor.write_string(&self.value)?;

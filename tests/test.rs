@@ -105,7 +105,7 @@ fn verify_file_data(file: &GvasFile) {
                         String::from("CustomStruct"),
                         vec![(
                             String::from("test_field"),
-                            UInt64Property { value: 10 }.into()
+                            Property::from(UInt64Property::new(10))
                         )]
                     )
                 }),
@@ -115,7 +115,7 @@ fn verify_file_data(file: &GvasFile) {
                         String::from("CustomStruct"),
                         vec![(
                             String::from("test_field"),
-                            UInt64Property { value: 10 }.into()
+                            Property::from(UInt64Property::new(10))
                         )]
                     )
                 }),

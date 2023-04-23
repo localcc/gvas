@@ -80,7 +80,7 @@ impl ArrayProperty {
         cursor.read_exact(&mut [0u8; 1])?;
         let start_position = cursor.stream_position()?;
 
-        let property_count = cursor.read_i32::<LittleEndian>()? as usize;
+        let property_count = cursor.read_u32::<LittleEndian>()? as usize;
         let mut properties: Vec<Property> = Vec::with_capacity(property_count);
 
         let mut array_struct_info = None;
@@ -163,10 +163,10 @@ impl PropertyTrait for ArrayProperty {
         cursor.write_u64::<LittleEndian>(0)?;
 
         cursor.write_string(&self.property_type)?;
-        let _ = cursor.write(&[0u8; 1])?;
+        cursor.write_u8(0)?;
         let begin_write = cursor.stream_position()?;
 
-        cursor.write_i32::<LittleEndian>(self.properties.len() as i32)?;
+        cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
 
         match self.property_type.as_str() {
             "StructProperty" => {
@@ -183,7 +183,7 @@ impl PropertyTrait for ArrayProperty {
                 cursor.write_u64::<LittleEndian>(0)?;
                 cursor.write_string(&array_struct_info.type_name)?;
                 let _ = cursor.write(&array_struct_info.guid.0)?;
-                let _ = cursor.write(&[0u8; 1])?;
+                cursor.write_u8(0)?;
                 let begin_without_name = cursor.stream_position()?;
 
                 for property in &self.properties {

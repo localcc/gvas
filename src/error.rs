@@ -8,13 +8,13 @@ use unreal_helpers::error::FStringError;
 pub enum DeserializeError {
     /// If the file header is not GVAS
     #[error("Invalid file type {0}")]
-    InvalidFileType(i32),
+    InvalidFileType(u32),
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
     #[error("Invalid value size, expected {0} got {1} at position {2}")]
     InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
     #[error("Invalid string size, got {0} at position {1}")]
-    InvalidString(i32, u64),
+    InvalidString(u32, u64),
     /// If a hint is missing.
     #[error("Missing hint for struct {0} at path {1}, cursor position: {2}")]
     MissingHint(String, String, u64),
