@@ -58,6 +58,7 @@ macro_rules! make_matcher {
         #[doc = "Retrieves the enum value as a `"]
         #[doc = stringify!($type)]
         #[doc = "`."]
+        #[inline]
         pub fn $name(&self) -> Option<&$type> {
             match self {
                 Self::$type(e) => Some(e),
@@ -71,7 +72,7 @@ macro_rules! make_matcher {
 #[enum_dispatch]
 pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
     /// Serialize.
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error>;
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error>;
 }
 
 /// GVAS property types.

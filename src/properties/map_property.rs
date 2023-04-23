@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     hash::Hash,
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -33,6 +33,7 @@ pub struct MapProperty {
 
 impl MapProperty {
     /// Creates a new `MapProperty` instance.
+    #[inline]
     pub fn new(
         key_type: String,
         value_type: String,
@@ -47,6 +48,7 @@ impl MapProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -57,7 +59,8 @@ impl MapProperty {
         let key_type = cursor.read_string()?;
         let value_type = cursor.read_string()?;
 
-        cursor.read_exact(&mut [0u8; 1])?;
+        let separator = cursor.read_u8()?;
+        assert_eq!(separator, 0);
 
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
         let element_count = cursor.read_u32::<LittleEndian>()?;
@@ -85,38 +88,38 @@ impl MapProperty {
 }
 
 impl PropertyTrait for MapProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    #[inline]
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
-            return Err(Error::from(SerializeError::InvalidValue(String::from(
+            return Err(SerializeError::invalid_value(
                 "Nested maps are not supported",
-            ))));
+            ))?;
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
         cursor.write_string("MapProperty")?;
-
-        let begin = cursor.stream_position()?;
-        cursor.write_u64::<LittleEndian>(0)?;
-
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
         cursor.write_string(&self.key_type)?;
         cursor.write_string(&self.value_type)?;
-
         cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
 
+        Ok(())
+    }
+}
+
+impl MapProperty {
+    fn write_body<W: Write + Seek>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_u32::<LittleEndian>(self.value.len() as u32)?;
-
-        let write_begin = cursor.stream_position()?;
 
         for (key, value) in &self.value {
             key.write(cursor, false)?;
             value.write(cursor, false)?;
         }
-
-        let end = cursor.stream_position()?;
-
-        cursor.seek(SeekFrom::Start(begin))?;
-        cursor.write_u64::<LittleEndian>(end - write_begin + 8)?;
-        cursor.seek(SeekFrom::Start(end))?;
 
         Ok(())
     }

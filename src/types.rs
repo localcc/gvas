@@ -10,11 +10,13 @@ pub struct Guid(pub [u8; 16]);
 
 impl Guid {
     /// Create new instance of Guid struct from a [0u8; 16] byte array
+    #[inline]
     pub fn new(guid: [u8; 16]) -> Self {
         Guid(guid)
     }
 
     /// Returns true if the guid is zero.
+    #[inline]
     pub fn is_zero(&self) -> bool {
         self.0.iter().all(|&x| x == 0)
     }
@@ -22,6 +24,7 @@ impl Guid {
 
 impl From<(u32, u32, u32, u32)> for Guid {
     /// Create new instance of Guid struct from 4 u32 values
+    #[inline]
     fn from(value: (u32, u32, u32, u32)) -> Self {
         let (a, b, c, d) = value;
         Guid([
@@ -47,6 +50,7 @@ impl From<(u32, u32, u32, u32)> for Guid {
 
 impl From<Guid> for (u32, u32, u32, u32) {
     /// Convert Guid struct into 4 u32 values
+    #[inline]
     fn from(guid: Guid) -> Self {
         let a = guid.0[0] as u32
             | ((guid.0[1] as u32) << 8)
@@ -70,6 +74,7 @@ impl From<Guid> for (u32, u32, u32, u32) {
 }
 
 impl From<u128> for Guid {
+    #[inline]
     fn from(value: u128) -> Self {
         Guid([
             (value & 0xff) as u8,
@@ -93,6 +98,7 @@ impl From<u128> for Guid {
 }
 
 impl From<Guid> for u128 {
+    #[inline]
     fn from(value: Guid) -> Self {
         (value.0[0] as u128)
             | ((value.0[1] as u128) << 8)

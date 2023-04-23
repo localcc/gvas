@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     fmt::Debug,
     hash::Hash,
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -56,6 +56,7 @@ pub enum StructPropertyValue {
 
 impl StructProperty {
     /// Creates a new `StructProperty` instance.
+    #[inline]
     pub fn new(guid: Guid, value: StructPropertyValue) -> Self {
         StructProperty { guid, value }
     }
@@ -80,16 +81,13 @@ impl StructProperty {
         };
 
         let guid = match include_header {
-            true => {
-                let mut guid = [0u8; 16];
-                cursor.read_exact(&mut guid)?;
-                guid
-            }
-            false => [0u8; 16],
+            true => cursor.read_guid()?,
+            false => Guid::default(),
         };
 
         if include_header {
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
 
         let value = match type_name.as_str() {
@@ -139,12 +137,10 @@ impl StructProperty {
             }
         };
 
-        Ok(StructProperty {
-            guid: Guid::new(guid),
-            value,
-        })
+        Ok(StructProperty { guid, value })
     }
 
+    #[inline]
     pub(crate) fn read_with_header<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -153,6 +149,7 @@ impl StructProperty {
         Self::read(cursor, hints, properties_stack, true, None)
     }
 
+    #[inline]
     pub(crate) fn read_with_type_name<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -170,27 +167,39 @@ impl StructProperty {
 }
 
 impl PropertyTrait for StructProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
-        let mut begin = 0;
-        let mut write_begin = 0;
-        if include_header {
-            cursor.write_string("StructProperty")?;
-            begin = cursor.stream_position()?;
-            cursor.write_u64::<LittleEndian>(0)?;
-            cursor.write_string(match &self.value {
-                StructPropertyValue::Vector(_) => "Vector",
-                StructPropertyValue::Rotator(_) => "Rotator",
-                StructPropertyValue::Quat(_) => "Quat",
-                StructPropertyValue::DateTime(_) => "DateTime",
-                StructPropertyValue::Guid(_) => "Guid",
-                StructPropertyValue::IntPoint(_) => "IntPoint",
-                StructPropertyValue::CustomStruct(type_name, _) => type_name,
-            })?;
-            cursor.write_all(&self.guid.0)?;
-            cursor.write_u8(0)?;
-            write_begin = cursor.stream_position()?;
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+        if !include_header {
+            return self.write_body(cursor);
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        let property_name = match &self.value {
+            StructPropertyValue::Vector(_) => "Vector",
+            StructPropertyValue::Rotator(_) => "Rotator",
+            StructPropertyValue::Quat(_) => "Quat",
+            StructPropertyValue::DateTime(_) => "DateTime",
+            StructPropertyValue::Guid(_) => "Guid",
+            StructPropertyValue::IntPoint(_) => "IntPoint",
+            StructPropertyValue::CustomStruct(type_name, _) => type_name,
+        };
+
+        cursor.write_string("StructProperty")?;
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+        cursor.write_string(property_name)?;
+        cursor.write_guid(&self.guid)?;
+        cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
+
+        Ok(())
+    }
+}
+
+impl StructProperty {
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         match &self.value {
             StructPropertyValue::Vector(vector) => {
                 FloatProperty::new(f32::from(vector.x)).write(cursor, false)?;
@@ -216,11 +225,7 @@ impl PropertyTrait for StructProperty {
                 IntProperty::new(int_point.y).write(cursor, false)?;
             }
             StructPropertyValue::Guid(guid) => {
-                let (a, b, c, d) = guid.to_owned().into();
-                UInt32Property::new(a).write(cursor, false)?;
-                UInt32Property::new(b).write(cursor, false)?;
-                UInt32Property::new(c).write(cursor, false)?;
-                UInt32Property::new(d).write(cursor, false)?;
+                cursor.write_guid(guid)?;
             }
             StructPropertyValue::CustomStruct(_, properties) => {
                 for (key, value) in properties {
@@ -231,48 +236,47 @@ impl PropertyTrait for StructProperty {
             }
         };
 
-        if include_header {
-            let write_end = cursor.stream_position()?;
-            cursor.seek(SeekFrom::Start(begin))?;
-            cursor.write_u64::<LittleEndian>(write_end - write_begin)?;
-            cursor.seek(SeekFrom::Start(write_end))?;
-        }
-
         Ok(())
     }
 }
 
 impl From<Vector> for StructProperty {
+    #[inline]
     fn from(vector: Vector) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Vector(vector))
     }
 }
 
 impl From<Rotator> for StructProperty {
+    #[inline]
     fn from(rotator: Rotator) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Rotator(rotator))
     }
 }
 
 impl From<Quat> for StructProperty {
+    #[inline]
     fn from(quat: Quat) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Quat(quat))
     }
 }
 
 impl From<DateTime> for StructProperty {
+    #[inline]
     fn from(date_time: DateTime) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::DateTime(date_time))
     }
 }
 
 impl From<IntPoint> for StructProperty {
+    #[inline]
     fn from(int_point: IntPoint) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::IntPoint(int_point))
     }
 }
 
 impl From<Guid> for StructProperty {
+    #[inline]
     fn from(guid: Guid) -> Self {
         Self::new(Guid([0u8; 16]), StructPropertyValue::Guid(guid))
     }

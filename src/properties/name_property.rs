@@ -18,13 +18,15 @@ pub struct NameProperty {
 }
 
 impl NameProperty {
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
     ) -> Result<Self, Error> {
         if include_header {
             let _length = cursor.read_u64::<LittleEndian>()?;
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         let value = cursor.read_string()?;
         Ok(NameProperty { value })
@@ -32,7 +34,8 @@ impl NameProperty {
 }
 
 impl PropertyTrait for NameProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    #[inline]
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if include_header {
             cursor.write_string("NameProperty")?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size

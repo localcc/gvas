@@ -44,8 +44,6 @@ fn test_options() {
         file,
         GvasFile {
             header: GvasHeader {
-                file_type_tag: 1396790855,
-                save_game_file_version: 2,
                 package_file_ue4_version: 518,
                 engine_version: FEngineVersion {
                     major: 4,

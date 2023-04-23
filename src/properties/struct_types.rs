@@ -40,6 +40,7 @@ macro_rules! make_struct {
 
         impl $name {
             #[doc = concat!("Creates a new `", stringify!($name), "` instance.")]
+            #[inline]
             pub fn new( $($field: $type,)+ ) -> Self {
                 $(
                     let $field = wrap_value!($type, $field);

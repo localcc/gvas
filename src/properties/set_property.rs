@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -26,6 +26,7 @@ pub struct SetProperty {
 
 impl SetProperty {
     /// Creates a new `SetProperty` instance.
+    #[inline]
     pub fn new(property_type: String, allocation_flags: u32, properties: Vec<Property>) -> Self {
         SetProperty {
             property_type,
@@ -34,6 +35,7 @@ impl SetProperty {
         }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         hints: &HashMap<String, String>,
@@ -42,7 +44,8 @@ impl SetProperty {
         let length = cursor.read_u64::<LittleEndian>()?;
 
         let property_type = cursor.read_string()?;
-        cursor.read_exact(&mut [0u8; 1])?;
+        let separator = cursor.read_u8()?;
+        assert_eq!(separator, 0);
 
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
 
@@ -71,38 +74,37 @@ impl SetProperty {
 }
 
 impl PropertyTrait for SetProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    #[inline]
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
         if !include_header {
+            // return self.write_body(writer);
             Err(SerializeError::invalid_value(
                 "Nested sets are not supported!",
             ))?
         }
 
-        if self.properties.is_empty() {
-            return Ok(());
-        }
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
 
         cursor.write_string("SetProperty")?;
-
-        let begin = cursor.stream_position()?;
-        cursor.write_u64::<LittleEndian>(0)?;
-
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
         cursor.write_string(&self.property_type)?;
         cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
 
-        let set_begin = cursor.stream_position()?;
+        Ok(())
+    }
+}
 
+impl SetProperty {
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
-
         for property in &self.properties {
             property.write(cursor, false)?;
         }
-
-        let end_write = cursor.stream_position()?;
-        cursor.seek(SeekFrom::Start(begin))?;
-        cursor.write_u64::<LittleEndian>(end_write - set_begin)?;
-        cursor.seek(SeekFrom::Start(end_write))?;
 
         Ok(())
     }

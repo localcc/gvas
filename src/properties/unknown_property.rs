@@ -1,4 +1,4 @@
-use std::io::{Read, Seek, Write};
+use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -16,10 +16,12 @@ pub struct UnknownProperty {
 
 impl UnknownProperty {
     /// Creates a new `UnknownProperty` instance.
+    #[inline]
     pub fn new(property_name: String, raw: Vec<u8>) -> Self {
         UnknownProperty { property_name, raw }
     }
 
+    #[inline]
     pub(crate) fn read_with_length<R: Read + Seek>(
         cursor: &mut R,
         property_name: String,
@@ -34,31 +36,42 @@ impl UnknownProperty {
         })
     }
 
+    #[inline]
     pub(crate) fn read_with_header<R: Read + Seek>(
         cursor: &mut R,
         property_name: String,
     ) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
-        cursor.read_exact(&mut [0u8; 1])?;
+        let separator = cursor.read_u8()?;
+        assert_eq!(separator, 0);
 
-        let mut data = vec![0u8; length as usize];
-        cursor.read_exact(&mut data)?;
-
-        Ok(UnknownProperty {
-            property_name,
-            raw: data,
-        })
+        UnknownProperty::read_with_length(cursor, property_name, length)
     }
 }
 
 impl PropertyTrait for UnknownProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string(&self.property_name)?;
-            cursor.write_u64::<LittleEndian>(self.raw.len() as u64)?;
-            cursor.write_u8(0)?;
+    #[inline]
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+        if !include_header {
+            return self.write_body(cursor);
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        cursor.write_string(&self.property_name)?;
+        cursor.write_u64::<LittleEndian>(self.raw.len() as u64)?;
+        cursor.write_all(&[0u8; 1])?;
+        cursor.write_all(buf)?;
+
+        Ok(())
+    }
+}
+
+impl UnknownProperty {
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_all(&self.raw)?;
 
         Ok(())

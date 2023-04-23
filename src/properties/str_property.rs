@@ -1,4 +1,4 @@
-use std::io::{Read, Seek, Write};
+use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
@@ -16,6 +16,7 @@ pub struct StrProperty {
 }
 
 impl From<&str> for StrProperty {
+    #[inline]
     fn from(value: &str) -> Self {
         StrProperty::new(Some(value.into()))
     }
@@ -23,17 +24,20 @@ impl From<&str> for StrProperty {
 
 impl StrProperty {
     /// Creates a new `StrProperty` instance.
+    #[inline]
     pub fn new(value: Option<String>) -> Self {
         StrProperty { value }
     }
 
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
     ) -> Result<Self, Error> {
         if include_header {
             let _length = cursor.read_u64::<LittleEndian>()?;
-            cursor.read_exact(&mut [0u8; 1])?;
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
         }
         let value = cursor.read_fstring()?;
         Ok(StrProperty { value })
@@ -41,17 +45,28 @@ impl StrProperty {
 }
 
 impl PropertyTrait for StrProperty {
-    fn write<W: Write + Seek>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string("StrProperty")?;
-            let property_length = match &self.value {
-                Some(value) => value.len() + 1 + 4, // 1 is null-byte, 4 is string length field size
-                None => 4,                          // 4 is string length field size
-            };
-            cursor.write_u64::<LittleEndian>(property_length as u64)?;
-            cursor.write_u8(0)?;
+    #[inline]
+    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+        if !include_header {
+            return self.write_body(cursor);
         }
 
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        cursor.write_string("StrProperty")?;
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+        cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
+
+        Ok(())
+    }
+}
+
+impl StrProperty {
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_fstring(self.value.as_deref())?;
 
         Ok(())
