@@ -8,6 +8,7 @@ use std::{
 
 use gvas::{
     properties::{
+        field_path_property::{FieldPath, FieldPathProperty},
         int_property::{FloatProperty, IntProperty},
         map_property::MapProperty,
         name_property::NameProperty,
@@ -15,7 +16,6 @@ use gvas::{
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::DateTime,
-        unknown_property::UnknownProperty,
         Property,
     },
     types::Guid,
@@ -428,17 +428,10 @@ fn read_save_slot_03() {
                                         ),
                                         (
                                             String::from("Attribute"),
-                                            Property::from(UnknownProperty::new(
-                                                String::from("FieldPathProperty"),
-                                                vec![
-                                                    1, 0, 0, 0, 20, 0, 0, 0, 67, 117, 114, 114,
-                                                    101, 110, 99, 121, 95, 66, 108, 117, 101, 112,
-                                                    114, 105, 110, 116, 115, 0, 32, 0, 0, 0, 47,
-                                                    83, 99, 114, 105, 112, 116, 47, 67, 68, 46, 67,
-                                                    68, 80, 108, 97, 121, 101, 114, 65, 116, 116,
-                                                    114, 105, 98, 117, 116, 101, 83, 101, 116, 0
-                                                ]
-                                            ))
+                                            Property::from(FieldPathProperty::new(FieldPath::new(
+                                                Vec::from([String::from("Currency_Blueprints")]),
+                                                String::from("/Script/CD.CDPlayerAttributeSet")
+                                            )))
                                         ),
                                         (
                                             String::from("AttributeOwner"),
@@ -461,17 +454,10 @@ fn read_save_slot_03() {
                                         ),
                                         (
                                             String::from("Attribute"),
-                                            Property::from(UnknownProperty::new(
-                                                String::from("FieldPathProperty"),
-                                                vec![
-                                                    1, 0, 0, 0, 18, 0, 0, 0, 67, 117, 114, 114,
-                                                    101, 110, 99, 121, 95, 69, 108, 101, 99, 116,
-                                                    114, 117, 109, 0, 32, 0, 0, 0, 47, 83, 99, 114,
-                                                    105, 112, 116, 47, 67, 68, 46, 67, 68, 80, 108,
-                                                    97, 121, 101, 114, 65, 116, 116, 114, 105, 98,
-                                                    117, 116, 101, 83, 101, 116, 0
-                                                ]
-                                            ))
+                                            Property::from(FieldPathProperty::new(FieldPath::new(
+                                                Vec::from([String::from("Currency_Electrum")]),
+                                                String::from("/Script/CD.CDPlayerAttributeSet")
+                                            )))
                                         ),
                                         (
                                             String::from("AttributeOwner"),

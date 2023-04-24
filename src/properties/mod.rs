@@ -18,6 +18,7 @@ use self::{
         DelegateProperty, MulticastInlineDelegateProperty, MulticastSparseDelegateProperty,
     },
     enum_property::EnumProperty,
+    field_path_property::FieldPathProperty,
     int_property::{
         BoolProperty, ByteProperty, DoubleProperty, FloatProperty, Int16Property, Int64Property,
         Int8Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
@@ -38,6 +39,8 @@ pub mod array_property;
 pub mod delegate_property;
 /// Module for `EnumProperty`.
 pub mod enum_property;
+/// Module for `FieldPathProperty`
+pub mod field_path_property;
 /// Module for `IntProperty` and various integer properties.
 pub mod int_property;
 /// Module for `MapProperty`
@@ -124,6 +127,8 @@ pub enum Property {
     MulticastInlineDelegateProperty,
     /// A `MulticastSparseDelegateProperty`
     MulticastSparseDelegateProperty,
+    /// A `FieldPathProperty`
+    FieldPathProperty,
     /// A `SetProperty`.
     SetProperty,
     /// A `StrProperty`.
@@ -177,6 +182,7 @@ impl Property {
             "MulticastSparseDelegateProperty" => {
                 Ok(MulticastSparseDelegateProperty::read(cursor, include_header)?.into())
             }
+            "FieldPathProperty" => Ok(FieldPathProperty::read(cursor, include_header)?.into()),
             "StructProperty" => {
                 if !include_header {
                     let struct_path = properties_stack.join(".");
@@ -248,6 +254,7 @@ impl Property {
         MulticastSparseDelegateProperty,
         get_multicast_sparse_delegate
     );
+    make_matcher!(FieldPathProperty, get_field_path);
     make_matcher!(SetProperty, get_set);
     make_matcher!(StrProperty, get_str);
     make_matcher!(StructProperty, get_struct);
