@@ -14,6 +14,9 @@ use crate::{
 
 use self::{
     array_property::ArrayProperty,
+    delegate_property::{
+        DelegateProperty, MulticastInlineDelegateProperty, MulticastSparseDelegateProperty,
+    },
     enum_property::EnumProperty,
     int_property::{
         BoolProperty, ByteProperty, DoubleProperty, FloatProperty, Int16Property, Int64Property,
@@ -21,6 +24,7 @@ use self::{
     },
     map_property::MapProperty,
     name_property::NameProperty,
+    object_property::ObjectProperty,
     set_property::SetProperty,
     str_property::StrProperty,
     struct_property::StructProperty,
@@ -30,6 +34,8 @@ use self::{
 
 /// Module for `ArrayProperty`.
 pub mod array_property;
+/// Module for delegates
+pub mod delegate_property;
 /// Module for `EnumProperty`.
 pub mod enum_property;
 /// Module for `IntProperty` and various integer properties.
@@ -38,6 +44,8 @@ pub mod int_property;
 pub mod map_property;
 /// Module for `NameProperty`
 pub mod name_property;
+/// Module for `ObjectProperty`
+pub mod object_property;
 /// Module for `SetProperty`
 pub mod set_property;
 /// Module for `StrProperty`
@@ -108,6 +116,14 @@ pub enum Property {
     MapProperty,
     /// A `NameProperty`.
     NameProperty,
+    /// An `ObjectProperty`
+    ObjectProperty,
+    /// A `DelegateProperty`
+    DelegateProperty,
+    /// A `MulticastInlineDelegateProperty`
+    MulticastInlineDelegateProperty,
+    /// A `MulticastSparseDelegateProperty`
+    MulticastSparseDelegateProperty,
     /// A `SetProperty`.
     SetProperty,
     /// A `StrProperty`.
@@ -153,6 +169,14 @@ impl Property {
             "StrProperty" => Ok(StrProperty::read(cursor, include_header)?.into()),
             "TextProperty" => Ok(TextProperty::read(cursor, include_header)?.into()),
             "NameProperty" => Ok(NameProperty::read(cursor, include_header)?.into()),
+            "ObjectProperty" => Ok(ObjectProperty::read(cursor, include_header)?.into()),
+            "DelegateProperty" => Ok(DelegateProperty::read(cursor, include_header)?.into()),
+            "MulticastInlineDelegateProperty" => {
+                Ok(MulticastInlineDelegateProperty::read(cursor, include_header)?.into())
+            }
+            "MulticastSparseDelegateProperty" => {
+                Ok(MulticastSparseDelegateProperty::read(cursor, include_header)?.into())
+            }
             "StructProperty" => {
                 if !include_header {
                     let struct_path = properties_stack.join(".");
@@ -214,6 +238,16 @@ impl Property {
     make_matcher!(UInt64Property, get_u64);
     make_matcher!(MapProperty, get_map);
     make_matcher!(NameProperty, get_name);
+    make_matcher!(ObjectProperty, get_object_ref);
+    make_matcher!(DelegateProperty, get_delegate);
+    make_matcher!(
+        MulticastInlineDelegateProperty,
+        get_multicast_inline_delegate
+    );
+    make_matcher!(
+        MulticastSparseDelegateProperty,
+        get_multicast_sparse_delegate
+    );
     make_matcher!(SetProperty, get_set);
     make_matcher!(StrProperty, get_str);
     make_matcher!(StructProperty, get_struct);

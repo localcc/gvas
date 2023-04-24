@@ -11,6 +11,7 @@ use gvas::{
         int_property::{FloatProperty, IntProperty},
         map_property::MapProperty,
         name_property::NameProperty,
+        object_property::ObjectProperty,
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::DateTime,
@@ -292,14 +293,8 @@ fn read_save_slot_03() {
                 (0, "LastSaveTime") => Property::from(StructProperty::from(DateTime {
                     ticks: 638160761644140000
                 })),
-                (1, "PlayerClass") => Property::from(UnknownProperty::new(
-                    String::from("ObjectProperty"),
-                    vec![
-                        58, 0, 0, 0, 47, 71, 97, 109, 101, 47, 67, 104, 97, 114, 97, 99, 116, 101,
-                        114, 47, 80, 108, 97, 121, 101, 114, 47, 66, 108, 117, 101, 112, 114, 105,
-                        110, 116, 115, 47, 66, 80, 95, 83, 111, 108, 100, 105, 101, 114, 46, 66,
-                        80, 95, 83, 111, 108, 100, 105, 101, 114, 95, 67, 0
-                    ]
+                (1, "PlayerClass") => Property::from(ObjectProperty::from(
+                    "/Game/Character/Player/Blueprints/BP_Soldier.BP_Soldier_C"
                 )),
                 (2, "Version") => Property::from(IntProperty::new(3)),
                 (3, "GameplayDatabase") => Property::from(MapProperty::new(
@@ -447,10 +442,7 @@ fn read_save_slot_03() {
                                         ),
                                         (
                                             String::from("AttributeOwner"),
-                                            Property::from(UnknownProperty::new(
-                                                String::from("ObjectProperty"),
-                                                vec![5, 0, 0, 0, 78, 111, 110, 101, 0]
-                                            ))
+                                            Property::from(ObjectProperty::from("None"))
                                         )
                                     ]
                                 )
@@ -483,10 +475,7 @@ fn read_save_slot_03() {
                                         ),
                                         (
                                             String::from("AttributeOwner"),
-                                            Property::from(UnknownProperty::new(
-                                                String::from("ObjectProperty"),
-                                                vec![5, 0, 0, 0, 78, 111, 110, 101, 0]
-                                            ))
+                                            Property::from(ObjectProperty::from("None"))
                                         )
                                     ]
                                 )
@@ -495,15 +484,8 @@ fn read_save_slot_03() {
                         )
                     ])
                 }),
-                (5, "SecondaryWeaponClass") => Property::from(UnknownProperty::new(
-                    String::from("ObjectProperty"),
-                    vec![
-                        78, 0, 0, 0, 47, 71, 97, 109, 101, 47, 87, 101, 97, 112, 111, 110, 115, 47,
-                        82, 111, 99, 107, 101, 116, 76, 97, 117, 110, 99, 104, 101, 114, 47, 66,
-                        108, 117, 101, 112, 114, 105, 110, 116, 115, 47, 66, 80, 95, 82, 111, 99,
-                        107, 101, 116, 76, 97, 117, 110, 99, 104, 101, 114, 46, 66, 80, 95, 82,
-                        111, 99, 107, 101, 116, 76, 97, 117, 110, 99, 104, 101, 114, 95, 67, 0
-                    ]
+                (5, "SecondaryWeaponClass") => Property::from(ObjectProperty::from(
+                    "/Game/Weapons/RocketLauncher/Blueprints/BP_RocketLauncher.BP_RocketLauncher_C"
                 )),
 
                 _ => panic!("Unexpected key ({}, {})", count, key),
