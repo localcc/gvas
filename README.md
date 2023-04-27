@@ -9,7 +9,7 @@ Crate documentation is published to
 
 ## Save files
 
-A gvas save file is a binary file format used by the Unreal Engine 4 (UE4) game
+A gvas save file is a binary file format used by the Unreal Engine 4/5 (UE4/UE5) game
 engine to store persistent data such as player progress, game settings, and
 other game-related information.
 
