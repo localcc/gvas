@@ -5,7 +5,7 @@ use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::{cursor_ext::WriteExt, error::Error};
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// A property that holds a GVAS string value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -46,7 +46,12 @@ impl StrProperty {
 
 impl PropertyTrait for StrProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             return self.write_body(cursor);
         }

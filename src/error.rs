@@ -6,12 +6,9 @@ use unreal_helpers::error::FStringError;
 /// Gets thrown when there is a deserialization error
 #[derive(Error, Debug)]
 pub enum DeserializeError {
-    /// If the file header is not GVAS
-    #[error("Invalid file type {0}")]
-    InvalidFileType(u32),
-    /// If the GVAS header is not a known version
-    #[error("Invalid GVAS file version {0}")]
-    InvalidGvasVersion(u32),
+    /// If the GVAS header is not valid
+    #[error("Invalid header: {0}")]
+    InvalidHeader(String),
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
     #[error("Invalid value size, expected {0} got {1} at position {2}")]
     InvalidValueSize(u64, u64, u64),

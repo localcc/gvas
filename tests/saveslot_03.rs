@@ -53,8 +53,8 @@ fn read_save_slot_03() {
 
     assert_eq!(
         file.header,
-        GvasHeader {
-            package_file_ue4_version: 522,
+        GvasHeader::Version2 {
+            package_file_version: 522,
             engine_version: FEngineVersion {
                 major: 4,
                 minor: 27,
@@ -505,6 +505,7 @@ fn write_save_slot_03() {
 
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
+    let hints = get_hints();
     let read_back = GvasFile::read_with_hints(&mut reader, &hints)
         .expect("Failed to read serialized gvas file");
 

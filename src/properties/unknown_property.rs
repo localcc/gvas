@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{cursor_ext::WriteExt, error::Error};
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// This struct is read when a property is unknown to the deserializer
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -51,7 +51,12 @@ impl UnknownProperty {
 
 impl PropertyTrait for UnknownProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             return self.write_body(cursor);
         }

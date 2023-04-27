@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// Field path
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -98,7 +98,12 @@ impl FieldPathProperty {
 
 impl PropertyTrait for FieldPathProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             return self.write_body(cursor);
         }

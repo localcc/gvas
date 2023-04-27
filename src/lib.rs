@@ -61,6 +61,8 @@
 pub mod cursor_ext;
 /// Error types.
 pub mod error;
+/// Extensions for `Ord`.
+mod ord_ext;
 /// Property types.
 pub mod properties;
 pub(crate) mod scoped_stack_entry;
@@ -77,7 +79,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use cursor_ext::{ReadExt, WriteExt};
 use error::Error;
 use indexmap::IndexMap;
-use properties::{Property, PropertyTrait};
+use ord_ext::OrdExt;
+use properties::{Property, PropertyOptions, PropertyTrait};
 use types::Guid;
 
 use crate::error::DeserializeError;
@@ -187,38 +190,39 @@ pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
 /// Stores information about GVAS file, engine version, etc.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct GvasHeader {
-    /// File format version.
-    pub package_file_ue4_version: u32,
-    /// Unreal Engine version.
-    pub engine_version: FEngineVersion,
-    /// Custom version format.
-    pub custom_version_format: u32,
-    /// Custom versions.
-    pub custom_versions: Vec<FCustomVersion>,
-    /// Save game class name.
-    pub save_game_class_name: String,
+#[cfg_attr(feature = "serde", serde(tag = "type"))]
+pub enum GvasHeader {
+    /// Version 2
+    Version2 {
+        /// File format version.
+        package_file_version: u32,
+        /// Unreal Engine version.
+        engine_version: FEngineVersion,
+        /// Custom version format.
+        custom_version_format: u32,
+        /// Custom versions.
+        custom_versions: Vec<FCustomVersion>,
+        /// Save game class name.
+        save_game_class_name: String,
+    },
+    /// Version 3
+    Version3 {
+        /// File format version.
+        package_file_version: u32,
+        /// Unknown.
+        unknown: u32,
+        /// Unreal Engine version.
+        engine_version: FEngineVersion,
+        /// Custom version format.
+        custom_version_format: u32,
+        /// Custom versions.
+        custom_versions: Vec<FCustomVersion>,
+        /// Save game class name.
+        save_game_class_name: String,
+    },
 }
 
 impl GvasHeader {
-    /// Creates a new instance of `GvasHeader`
-    #[inline]
-    pub fn new(
-        package_file_ue4_version: u32,
-        engine_version: FEngineVersion,
-        custom_version_format: u32,
-        custom_versions: Vec<FCustomVersion>,
-        save_game_class_name: String,
-    ) -> Self {
-        GvasHeader {
-            package_file_ue4_version,
-            engine_version,
-            custom_version_format,
-            custom_versions,
-            save_game_class_name,
-        }
-    }
-
     /// Read GvasHeader from a binary file
     ///
     /// # Errors
@@ -243,23 +247,38 @@ impl GvasHeader {
     pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let file_type_tag = cursor.read_u32::<LittleEndian>()?;
         if file_type_tag != FILE_TYPE_GVAS {
-            Err(DeserializeError::InvalidFileType(file_type_tag))?
+            Err(DeserializeError::InvalidHeader(format!(
+                "File type {file_type_tag} not recognized",
+            )))?
         }
-        let save_game_file_version = cursor.read_u32::<LittleEndian>()?;
-        match save_game_file_version {
-            2 => GvasHeader::read_v2(cursor),
-            _ => Err(DeserializeError::InvalidGvasVersion(save_game_file_version))?,
-        }
-    }
 
-    fn read_v2<R: Read + Seek>(cursor: &mut R) -> Result<GvasHeader, Error> {
-        let package_file_ue4_version = cursor.read_u32::<LittleEndian>()?;
-        match package_file_ue4_version {
-            0x205..=0x20A => {}
-            _ => Err(DeserializeError::InvalidFileType(package_file_ue4_version))?,
+        let save_game_file_version = cursor.read_u32::<LittleEndian>()?;
+        if !save_game_file_version.between(2, 3) {
+            Err(DeserializeError::InvalidHeader(format!(
+                "GVAS version {save_game_file_version} not supported"
+            )))?
         }
+
+        let package_file_version = cursor.read_u32::<LittleEndian>()?;
+        if !package_file_version.between(0x205, 0x20A) {
+            Err(DeserializeError::InvalidHeader(format!(
+                "Package file version {package_file_version} not supported"
+            )))?
+        }
+
+        // This field is only present in the v3 header
+        let unknown = match save_game_file_version {
+            3 => Some(cursor.read_u32::<LittleEndian>()?),
+            _ => None,
+        };
+
         let engine_version = FEngineVersion::read(cursor)?;
         let custom_version_format = cursor.read_u32::<LittleEndian>()?;
+        if custom_version_format != 3 {
+            Err(DeserializeError::InvalidHeader(format!(
+                "Custom version format {custom_version_format} not supported"
+            )))?
+        }
 
         let custom_versions_len = cursor.read_u32::<LittleEndian>()? as usize;
         let mut custom_versions = Vec::with_capacity(custom_versions_len);
@@ -269,12 +288,22 @@ impl GvasHeader {
 
         let save_game_class_name = cursor.read_string()?;
 
-        Ok(GvasHeader {
-            package_file_ue4_version,
-            engine_version,
-            custom_version_format,
-            custom_versions,
-            save_game_class_name,
+        Ok(match unknown {
+            None => GvasHeader::Version2 {
+                package_file_version,
+                engine_version,
+                custom_version_format,
+                custom_versions,
+                save_game_class_name,
+            },
+            Some(unknown) => GvasHeader::Version3 {
+                package_file_version,
+                unknown,
+                engine_version,
+                custom_version_format,
+                custom_versions,
+                save_game_class_name,
+            },
         })
     }
 
@@ -298,17 +327,48 @@ impl GvasHeader {
     /// ```
     pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(FILE_TYPE_GVAS)?;
-        cursor.write_u32::<LittleEndian>(2)?;
-        cursor.write_u32::<LittleEndian>(self.package_file_ue4_version)?;
-        self.engine_version.write(cursor)?;
-        cursor.write_u32::<LittleEndian>(self.custom_version_format)?;
-        cursor.write_u32::<LittleEndian>(self.custom_versions.len() as u32)?;
+        match self {
+            GvasHeader::Version2 {
+                package_file_version,
+                engine_version,
+                custom_version_format,
+                custom_versions,
+                save_game_class_name,
+            } => {
+                cursor.write_u32::<LittleEndian>(2)?;
+                cursor.write_u32::<LittleEndian>(*package_file_version)?;
+                engine_version.write(cursor)?;
+                cursor.write_u32::<LittleEndian>(*custom_version_format)?;
+                cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
 
-        for custom_version in &self.custom_versions {
-            custom_version.write(cursor)?;
+                for custom_version in custom_versions {
+                    custom_version.write(cursor)?;
+                }
+
+                cursor.write_string(save_game_class_name)?;
+            }
+            GvasHeader::Version3 {
+                package_file_version,
+                unknown,
+                engine_version,
+                custom_version_format,
+                custom_versions,
+                save_game_class_name,
+            } => {
+                cursor.write_u32::<LittleEndian>(3)?;
+                cursor.write_u32::<LittleEndian>(*package_file_version)?;
+                cursor.write_u32::<LittleEndian>(*unknown)?;
+                engine_version.write(cursor)?;
+                cursor.write_u32::<LittleEndian>(*custom_version_format)?;
+                cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
+
+                for custom_version in custom_versions {
+                    custom_version.write(cursor)?;
+                }
+
+                cursor.write_string(save_game_class_name)?;
+            }
         }
-
-        cursor.write_string(&self.save_game_class_name)?;
         Ok(())
     }
 }
@@ -322,6 +382,32 @@ pub struct GvasFile {
     /// GVAS properties.
     #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub properties: IndexMap<String, Property>,
+}
+
+trait GvasHeaderTrait {
+    fn use_large_world_coordinates(&self) -> bool;
+}
+
+impl GvasHeaderTrait for GvasHeader {
+    fn use_large_world_coordinates(&self) -> bool {
+        match self {
+            GvasHeader::Version2 {
+                package_file_version: _,
+                engine_version: _,
+                custom_version_format: _,
+                custom_versions: _,
+                save_game_class_name: _,
+            } => false,
+            GvasHeader::Version3 {
+                package_file_version: _,
+                unknown: _,
+                engine_version: _,
+                custom_version_format: _,
+                custom_versions: _,
+                save_game_class_name: _,
+            } => true,
+        }
+    }
 }
 
 impl GvasFile {
@@ -387,6 +473,12 @@ impl GvasFile {
     ) -> Result<Self, Error> {
         let header = GvasHeader::read(cursor)?;
 
+        let mut options = PropertyOptions {
+            hints,
+            properties_stack: &mut vec![],
+            large_world_coordinates: header.use_large_world_coordinates(),
+        };
+
         let mut properties = IndexMap::new();
         loop {
             let property_name = cursor.read_string()?;
@@ -396,18 +488,12 @@ impl GvasFile {
 
             let property_type = cursor.read_string()?;
 
-            let mut properties_stack = Vec::new();
-            properties_stack.push(property_name.clone());
+            options.properties_stack.push(property_name.clone());
 
-            let property = Property::new(
-                cursor,
-                hints,
-                &mut properties_stack,
-                &property_type,
-                true,
-                None,
-            )?;
+            let property = Property::new(cursor, &property_type, true, &mut options, None)?;
             properties.insert(property_name, property);
+
+            let _ = options.properties_stack.pop();
         }
 
         Ok(GvasFile { header, properties })
@@ -439,9 +525,15 @@ impl GvasFile {
     pub fn write<W: Write + Seek>(&self, cursor: &mut W) -> Result<(), Error> {
         self.header.write(cursor)?;
 
+        let mut options = PropertyOptions {
+            hints: &HashMap::new(),
+            properties_stack: &mut vec![],
+            large_world_coordinates: self.header.use_large_world_coordinates(),
+        };
+
         for (name, property) in &self.properties {
             cursor.write_string(name)?;
-            property.write(cursor, true)?;
+            property.write(cursor, true, &mut options)?;
         }
         cursor.write_string("None")?;
         cursor.write_i32::<LittleEndian>(0)?; // padding

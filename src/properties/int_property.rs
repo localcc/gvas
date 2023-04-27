@@ -7,12 +7,11 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
+use super::{PropertyOptions, PropertyTrait};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
 };
-
-use super::PropertyTrait;
 
 macro_rules! check_size {
     ($cursor:ident, $expected:literal) => {
@@ -72,7 +71,12 @@ macro_rules! impl_int_property {
 
         impl PropertyTrait for $name {
             #[inline]
-            fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+            fn write<W: Write>(
+                &self,
+                cursor: &mut W,
+                include_header: bool,
+                _options: &mut PropertyOptions,
+            ) -> Result<(), Error> {
                 if !include_header {
                     return self.write_body(cursor);
                 }
@@ -140,7 +144,12 @@ impl Debug for Int8Property {
 
 impl PropertyTrait for Int8Property {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("Int8Property")?;
             cursor.write_u64::<LittleEndian>(1)?;
@@ -195,7 +204,12 @@ impl Debug for ByteProperty {
 
 impl PropertyTrait for ByteProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("ByteProperty")?;
             cursor.write_u64::<LittleEndian>(1)?;
@@ -247,7 +261,12 @@ impl Debug for BoolProperty {
 
 impl PropertyTrait for BoolProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("BoolProperty")?;
             cursor.write_u64::<LittleEndian>(0)?;
@@ -301,7 +320,12 @@ impl Debug for FloatProperty {
 
 impl PropertyTrait for FloatProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("FloatProperty")?;
             cursor.write_u64::<LittleEndian>(4)?;
@@ -353,7 +377,12 @@ impl Debug for DoubleProperty {
 
 impl PropertyTrait for DoubleProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("DoubleProperty")?;
             cursor.write_u64::<LittleEndian>(8)?;

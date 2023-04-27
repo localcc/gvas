@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fmt::Debug,
     io::{Cursor, Read, Seek, Write},
 };
@@ -12,7 +11,7 @@ use crate::{
     types::Guid,
 };
 
-use super::{struct_property::StructProperty, Property, PropertyTrait};
+use super::{struct_property::StructProperty, Property, PropertyOptions, PropertyTrait};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -73,8 +72,7 @@ impl ArrayProperty {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
-        hints: &HashMap<String, String>,
-        properties_stack: &mut Vec<String>,
+        options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         let length = cursor.read_u64::<LittleEndian>()?;
 
@@ -92,7 +90,8 @@ impl ArrayProperty {
             "StructProperty" => {
                 let field_name = cursor.read_string()?;
 
-                let _dup_property_type = cursor.read_string()?;
+                let property_type = cursor.read_string()?;
+                assert_eq!(property_type, "StructProperty");
                 let properties_size = cursor.read_u64::<LittleEndian>()?;
 
                 let struct_name = cursor.read_string()?;
@@ -103,13 +102,7 @@ impl ArrayProperty {
                 let properties_start = cursor.stream_position()?;
                 for _ in 0..property_count {
                     properties.push(
-                        StructProperty::read_with_type_name(
-                            cursor,
-                            hints,
-                            properties_stack,
-                            &struct_name,
-                        )?
-                        .into(),
+                        StructProperty::read_with_type_name(cursor, &struct_name, options)?.into(),
                     );
                 }
                 let properties_end = cursor.stream_position()?;
@@ -127,14 +120,18 @@ impl ArrayProperty {
                 });
             }
             _ => {
+                let suggested_length = if property_count > 0 && length >= 4 {
+                    Some((length - 4) / property_count as u64)
+                } else {
+                    None
+                };
                 for _ in 0..property_count {
                     properties.push(Property::new(
                         cursor,
-                        hints,
-                        properties_stack,
                         &property_type,
                         false,
-                        Some((length - 4) / property_count as u64 + length),
+                        options,
+                        suggested_length,
                     )?)
                 }
             }
@@ -154,14 +151,19 @@ impl ArrayProperty {
 
 impl PropertyTrait for ArrayProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if !include_header {
             // return self.write_body(cursor);
             Err(SerializeError::invalid_value("Nested arrays not supported"))?
         }
 
         let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
+        self.write_body(buf, options)?;
         let buf = buf.get_ref();
 
         cursor.write_string("ArrayProperty")?;
@@ -175,7 +177,11 @@ impl PropertyTrait for ArrayProperty {
 }
 
 impl ArrayProperty {
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
 
         match self.property_type.as_str() {
@@ -190,7 +196,7 @@ impl ArrayProperty {
                 cursor.write_string(&self.property_type)?;
 
                 let buf = &mut Cursor::new(Vec::new());
-                self.write_properties(buf)?;
+                self.write_properties(buf, options)?;
                 let buf = buf.get_ref();
 
                 cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
@@ -201,7 +207,7 @@ impl ArrayProperty {
             }
             _ => {
                 for property in &self.properties {
-                    property.write(cursor, false)?;
+                    property.write(cursor, false, options)?;
                 }
             }
         }
@@ -209,11 +215,15 @@ impl ArrayProperty {
         Ok(())
     }
 
-    fn write_properties<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    fn write_properties<W: Write>(
+        &self,
+        cursor: &mut W,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         for property in &self.properties {
             let res: Result<(), Error> = match property {
                 Property::StructProperty(e) => {
-                    e.write(cursor, false)?;
+                    e.write(cursor, false, options)?;
                     Ok(())
                 }
                 _ => Err(SerializeError::invalid_value(

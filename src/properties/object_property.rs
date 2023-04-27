@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::PropertyTrait;
+use super::{PropertyOptions, PropertyTrait};
 
 /// A property that describes a reference variable to another object which may be nil.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -48,7 +48,12 @@ impl ObjectProperty {
 
 impl PropertyTrait for ObjectProperty {
     #[inline]
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error> {
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        _options: &mut PropertyOptions,
+    ) -> Result<(), Error> {
         if include_header {
             cursor.write_string("ObjectProperty")?;
             let property_length = self.value.len() + 1 + 4; // 1 is null-byte, 4 is string length field size

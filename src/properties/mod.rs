@@ -79,11 +79,26 @@ macro_rules! make_matcher {
     };
 }
 
+/// Property options used for reading and writing.
+pub struct PropertyOptions<'a> {
+    /// Hints about property types.
+    pub hints: &'a HashMap<String, String>,
+    /// Tracks the property tree location in a GVAS file.
+    pub properties_stack: &'a mut Vec<String>,
+    /// Enables large world coordinates.
+    pub large_world_coordinates: bool,
+}
+
 /// Property traits.
 #[enum_dispatch]
 pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
     /// Serialize.
-    fn write<W: Write>(&self, cursor: &mut W, include_header: bool) -> Result<(), Error>;
+    fn write<W: Write>(
+        &self,
+        cursor: &mut W,
+        include_header: bool,
+        options: &mut PropertyOptions,
+    ) -> Result<(), Error>;
 }
 
 /// GVAS property types.
@@ -105,7 +120,7 @@ pub enum Property {
     DoubleProperty,
     /// An `EnumProperty`.
     EnumProperty,
-    /// A `FloatProperty`.
+    /// A `FloatPropertyF`.
     FloatProperty,
     /// An `Int16Property`.
     Int16Property,
@@ -151,13 +166,12 @@ impl Property {
     /// Creates a new `Property` instance.
     pub fn new<R: Read + Seek>(
         cursor: &mut R,
-        hints: &HashMap<String, String>,
-        properties_stack: &mut Vec<String>,
         value_type: &str,
         include_header: bool,
+        options: &mut PropertyOptions,
         suggested_length: Option<u64>,
     ) -> Result<Self, Error> {
-        let _stack_entry = ScopedStackEntry::new(properties_stack, value_type.to_string());
+        let _stack_entry = ScopedStackEntry::new(options.properties_stack, value_type.to_string());
         match value_type {
             "Int8Property" => Ok(Int8Property::read(cursor, include_header)?.into()),
             "ByteProperty" => Ok(ByteProperty::read(cursor, include_header)?.into()),
@@ -172,7 +186,7 @@ impl Property {
             "BoolProperty" => Ok(BoolProperty::read(cursor, include_header)?.into()),
             "EnumProperty" => Ok(EnumProperty::read(cursor)?.into()),
             "StrProperty" => Ok(StrProperty::read(cursor, include_header)?.into()),
-            "TextProperty" => Ok(TextProperty::read(cursor, include_header)?.into()),
+            "TextProperty" => Ok(TextProperty::read(cursor, include_header, options)?.into()),
             "NameProperty" => Ok(NameProperty::read(cursor, include_header)?.into()),
             "ObjectProperty" => Ok(ObjectProperty::read(cursor, include_header)?.into()),
             "DelegateProperty" => Ok(DelegateProperty::read(cursor, include_header)?.into()),
@@ -183,31 +197,10 @@ impl Property {
                 Ok(MulticastSparseDelegateProperty::read(cursor, include_header)?.into())
             }
             "FieldPathProperty" => Ok(FieldPathProperty::read(cursor, include_header)?.into()),
-            "StructProperty" => {
-                if !include_header {
-                    let struct_path = properties_stack.join(".");
-                    let Some(hint) = hints.get(&struct_path) else {
-                        Err(DeserializeError::MissingHint(
-                            value_type.to_string(),
-                            struct_path,
-                            cursor.stream_position()?,
-                        ))?
-                    };
-
-                    return Ok(StructProperty::read_with_type_name(
-                        cursor,
-                        hints,
-                        properties_stack,
-                        hint,
-                    )?
-                    .into());
-                }
-
-                Ok(StructProperty::read_with_header(cursor, hints, properties_stack)?.into())
-            }
-            "ArrayProperty" => Ok(ArrayProperty::read(cursor, hints, properties_stack)?.into()),
-            "SetProperty" => Ok(SetProperty::read(cursor, hints, properties_stack)?.into()),
-            "MapProperty" => Ok(MapProperty::read(cursor, hints, properties_stack)?.into()),
+            "StructProperty" => Ok(StructProperty::read(cursor, include_header, options)?.into()),
+            "ArrayProperty" => Ok(ArrayProperty::read(cursor, options)?.into()),
+            "SetProperty" => Ok(SetProperty::read(cursor, options)?.into()),
+            "MapProperty" => Ok(MapProperty::read(cursor, options)?.into()),
             _ => {
                 if include_header {
                     return Ok(
