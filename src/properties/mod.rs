@@ -62,6 +62,87 @@ pub mod text_property;
 /// Module for `UnknownProperty`
 pub mod unknown_property;
 
+/// The default read() implementation
+macro_rules! impl_read {
+    () => {
+        #[inline]
+        pub(crate) fn read<R: Read + Seek>(
+            cursor: &mut R,
+            include_header: bool,
+        ) -> Result<Self, Error> {
+            if include_header {
+                Self::read_header(cursor)
+            } else {
+                Self::read_body(cursor)
+            }
+        }
+    };
+
+    (options) => {
+        #[inline]
+        pub(crate) fn read<R: Read + Seek>(
+            cursor: &mut R,
+            options: &mut PropertyOptions,
+            include_header: bool,
+        ) -> Result<Self, Error> {
+            if include_header {
+                Self::read_header(cursor, options)
+            } else {
+                Self::read_body(cursor, options)
+            }
+        }
+    };
+}
+
+/// The default read_header() implementation
+macro_rules! impl_read_header {
+    (options, $($var:ident, )*) => {
+        #[inline]
+        fn read_header<R: Read + Seek>(
+            cursor: &mut R,
+            options: &mut PropertyOptions,
+        ) -> Result<Self, Error> {
+            let length = cursor.read_u64::<LittleEndian>()?;
+            $(
+                let $var = cursor.read_string()?;
+            )*
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
+
+            let start = cursor.stream_position()?;
+            let result = Self::read_body(cursor, options $(, $var)*)?;
+            let end = cursor.stream_position()?;
+            assert_eq!(end - start, length);
+
+            Ok(result)
+        }
+    };
+
+    ($($var:ident $(,)? )*) => {
+        #[inline]
+        fn read_header<R: Read + Seek>(
+            cursor: &mut R,
+        ) -> Result<Self, Error> {
+            let length = cursor.read_u64::<LittleEndian>()?;
+            $(
+                let $var = cursor.read_string()?;
+            )*
+            let separator = cursor.read_u8()?;
+            assert_eq!(separator, 0);
+
+            let start = cursor.stream_position()?;
+            let result = Self::read_body(cursor $(, $var)*)?;
+            let end = cursor.stream_position()?;
+            assert_eq!(end - start, length);
+
+            Ok(result)
+        }
+    };
+}
+
+pub(crate) use impl_read;
+pub(crate) use impl_read_header;
+
 /// Creates a match helper function for enums.
 #[macro_export]
 macro_rules! make_matcher {
@@ -184,7 +265,7 @@ impl Property {
             "FloatProperty" => Ok(FloatProperty::read(cursor, include_header)?.into()),
             "DoubleProperty" => Ok(DoubleProperty::read(cursor, include_header)?.into()),
             "BoolProperty" => Ok(BoolProperty::read(cursor, include_header)?.into()),
-            "EnumProperty" => Ok(EnumProperty::read(cursor)?.into()),
+            "EnumProperty" => Ok(EnumProperty::read(cursor, include_header)?.into()),
             "StrProperty" => Ok(StrProperty::read(cursor, include_header)?.into()),
             "TextProperty" => Ok(TextProperty::read(cursor, include_header, options)?.into()),
             "NameProperty" => Ok(NameProperty::read(cursor, include_header)?.into()),
@@ -200,7 +281,7 @@ impl Property {
             "StructProperty" => Ok(StructProperty::read(cursor, include_header, options)?.into()),
             "ArrayProperty" => Ok(ArrayProperty::read(cursor, options)?.into()),
             "SetProperty" => Ok(SetProperty::read(cursor, options)?.into()),
-            "MapProperty" => Ok(MapProperty::read(cursor, options)?.into()),
+            "MapProperty" => Ok(MapProperty::read(cursor, options, include_header)?.into()),
             _ => {
                 if include_header {
                     return Ok(

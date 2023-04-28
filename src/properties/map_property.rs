@@ -9,11 +9,11 @@ use indexmap::IndexMap;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{Error, SerializeError},
+    error::{DeserializeError, Error, SerializeError},
     scoped_stack_entry::ScopedStackEntry,
 };
 
-use super::{Property, PropertyOptions, PropertyTrait};
+use super::{impl_read_header, Property, PropertyOptions, PropertyTrait};
 
 /// A property that stores a map of properties to properties.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -51,15 +51,27 @@ impl MapProperty {
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         options: &mut PropertyOptions,
+        include_header: bool,
     ) -> Result<Self, Error> {
-        let _length = cursor.read_u64::<LittleEndian>()?;
+        if include_header {
+            Self::read_header(cursor, options)
+        } else {
+            Err(DeserializeError::invalid_property(
+                "MapProperty is not supported in arrays",
+                cursor,
+            ))?
+        }
+    }
 
-        let key_type = cursor.read_string()?;
-        let value_type = cursor.read_string()?;
+    impl_read_header!(options, key_type, value_type,);
 
-        let separator = cursor.read_u8()?;
-        assert_eq!(separator, 0);
-
+    #[inline]
+    fn read_body<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+        key_type: String,
+        value_type: String,
+    ) -> Result<Self, Error> {
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
         let element_count = cursor.read_u32::<LittleEndian>()?;
 

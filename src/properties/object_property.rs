@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{PropertyOptions, PropertyTrait};
+use super::{impl_read, impl_read_header, PropertyOptions, PropertyTrait};
 
 /// A property that describes a reference variable to another object which may be nil.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -31,16 +31,11 @@ impl ObjectProperty {
         ObjectProperty { value }
     }
 
+    impl_read!();
+    impl_read_header!();
+
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
+    fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = cursor.read_string()?;
         Ok(ObjectProperty { value })
     }
