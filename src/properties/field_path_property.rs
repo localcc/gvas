@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{PropertyOptions, PropertyTrait};
+use super::{impl_read, impl_read_header, PropertyOptions, PropertyTrait};
 
 /// Field path
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -74,16 +74,10 @@ impl FieldPathProperty {
         FieldPathProperty { value }
     }
 
-    #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
+    impl_read!();
+    impl_read_header!();
+
+    fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = FieldPath::read(cursor)?;
 
         Ok(FieldPathProperty { value })

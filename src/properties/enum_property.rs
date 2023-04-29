@@ -7,7 +7,7 @@ use crate::{
     error::{DeserializeError, Error, SerializeError},
 };
 
-use super::{PropertyOptions, PropertyTrait};
+use super::{impl_read_header, PropertyOptions, PropertyTrait};
 
 /// A property that holds an enum value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -25,23 +25,25 @@ impl EnumProperty {
     }
 
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
-        let length = cursor.read_u64::<LittleEndian>()?;
-
-        let enum_type = cursor.read_string()?;
-
-        let indicator = cursor.read_u8()?;
-        if indicator != 0 {
+    pub(crate) fn read<R: Read + Seek>(
+        cursor: &mut R,
+        include_header: bool,
+    ) -> Result<Self, Error> {
+        if include_header {
+            Self::read_header(cursor)
+        } else {
             Err(DeserializeError::invalid_property(
-                &format!("Unexpected indicator value {}", indicator),
+                "EnumProperty is not supported in arrays",
                 cursor,
             ))?
         }
-        assert_eq!(indicator, 0);
+    }
 
+    impl_read_header!(enum_type);
+
+    #[inline]
+    fn read_body<R: Read + Seek>(cursor: &mut R, enum_type: String) -> Result<Self, Error> {
         let value = cursor.read_string()?;
-
-        assert_eq!(length as usize, value.len() + 5);
 
         Ok(EnumProperty { enum_type, value })
     }
