@@ -9,13 +9,14 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
-    make_matcher,
     scoped_stack_entry::ScopedStackEntry,
     types::Guid,
 };
 
 use super::{
+    impl_write, impl_write_header_part,
     int_property::{DoubleProperty, FloatProperty, IntProperty, UInt32Property, UInt64Property},
+    make_matcher,
     struct_types::{DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, VectorD, VectorF},
     Property, PropertyOptions, PropertyTrait,
 };
@@ -26,8 +27,6 @@ macro_rules! validate {
             Err(SerializeError::InvalidValue(
                 format!($($arg)+),
             ))?
-        } else {
-            Ok(())
         }
     }};
 }
@@ -71,6 +70,13 @@ pub enum StructPropertyValue {
     CustomStruct(String, Vec<(String, Property)>),
 }
 
+impl_write!(
+    StructProperty,
+    options,
+    (write_string, fn, get_property_name),
+    (write_guid, guid)
+);
+
 impl StructProperty {
     /// Creates a new `StructProperty` instance.
     #[inline]
@@ -100,6 +106,7 @@ impl StructProperty {
         }
     }
 
+    #[inline]
     fn read_real<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
@@ -211,40 +218,6 @@ impl StructProperty {
     }
 
     #[inline]
-    fn validate_value(&self, options: &mut PropertyOptions) -> Result<(), Error> {
-        match self.value {
-            StructPropertyValue::VectorF(_) => validate!(
-                !options.large_world_coordinates,
-                "VectorF not supported when LWC is enabled, use VectorD",
-            ),
-            StructPropertyValue::VectorD(_) => validate!(
-                options.large_world_coordinates,
-                "VectorD not supported when LWC is disabled, use VectorF",
-            ),
-            StructPropertyValue::RotatorF(_) => validate!(
-                !options.large_world_coordinates,
-                "RotatorF not supported when LWC is enabled, use RotatorD",
-            ),
-            StructPropertyValue::RotatorD(_) => validate!(
-                options.large_world_coordinates,
-                "RotatorD not supported when LWC is disabled, use RotatorF",
-            ),
-            StructPropertyValue::QuatF(_) => validate!(
-                !options.large_world_coordinates,
-                "QuatF not supported when LWC is enabled, use QuatD",
-            ),
-            StructPropertyValue::QuatD(_) => validate!(
-                options.large_world_coordinates,
-                "QuatD not supported when LWC is disabled, use QuatF",
-            ),
-            StructPropertyValue::DateTime(_) => Ok(()),
-            StructPropertyValue::Guid(_) => Ok(()),
-            StructPropertyValue::IntPoint(_) => Ok(()),
-            StructPropertyValue::CustomStruct(_, _) => Ok(()),
-        }
-    }
-
-    #[inline]
     fn get_property_name(&self) -> Result<&str, Error> {
         let property_name = match &self.value {
             StructPropertyValue::VectorF(_) | StructPropertyValue::VectorD(_) => "Vector",
@@ -257,38 +230,7 @@ impl StructProperty {
         };
         Ok(property_name)
     }
-}
 
-impl PropertyTrait for StructProperty {
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        self.validate_value(options)?;
-        if !include_header {
-            return self.write_body(cursor, options);
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        let property_name = self.get_property_name()?;
-
-        cursor.write_string("StructProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_string(property_name)?;
-        cursor.write_guid(&self.guid)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
-        Ok(())
-    }
-}
-
-impl StructProperty {
     #[inline]
     fn write_body<W: Write>(
         &self,
@@ -297,32 +239,56 @@ impl StructProperty {
     ) -> Result<(), Error> {
         match &self.value {
             StructPropertyValue::VectorF(vector) => {
+                validate!(
+                    !options.large_world_coordinates,
+                    "VectorF not supported when LWC is enabled, use VectorD",
+                );
                 cursor.write_f32::<LittleEndian>(vector.x.0)?;
                 cursor.write_f32::<LittleEndian>(vector.y.0)?;
                 cursor.write_f32::<LittleEndian>(vector.z.0)?;
             }
             StructPropertyValue::VectorD(vector) => {
+                validate!(
+                    options.large_world_coordinates,
+                    "VectorD not supported when LWC is disabled, use VectorF",
+                );
                 cursor.write_f64::<LittleEndian>(vector.x.0)?;
                 cursor.write_f64::<LittleEndian>(vector.y.0)?;
                 cursor.write_f64::<LittleEndian>(vector.z.0)?;
             }
             StructPropertyValue::RotatorF(rotator) => {
+                validate!(
+                    !options.large_world_coordinates,
+                    "RotatorF not supported when LWC is enabled, use RotatorD",
+                );
                 cursor.write_f32::<LittleEndian>(rotator.pitch.0)?;
                 cursor.write_f32::<LittleEndian>(rotator.yaw.0)?;
                 cursor.write_f32::<LittleEndian>(rotator.roll.0)?;
             }
             StructPropertyValue::RotatorD(rotator) => {
+                validate!(
+                    options.large_world_coordinates,
+                    "RotatorD not supported when LWC is disabled, use RotatorF",
+                );
                 cursor.write_f64::<LittleEndian>(rotator.pitch.0)?;
                 cursor.write_f64::<LittleEndian>(rotator.yaw.0)?;
                 cursor.write_f64::<LittleEndian>(rotator.roll.0)?;
             }
             StructPropertyValue::QuatF(quat) => {
+                validate!(
+                    !options.large_world_coordinates,
+                    "QuatF not supported when LWC is enabled, use QuatD",
+                );
                 cursor.write_f32::<LittleEndian>(quat.x.0)?;
                 cursor.write_f32::<LittleEndian>(quat.y.0)?;
                 cursor.write_f32::<LittleEndian>(quat.z.0)?;
                 cursor.write_f32::<LittleEndian>(quat.w.0)?;
             }
             StructPropertyValue::QuatD(quat) => {
+                validate!(
+                    options.large_world_coordinates,
+                    "QuatD not supported when LWC is disabled, use QuatF",
+                );
                 cursor.write_f64::<LittleEndian>(quat.x.0)?;
                 cursor.write_f64::<LittleEndian>(quat.y.0)?;
                 cursor.write_f64::<LittleEndian>(quat.z.0)?;

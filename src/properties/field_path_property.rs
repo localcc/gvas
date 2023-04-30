@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read, impl_read_header, PropertyOptions, PropertyTrait};
+use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
 
 /// Field path
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -67,6 +67,8 @@ pub struct FieldPathProperty {
     pub value: FieldPath,
 }
 
+impl_write!(FieldPathProperty);
+
 impl FieldPathProperty {
     /// Creates a new `FieldPathProperty` instance
     #[inline]
@@ -86,31 +88,6 @@ impl FieldPathProperty {
     #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         self.value.write(cursor)?;
-        Ok(())
-    }
-}
-
-impl PropertyTrait for FieldPathProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            return self.write_body(cursor);
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("FieldPathProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
         Ok(())
     }
 }

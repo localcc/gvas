@@ -1,16 +1,16 @@
 use std::{
     fmt::Debug,
-    io::{Read, Seek, Write},
+    io::{Cursor, Read, Seek, Write},
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{DeserializeError, Error, SerializeError},
+    error::{DeserializeError, Error},
 };
 
-use super::{PropertyOptions, PropertyTrait};
+use super::{impl_write, PropertyOptions, PropertyTrait};
 
 /// A property that stores GVAS Text.
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -63,6 +63,8 @@ macro_rules! validate {
         }
     }};
 }
+
+impl_write!(TextProperty, options);
 
 impl TextProperty {
     /// Creates a new `TextProperty` instance.
@@ -182,32 +184,13 @@ impl TextProperty {
             ))?
         }
     }
-}
 
-impl Debug for TextProperty {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TextProperty::Rich(value) => value.fmt(f),
-            TextProperty::Simple(values) => f.debug_list().entries(values).finish(),
-            TextProperty::Empty(_) => f.write_str("Empty"),
-        }
-    }
-}
-
-impl PropertyTrait for TextProperty {
     #[inline]
-    fn write<W: Write>(
+    fn write_body<W: Write>(
         &self,
         cursor: &mut W,
-        include_header: bool,
         options: &mut PropertyOptions,
     ) -> Result<(), Error> {
-        if include_header {
-            Err(SerializeError::invalid_value(
-                "TextProperty only supported in arrays",
-            ))?
-        }
-
         match self {
             TextProperty::Empty(_) => {
                 cursor.write_u32::<LittleEndian>(0)?;
@@ -251,6 +234,16 @@ impl PropertyTrait for TextProperty {
         }
 
         Ok(())
+    }
+}
+
+impl Debug for TextProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TextProperty::Rich(value) => value.fmt(f),
+            TextProperty::Simple(values) => f.debug_list().entries(values).finish(),
+            TextProperty::Empty(_) => f.write_str("Empty"),
+        }
     }
 }
 

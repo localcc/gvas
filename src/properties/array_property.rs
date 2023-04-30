@@ -11,7 +11,10 @@ use crate::{
     types::Guid,
 };
 
-use super::{struct_property::StructProperty, Property, PropertyOptions, PropertyTrait};
+use super::{
+    impl_read_header, impl_write, impl_write_header_part, struct_property::StructProperty,
+    Property, PropertyOptions, PropertyTrait,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -47,6 +50,8 @@ macro_rules! validate {
     }};
 }
 
+impl_write!(ArrayProperty, options, (write_string, property_type));
+
 impl ArrayProperty {
     /// Creates a new `ArrayProperty` instance.
     #[inline]
@@ -72,15 +77,28 @@ impl ArrayProperty {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
+        include_header: bool,
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
-        let length = cursor.read_u64::<LittleEndian>()?;
+        if include_header {
+            Self::read_header(cursor, options)
+        } else {
+            Err(DeserializeError::invalid_property(
+                "ArrayProperty is not supported in arrays",
+                cursor,
+            ))?
+        }
+    }
 
-        let property_type = cursor.read_string()?;
-        let separator = cursor.read_u8()?;
-        assert_eq!(separator, 0);
-        let start_position = cursor.stream_position()?;
+    impl_read_header!(options, length, property_type);
 
+    #[inline]
+    pub(crate) fn read_body<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+        length: u64,
+        property_type: String,
+    ) -> Result<Self, Error> {
         let property_count = cursor.read_u32::<LittleEndian>()? as usize;
         let mut properties: Vec<Property> = Vec::with_capacity(property_count);
 
@@ -136,9 +154,6 @@ impl ArrayProperty {
                 }
             }
         };
-        let end_position = cursor.stream_position()?;
-        let actual = end_position - start_position;
-        validate!(cursor, actual == length, "{actual} != {length}");
 
         Ok(ArrayProperty {
             property_type,
@@ -147,36 +162,8 @@ impl ArrayProperty {
             array_struct_info,
         })
     }
-}
 
-impl PropertyTrait for ArrayProperty {
     #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            // return self.write_body(cursor);
-            Err(SerializeError::invalid_value("Nested arrays not supported"))?
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("ArrayProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_string(&self.property_type)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
-        Ok(())
-    }
-}
-
-impl ArrayProperty {
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,
@@ -215,6 +202,7 @@ impl ArrayProperty {
         Ok(())
     }
 
+    #[inline]
     fn write_properties<W: Write>(
         &self,
         cursor: &mut W,

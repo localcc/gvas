@@ -9,11 +9,13 @@ use indexmap::IndexMap;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{DeserializeError, Error, SerializeError},
+    error::{DeserializeError, Error},
     scoped_stack_entry::ScopedStackEntry,
 };
 
-use super::{impl_read_header, Property, PropertyOptions, PropertyTrait};
+use super::{
+    impl_read_header, impl_write, impl_write_header_part, Property, PropertyOptions, PropertyTrait,
+};
 
 /// A property that stores a map of properties to properties.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -29,6 +31,13 @@ pub struct MapProperty {
     #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub value: IndexMap<Property, Property>,
 }
+
+impl_write!(
+    MapProperty,
+    options,
+    (write_string, key_type),
+    (write_string, value_type)
+);
 
 impl MapProperty {
     /// Creates a new `MapProperty` instance.
@@ -50,8 +59,8 @@ impl MapProperty {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
-        options: &mut PropertyOptions,
         include_header: bool,
+        options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         if include_header {
             Self::read_header(cursor, options)
@@ -63,7 +72,7 @@ impl MapProperty {
         }
     }
 
-    impl_read_header!(options, key_type, value_type,);
+    impl_read_header!(options, key_type, value_type);
 
     #[inline]
     fn read_body<R: Read + Seek>(
@@ -97,39 +106,8 @@ impl MapProperty {
             value: map,
         })
     }
-}
 
-impl PropertyTrait for MapProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            return Err(SerializeError::invalid_value(
-                "Nested maps are not supported",
-            ))?;
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("MapProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_string(&self.key_type)?;
-        cursor.write_string(&self.value_type)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
-        Ok(())
-    }
-}
-
-impl MapProperty {
-    fn write_body<W: Write + Seek>(
+    fn write_body<W: Write>(
         &self,
         cursor: &mut W,
         options: &mut PropertyOptions,

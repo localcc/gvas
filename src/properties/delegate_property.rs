@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read, impl_read_header, PropertyOptions, PropertyTrait};
+use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
 
 /// An Unreal script delegate
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -40,11 +40,7 @@ impl Delegate {
     }
 
     #[inline]
-    pub(crate) fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_string(&self.object)?;
         cursor.write_string(&self.function_name)?;
         Ok(())
@@ -58,6 +54,8 @@ pub struct DelegateProperty {
     /// Delegate
     pub value: Delegate,
 }
+
+impl_write!(DelegateProperty);
 
 impl DelegateProperty {
     /// Creates a new `DelegateProperty` instance
@@ -76,37 +74,8 @@ impl DelegateProperty {
     }
 
     #[inline]
-    fn write_body<W: Write>(
-        &self,
-        cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        self.value.write(cursor, options)?;
-        Ok(())
-    }
-}
-
-impl PropertyTrait for DelegateProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            return self.write_body(cursor, options);
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("DelegateProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        self.value.write(cursor)?;
         Ok(())
     }
 }
@@ -138,15 +107,11 @@ impl MulticastScriptDelegate {
     }
 
     #[inline]
-    pub(crate) fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_u32::<LittleEndian>(self.delegates.len() as u32)?;
 
         for delegate in &self.delegates {
-            delegate.write(cursor, options)?;
+            delegate.write(cursor)?;
         }
 
         Ok(())
@@ -161,6 +126,8 @@ pub struct MulticastInlineDelegateProperty {
     pub value: MulticastScriptDelegate,
 }
 
+impl_write!(MulticastInlineDelegateProperty);
+
 impl MulticastInlineDelegateProperty {
     /// Creates a new `MulticastInlineDelegateProperty` instance
     #[inline]
@@ -168,54 +135,18 @@ impl MulticastInlineDelegateProperty {
         MulticastInlineDelegateProperty { value }
     }
 
+    impl_read!();
+    impl_read_header!();
+
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
-
+    pub(crate) fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = MulticastScriptDelegate::read(cursor)?;
-
         Ok(MulticastInlineDelegateProperty { value })
     }
 
     #[inline]
-    fn write_body<W: Write>(
-        &self,
-        cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        self.value.write(cursor, options)?;
-        Ok(())
-    }
-}
-
-impl PropertyTrait for MulticastInlineDelegateProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            return self.write_body(cursor, options);
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("MulticastInlineDelegateProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        self.value.write(cursor)?;
         Ok(())
     }
 }
@@ -228,6 +159,8 @@ pub struct MulticastSparseDelegateProperty {
     pub value: MulticastScriptDelegate,
 }
 
+impl_write!(MulticastSparseDelegateProperty);
+
 impl MulticastSparseDelegateProperty {
     /// Creates a new `MulticastSparseDelegateProperty` instance
     #[inline]
@@ -235,54 +168,18 @@ impl MulticastSparseDelegateProperty {
         MulticastSparseDelegateProperty { value }
     }
 
+    impl_read!();
+    impl_read_header!();
+
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
-
+    pub(crate) fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = MulticastScriptDelegate::read(cursor)?;
-
         Ok(MulticastSparseDelegateProperty { value })
     }
 
     #[inline]
-    fn write_body<W: Write>(
-        &self,
-        cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        self.value.write(cursor, options)?;
-        Ok(())
-    }
-}
-
-impl PropertyTrait for MulticastSparseDelegateProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            return self.write_body(cursor, options);
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("MulticastSparseDelegateProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        self.value.write(cursor)?;
         Ok(())
     }
 }
