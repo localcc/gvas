@@ -59,8 +59,8 @@ impl MapProperty {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
-        options: &mut PropertyOptions,
         include_header: bool,
+        options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         if include_header {
             Self::read_header(cursor, options)
@@ -72,7 +72,7 @@ impl MapProperty {
         }
     }
 
-    impl_read_header!(options, key_type, value_type,);
+    impl_read_header!(options, key_type, value_type);
 
     #[inline]
     fn read_body<R: Read + Seek>(

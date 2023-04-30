@@ -106,6 +106,7 @@ impl StructProperty {
         }
     }
 
+    #[inline]
     fn read_real<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,

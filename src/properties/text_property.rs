@@ -185,6 +185,7 @@ impl TextProperty {
         }
     }
 
+    #[inline]
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,

@@ -135,19 +135,12 @@ impl MulticastInlineDelegateProperty {
         MulticastInlineDelegateProperty { value }
     }
 
+    impl_read!();
+    impl_read_header!();
+
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
-
+    pub(crate) fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = MulticastScriptDelegate::read(cursor)?;
-
         Ok(MulticastInlineDelegateProperty { value })
     }
 
@@ -175,19 +168,12 @@ impl MulticastSparseDelegateProperty {
         MulticastSparseDelegateProperty { value }
     }
 
+    impl_read!();
+    impl_read_header!();
+
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
-
+    pub(crate) fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = MulticastScriptDelegate::read(cursor)?;
-
         Ok(MulticastSparseDelegateProperty { value })
     }
 
