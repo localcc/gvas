@@ -310,13 +310,19 @@ macro_rules! impl_write_header_part {
 pub(crate) use impl_write;
 pub(crate) use impl_write_header_part;
 
-/// Creates a match helper function for enums.
-#[macro_export]
+/// This macro generates a helper function for matching a specific variant of an enum.
+///
+/// # Examples
+///
+/// ```ignore
+/// make_matcher!(MyEnumVariant, get_my_enum_variant);
+/// ```
+///
+/// This generates a `get_my_enum_variant` function that returns an `Option<&MyEnumVariant>`
+/// if the enum instance is of the `MyEnumVariant` variant.
 macro_rules! make_matcher {
     ($type:ident, $name:ident) => {
-        #[doc = "Retrieves the enum value as a `"]
-        #[doc = stringify!($type)]
-        #[doc = "`."]
+        #[doc = concat!("Retrieves the enum value as a `", stringify!($type), "`.")]
         #[inline]
         pub fn $name(&self) -> Option<&$type> {
             match self {
@@ -326,6 +332,8 @@ macro_rules! make_matcher {
         }
     };
 }
+
+pub(crate) use make_matcher;
 
 /// Property options used for reading and writing.
 pub struct PropertyOptions<'a> {

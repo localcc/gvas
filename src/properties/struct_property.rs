@@ -9,7 +9,6 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
-    make_matcher,
     scoped_stack_entry::ScopedStackEntry,
     types::Guid,
 };
@@ -17,6 +16,7 @@ use crate::{
 use super::{
     impl_write, impl_write_header_part,
     int_property::{DoubleProperty, FloatProperty, IntProperty, UInt32Property, UInt64Property},
+    make_matcher,
     struct_types::{DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, VectorD, VectorF},
     Property, PropertyOptions, PropertyTrait,
 };
