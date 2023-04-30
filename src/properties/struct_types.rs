@@ -2,6 +2,18 @@ use std::{fmt::Display, hash::Hash};
 
 use ordered_float::OrderedFloat;
 
+macro_rules! unwrap_value {
+    (f32, $name:ident) => {
+        $name.0
+    };
+    (f64, $name:ident) => {
+        $name.0
+    };
+    ($type:ident, $name:tt) => {
+        <$type>::from($name)
+    };
+}
+
 macro_rules! wrap_type {
     (f32) => {
         OrderedFloat<f32>
@@ -21,10 +33,14 @@ macro_rules! wrap_value {
     (f64, $name:ident) => {
         OrderedFloat::from($name)
     };
-    ($type:ident, $name:ident) => {
-        $type::from($name)
+    ($type:ty, $name:ident) => {
+        <$type>::from($name)
     };
 }
+
+pub(crate) use unwrap_value;
+pub(crate) use wrap_type;
+pub(crate) use wrap_value;
 
 macro_rules! make_struct {
     (

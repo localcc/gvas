@@ -7,7 +7,11 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
-use super::{impl_write, PropertyOptions, PropertyTrait};
+use super::{
+    impl_write,
+    struct_types::{unwrap_value, wrap_type, wrap_value},
+    PropertyOptions, PropertyTrait,
+};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
@@ -27,26 +31,23 @@ macro_rules! check_size {
 }
 
 macro_rules! impl_int_property {
-    ($name:ident, $ty:ty, $read_method:ident, $write_method:ident, $size:literal) => {
-        #[doc = "A property that stores a `"]
-        #[doc = stringify!($ty)]
-        #[doc = "`."]
+    ($name:ident, $ty:ident, $read_method:ident, $write_method:ident, $size:literal) => {
+        #[doc = concat!("A property that stores a `", stringify!($ty), "`.")]
         #[derive(Clone, PartialEq, Eq, Hash)]
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub struct $name {
             /// Integer value.
-            pub value: $ty,
+            pub value: wrap_type!($ty),
         }
 
         impl_write!($name);
 
         impl $name {
-            #[doc = "Creates a new `"]
-            #[doc = stringify!($name)]
-            #[doc = "` instance."]
+            #[doc = concat!("Creates a new `", stringify!($name), "` instance.")]
             #[inline]
             pub fn new(value: $ty) -> Self {
-                $name { value }
+                let value = wrap_value!($ty, value);
+                Self { value }
             }
 
             #[inline]
@@ -59,9 +60,7 @@ macro_rules! impl_int_property {
                     let separator = cursor.read_u8()?;
                     assert_eq!(separator, 0);
                 }
-                Ok(Self {
-                    value: cursor.$read_method::<LittleEndian>()?,
-                })
+                Ok(Self::new(cursor.$read_method::<LittleEndian>()?))
             }
         }
 
@@ -74,7 +73,9 @@ macro_rules! impl_int_property {
         impl $name {
             #[inline]
             fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-                cursor.$write_method::<LittleEndian>(self.value)?;
+                let value = self.value;
+                let value = unwrap_value!($ty, value);
+                cursor.$write_method::<LittleEndian>(value)?;
 
                 Ok(())
             }
@@ -246,100 +247,8 @@ impl PropertyTrait for BoolProperty {
     }
 }
 
-/// A property that stores a `f32`.
-#[derive(Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct FloatProperty {
-    /// Integer value.
-    pub value: OrderedFloat<f32>,
-}
-
-impl_write!(FloatProperty);
-
-impl FloatProperty {
-    /// Creates a new `FloatProperty` instance.
-    #[inline]
-    pub fn new(value: f32) -> Self {
-        FloatProperty {
-            value: OrderedFloat(value),
-        }
-    }
-
-    #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            check_size!(cursor, 4);
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
-        Ok(Self {
-            value: OrderedFloat(cursor.read_f32::<LittleEndian>()?),
-        })
-    }
-
-    #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_f32::<LittleEndian>(self.value.0)?;
-        Ok(())
-    }
-}
-
-impl Debug for FloatProperty {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}f32", self.value)
-    }
-}
-
-/// A property that stores a `f64`.
-#[derive(Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct DoubleProperty {
-    /// Integer value.
-    pub value: OrderedFloat<f64>,
-}
-
-impl_write!(DoubleProperty);
-
-impl DoubleProperty {
-    /// Creates a new `DoubleProperty` instance.
-    #[inline]
-    pub fn new(value: f64) -> Self {
-        DoubleProperty {
-            value: OrderedFloat(value),
-        }
-    }
-
-    #[inline]
-    pub(crate) fn read<R: Read + Seek>(
-        cursor: &mut R,
-        include_header: bool,
-    ) -> Result<Self, Error> {
-        if include_header {
-            check_size!(cursor, 8);
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
-        }
-        Ok(Self {
-            value: OrderedFloat(cursor.read_f64::<LittleEndian>()?),
-        })
-    }
-
-    #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_f64::<LittleEndian>(self.value.0)?;
-        Ok(())
-    }
-}
-
-impl Debug for DoubleProperty {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}f64", self.value)
-    }
-}
-
+impl_int_property!(FloatProperty, f32, read_f32, write_f32, 4);
+impl_int_property!(DoubleProperty, f64, read_f64, write_f64, 8);
 impl_int_property!(Int16Property, i16, read_i16, write_i16, 2);
 impl_int_property!(UInt16Property, u16, read_u16, write_u16, 2);
 impl_int_property!(IntProperty, i32, read_i32, write_i32, 4);
