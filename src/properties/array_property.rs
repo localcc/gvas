@@ -11,7 +11,10 @@ use crate::{
     types::Guid,
 };
 
-use super::{struct_property::StructProperty, Property, PropertyOptions, PropertyTrait};
+use super::{
+    impl_write, impl_write_header_part, struct_property::StructProperty, Property, PropertyOptions,
+    PropertyTrait,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -46,6 +49,8 @@ macro_rules! validate {
         }
     }};
 }
+
+impl_write!(ArrayProperty, options, (write_string, property_type));
 
 impl ArrayProperty {
     /// Creates a new `ArrayProperty` instance.
@@ -147,36 +152,7 @@ impl ArrayProperty {
             array_struct_info,
         })
     }
-}
 
-impl PropertyTrait for ArrayProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            // return self.write_body(cursor);
-            Err(SerializeError::invalid_value("Nested arrays not supported"))?
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("ArrayProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_string(&self.property_type)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
-        Ok(())
-    }
-}
-
-impl ArrayProperty {
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,

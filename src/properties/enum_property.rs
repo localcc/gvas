@@ -4,10 +4,10 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{DeserializeError, Error, SerializeError},
+    error::{DeserializeError, Error},
 };
 
-use super::{impl_read_header, PropertyOptions, PropertyTrait};
+use super::{impl_read_header, impl_write, impl_write_header_part, PropertyOptions, PropertyTrait};
 
 /// A property that holds an enum value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -16,6 +16,8 @@ pub struct EnumProperty {
     enum_type: String,
     value: String,
 }
+
+impl_write!(EnumProperty, (write_string, enum_type));
 
 impl EnumProperty {
     /// Creates a new `EnumProperty` instance.
@@ -47,38 +49,7 @@ impl EnumProperty {
 
         Ok(EnumProperty { enum_type, value })
     }
-}
 
-impl PropertyTrait for EnumProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            // return self.write_body(cursor);
-            Err(SerializeError::invalid_value(
-                "Enum without headers not supported!",
-            ))?
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("EnumProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_string(&self.enum_type)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
-        Ok(())
-    }
-}
-
-impl EnumProperty {
     #[inline]
     fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_string(&self.value)?;

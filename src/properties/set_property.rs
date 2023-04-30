@@ -4,10 +4,10 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{Error, SerializeError},
+    error::Error,
 };
 
-use super::{Property, PropertyOptions, PropertyTrait};
+use super::{impl_write, impl_write_header_part, Property, PropertyOptions, PropertyTrait};
 
 /// A property that stores a set of properties.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -20,6 +20,8 @@ pub struct SetProperty {
     /// Properties.
     pub properties: Vec<Property>,
 }
+
+impl_write!(SetProperty, options, (write_string, property_type));
 
 impl SetProperty {
     /// Creates a new `SetProperty` instance.
@@ -66,38 +68,7 @@ impl SetProperty {
             properties,
         })
     }
-}
 
-impl PropertyTrait for SetProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if !include_header {
-            // return self.write_body(writer);
-            Err(SerializeError::invalid_value(
-                "Nested sets are not supported!",
-            ))?
-        }
-
-        let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf, options)?;
-        let buf = buf.get_ref();
-
-        cursor.write_string("SetProperty")?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_string(&self.property_type)?;
-        cursor.write_u8(0)?;
-        cursor.write_all(buf)?;
-
-        Ok(())
-    }
-}
-
-impl SetProperty {
     #[inline]
     fn write_body<W: Write>(
         &self,

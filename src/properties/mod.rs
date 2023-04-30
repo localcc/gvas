@@ -143,6 +143,118 @@ macro_rules! impl_read_header {
 pub(crate) use impl_read;
 pub(crate) use impl_read_header;
 
+/// This macro generates a `write` function for writing the property data to a writer.
+/// If `include_header` is true, it will write the property header first.
+///
+/// # Examples
+///
+/// ```ignore
+/// impl_write!(ArrayProperty, options, (write_string, property_type));
+/// ```
+///
+/// This generates a `write` function for the `ArrayProperty` type with `PropertyOptions` support,
+/// writing `&self.property_name` in to the header using the `write_string` function.
+///
+/// ```ignore
+/// impl_write!(NameProperty);
+/// ```
+///
+/// This generates a basic `write` function for the `NameProperty` type.
+///
+/// ```ignore
+/// impl_write!(
+///     StructProperty,
+///     options,
+///     (write_string, fn, get_property_name),
+///     (write_guid, guid)
+/// );
+/// ```
+///
+/// This generateds and advanced `write` function for the `StructProperty` type, writing
+/// `&self.get_property_name()?` in to the header using the `write_string` function, and
+/// `&self.guid` using the `write_guid` function.
+///
+/// # Notes
+///
+/// This macro must be used in conjunction with a suitable `write_body` function.
+macro_rules! impl_write {
+    ($property:ident, options $(, $header_property:tt)*) => {
+        impl PropertyTrait for $property {
+            #[inline]
+            fn write<W: Write>(
+                &self,
+                writer: &mut W,
+                include_header: bool,
+                options: &mut PropertyOptions,
+            ) -> Result<(), Error> {
+                if !include_header {
+                    return self.write_body(writer, options);
+                }
+
+                let buf = &mut Cursor::new(Vec::new());
+                self.write_body(buf, options)?;
+                let buf = buf.get_ref();
+
+                writer.write_string(stringify!($property))?;
+                writer.write_u64::<LittleEndian>(buf.len() as u64)?;
+                $(
+                    impl_write_header_part!(self, writer, $header_property);
+                )*
+                writer.write_u8(0)?;
+                writer.write_all(buf)?;
+
+                Ok(())
+            }
+        }
+    };
+
+    ($property:ident $(, $header_property:tt)*) => {
+        impl PropertyTrait for $property {
+            #[inline]
+            fn write<W: Write>(
+                &self,
+                writer: &mut W,
+                include_header: bool,
+                _options: &mut PropertyOptions,
+            ) -> Result<(), Error> {
+                if !include_header {
+                    return self.write_body(writer);
+                }
+
+                let buf = &mut Cursor::new(Vec::new());
+                self.write_body(buf)?;
+                let buf = buf.get_ref();
+
+                writer.write_string(stringify!($property))?;
+                writer.write_u64::<LittleEndian>(buf.len() as u64)?;
+                $(
+                    impl_write_header_part!(self, writer, $header_property);
+                )*
+                writer.write_u8(0)?;
+                writer.write_all(buf)?;
+
+                Ok(())
+            }
+        }
+    };
+}
+
+/// A helper macro for writing property header parts.
+///
+/// This macro is used inside the `impl_write!` macro to write individual parts of a property header.
+macro_rules! impl_write_header_part {
+    ($self:ident, $writer:ident, ($write_fn:ident, $member:ident)) => {
+        $writer.$write_fn(&$self.$member)?;
+    };
+
+    ($self:ident, $writer:ident, ($write_fn:ident, fn, $member:ident)) => {
+        $writer.$write_fn(&$self.$member()?)?;
+    };
+}
+
+pub(crate) use impl_write;
+pub(crate) use impl_write_header_part;
+
 /// Creates a match helper function for enums.
 #[macro_export]
 macro_rules! make_matcher {

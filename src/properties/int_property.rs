@@ -7,7 +7,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
 use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
-use super::{PropertyOptions, PropertyTrait};
+use super::{impl_write, PropertyOptions, PropertyTrait};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
@@ -37,6 +37,8 @@ macro_rules! impl_int_property {
             /// Integer value.
             pub value: $ty,
         }
+
+        impl_write!($name);
 
         impl $name {
             #[doc = "Creates a new `"]
@@ -69,31 +71,6 @@ macro_rules! impl_int_property {
             }
         }
 
-        impl PropertyTrait for $name {
-            #[inline]
-            fn write<W: Write>(
-                &self,
-                cursor: &mut W,
-                include_header: bool,
-                _options: &mut PropertyOptions,
-            ) -> Result<(), Error> {
-                if !include_header {
-                    return self.write_body(cursor);
-                }
-
-                let buf = &mut Cursor::new(Vec::new());
-                self.write_body(buf)?;
-                let buf = buf.get_ref();
-
-                cursor.write_string(stringify!($name))?;
-                cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-                cursor.write_u8(0)?;
-                cursor.write_all(buf)?;
-
-                Ok(())
-            }
-        }
-
         impl $name {
             #[inline]
             fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
@@ -112,6 +89,8 @@ pub struct Int8Property {
     /// Integer value.
     pub value: i8,
 }
+
+impl_write!(Int8Property);
 
 impl Int8Property {
     /// Creates a new `Int8Property` instance.
@@ -134,29 +113,17 @@ impl Int8Property {
             value: cursor.read_i8()?,
         })
     }
+
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        cursor.write_i8(self.value)?;
+        Ok(())
+    }
 }
 
 impl Debug for Int8Property {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}i8", self.value)
-    }
-}
-
-impl PropertyTrait for Int8Property {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string("Int8Property")?;
-            cursor.write_u64::<LittleEndian>(1)?;
-            cursor.write_u8(0)?;
-        }
-        cursor.write_i8(self.value)?;
-        Ok(())
     }
 }
 
@@ -287,6 +254,8 @@ pub struct FloatProperty {
     pub value: OrderedFloat<f32>,
 }
 
+impl_write!(FloatProperty);
+
 impl FloatProperty {
     /// Creates a new `FloatProperty` instance.
     #[inline]
@@ -310,29 +279,17 @@ impl FloatProperty {
             value: OrderedFloat(cursor.read_f32::<LittleEndian>()?),
         })
     }
+
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        cursor.write_f32::<LittleEndian>(self.value.0)?;
+        Ok(())
+    }
 }
 
 impl Debug for FloatProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}f32", self.value)
-    }
-}
-
-impl PropertyTrait for FloatProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string("FloatProperty")?;
-            cursor.write_u64::<LittleEndian>(4)?;
-            cursor.write_u8(0)?;
-        }
-        cursor.write_f32::<LittleEndian>(self.value.0)?;
-        Ok(())
     }
 }
 
@@ -343,6 +300,8 @@ pub struct DoubleProperty {
     /// Integer value.
     pub value: OrderedFloat<f64>,
 }
+
+impl_write!(DoubleProperty);
 
 impl DoubleProperty {
     /// Creates a new `DoubleProperty` instance.
@@ -367,29 +326,17 @@ impl DoubleProperty {
             value: OrderedFloat(cursor.read_f64::<LittleEndian>()?),
         })
     }
+
+    #[inline]
+    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        cursor.write_f64::<LittleEndian>(self.value.0)?;
+        Ok(())
+    }
 }
 
 impl Debug for DoubleProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}f64", self.value)
-    }
-}
-
-impl PropertyTrait for DoubleProperty {
-    #[inline]
-    fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string("DoubleProperty")?;
-            cursor.write_u64::<LittleEndian>(8)?;
-            cursor.write_u8(0)?;
-        }
-        cursor.write_f64::<LittleEndian>(self.value.0)?;
-        Ok(())
     }
 }
 
