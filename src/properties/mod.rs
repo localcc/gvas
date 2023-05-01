@@ -320,11 +320,21 @@ pub(crate) use impl_write_header_part;
 ///
 /// This generates a `get_my_enum_variant` function that returns an `Option<&MyEnumVariant>`
 /// if the enum instance is of the `MyEnumVariant` variant.
+
 macro_rules! make_matcher {
-    ($type:ident, $name:ident) => {
+    ($type:ident, $name:ident, $name_mut:ident) => {
         #[doc = concat!("Retrieves the enum value as a `", stringify!($type), "`.")]
         #[inline]
         pub fn $name(&self) -> Option<&$type> {
+            match self {
+                Self::$type(e) => Some(e),
+                _ => None,
+            }
+        }
+
+        #[doc = concat!("Retrieves the mutable enum value as a `", stringify!($type), "`.")]
+        #[inline]
+        pub fn $name_mut(&mut self) -> Option<&mut $type> {
             match self {
                 Self::$type(e) => Some(e),
                 _ => None,
@@ -478,35 +488,37 @@ impl Property {
         }
     }
 
-    make_matcher!(ArrayProperty, get_array);
-    make_matcher!(EnumProperty, get_enum);
-    make_matcher!(BoolProperty, get_bool);
-    make_matcher!(ByteProperty, get_byte);
-    make_matcher!(DoubleProperty, get_f64);
-    make_matcher!(FloatProperty, get_f32);
-    make_matcher!(Int16Property, get_i16);
-    make_matcher!(Int64Property, get_i64);
-    make_matcher!(Int8Property, get_i8);
-    make_matcher!(IntProperty, get_int);
-    make_matcher!(UInt16Property, get_u16);
-    make_matcher!(UInt32Property, get_u32);
-    make_matcher!(UInt64Property, get_u64);
-    make_matcher!(MapProperty, get_map);
-    make_matcher!(NameProperty, get_name);
-    make_matcher!(ObjectProperty, get_object_ref);
-    make_matcher!(DelegateProperty, get_delegate);
+    make_matcher!(ArrayProperty, get_array, get_array_mut);
+    make_matcher!(EnumProperty, get_enum, get_enum_mut);
+    make_matcher!(BoolProperty, get_bool, get_bool_mut);
+    make_matcher!(ByteProperty, get_byte, get_byte_mut);
+    make_matcher!(DoubleProperty, get_f64, get_f64_mut);
+    make_matcher!(FloatProperty, get_f32, get_f32_mut);
+    make_matcher!(Int16Property, get_i16, get_i16_mut);
+    make_matcher!(Int64Property, get_i64, get_i64_mut);
+    make_matcher!(Int8Property, get_i8, get_i8_mut);
+    make_matcher!(IntProperty, get_int, get_int_mut);
+    make_matcher!(UInt16Property, get_u16, get_u16_mut);
+    make_matcher!(UInt32Property, get_u32, get_u32_mut);
+    make_matcher!(UInt64Property, get_u64, get_u64_mut);
+    make_matcher!(MapProperty, get_map, get_map_mut);
+    make_matcher!(NameProperty, get_name, get_name_mut);
+    make_matcher!(ObjectProperty, get_object_ref, get_object_ref_mut);
+    make_matcher!(DelegateProperty, get_delegate, get_delegate_mut);
     make_matcher!(
         MulticastInlineDelegateProperty,
-        get_multicast_inline_delegate
+        get_multicast_inline_delegate,
+        get_multicast_inline_delegate_mut
     );
     make_matcher!(
         MulticastSparseDelegateProperty,
-        get_multicast_sparse_delegate
+        get_multicast_sparse_delegate,
+        get_multicast_sparse_delegate_mut
     );
-    make_matcher!(FieldPathProperty, get_field_path);
-    make_matcher!(SetProperty, get_set);
-    make_matcher!(StrProperty, get_str);
-    make_matcher!(StructProperty, get_struct);
-    make_matcher!(TextProperty, get_text);
-    make_matcher!(UnknownProperty, get_unknown);
+    make_matcher!(FieldPathProperty, get_field_path, get_field_path_mut);
+    make_matcher!(SetProperty, get_set, get_set_mut);
+    make_matcher!(StrProperty, get_str, get_str_mut);
+    make_matcher!(StructProperty, get_struct, get_struct_mut);
+    make_matcher!(TextProperty, get_text, get_text_mut);
+    make_matcher!(UnknownProperty, get_unknown, get_unknown_mut);
 }

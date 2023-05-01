@@ -381,13 +381,31 @@ impl From<Guid> for StructProperty {
 }
 
 impl StructPropertyValue {
-    make_matcher!(VectorF, get_vector_f);
-    make_matcher!(VectorD, get_vector_d);
-    make_matcher!(RotatorF, get_rotator_f);
-    make_matcher!(RotatorD, get_rotator_d);
-    make_matcher!(QuatF, get_quat_f);
-    make_matcher!(QuatD, get_quat_d);
-    make_matcher!(DateTime, get_date_time);
-    make_matcher!(IntPoint, get_int_point);
-    make_matcher!(Guid, get_guid);
+    make_matcher!(VectorF, get_vector_f, get_vector_f_mut);
+    make_matcher!(VectorD, get_vector_d, get_vector_d_mut);
+    make_matcher!(RotatorF, get_rotator_f, get_rotator_f_mut);
+    make_matcher!(RotatorD, get_rotator_d, get_rotator_d_mut);
+    make_matcher!(QuatF, get_quat_f, get_quat_f_mut);
+    make_matcher!(QuatD, get_quat_d, get_quat_d_mut);
+    make_matcher!(DateTime, get_date_time, get_date_time_mut);
+    make_matcher!(IntPoint, get_int_point, get_int_point_mut);
+    make_matcher!(Guid, get_guid, get_guid_mut);
+
+    /// Retrieves the enum value as a `CustomStruct`.
+    #[inline]
+    pub fn get_custom_struct(&self) -> Option<(&String, &Vec<(String, Property)>)> {
+        match self {
+            Self::CustomStruct(type_name, properties) => Some((type_name, properties)),
+            _ => None,
+        }
+    }
+
+    /// Retrieves the mutable enum value as a `CustomStruct`.
+    #[inline]
+    pub fn get_custom_struct_mut(&mut self) -> Option<(&mut String, &mut Vec<(String, Property)>)> {
+        match self {
+            Self::CustomStruct(type_name, properties) => Some((type_name, properties)),
+            _ => None,
+        }
+    }
 }
