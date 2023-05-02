@@ -21,3 +21,10 @@ thiserror = "1.0.40"
 
 [features]
 serde = ["dep:serde", "ordered-float/serde", "indexmap/serde"]
+
+[dev-dependencies]
+serde_json = "1.0.96"
+
+[[test]]
+name = "serde"
+required-features = ["serde"]
