@@ -40,7 +40,6 @@ pub struct StructProperty {
     #[cfg_attr(feature = "serde", serde(default))]
     pub guid: Guid,
     /// The value of the property.
-    #[cfg_attr(feature = "serde", serde(flatten))]
     pub value: StructPropertyValue,
 }
 
