@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fs::File, path::Path};
 
 use gvas::GvasFile;
-use serde_json::json;
 
 fn get_hints() -> HashMap<String, String> {
     let mut hints = HashMap::new();
