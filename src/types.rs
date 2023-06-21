@@ -185,6 +185,11 @@ impl FromStr for Guid {
         let cleaned = cleaned.trim();
         let cleaned = cleaned.strip_prefix('{').unwrap_or(cleaned);
         let cleaned = cleaned.strip_suffix('}').unwrap_or(cleaned);
+
+        if cleaned.len() == 1 && cleaned == "0" {
+            return Ok(Guid::new([0u8; 16]));
+        }
+
         if cleaned.len() != 32 {
             Err(ParseGuidError)?;
         }
