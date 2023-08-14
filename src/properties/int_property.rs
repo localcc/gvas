@@ -128,45 +128,90 @@ impl Debug for Int8Property {
     }
 }
 
-/// A property that stores a `u8`.
-#[derive(Clone, PartialEq, Eq, Hash)]
+/// Byte property value
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum BytePropertyValue {
+    /// Byte value
+    Byte(u8),
+    /// Namespaced enum value
+    Namespaced(String),
+}
+
+/// A property that stores a `u8` or the property's namespaced name.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ByteProperty {
     /// Property name.
     pub name: Option<String>,
-    /// Integer value.
-    pub value: u8,
+    /// Property value.
+    pub value: BytePropertyValue,
 }
 
 impl ByteProperty {
     /// Creates a new `ByteProperty` instance.
     #[inline]
-    pub fn new(name: Option<String>, value: u8) -> Self {
+    pub fn new(name: Option<String>, value: BytePropertyValue) -> Self {
         ByteProperty { name, value }
+    }
+
+    /// Creates a new `ByteProperty` instance for a u8 value
+    #[inline]
+    pub fn new_byte(name: Option<String>, value: u8) -> Self {
+        ByteProperty {
+            name,
+            value: BytePropertyValue::Byte(value),
+        }
+    }
+
+    /// Creates a new `ByteProperty` instance for a namespaced enum value
+    #[inline]
+    pub fn new_namespaced(name: Option<String>, value: String) -> Self {
+        ByteProperty {
+            name,
+            value: BytePropertyValue::Namespaced(value),
+        }
     }
 
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
+        mut suggested_length: Option<u64>,
     ) -> Result<Self, Error> {
         let mut name = None;
         if include_header {
-            check_size!(cursor, 1);
+            let length = cursor.read_u64::<LittleEndian>()?;
+            suggested_length = Some(length);
+
             name = Some(cursor.read_string()?);
             let separator = cursor.read_u8()?;
             assert_eq!(separator, 0);
         }
-        Ok(ByteProperty {
-            name,
-            value: cursor.read_u8()?,
-        })
-    }
-}
 
-impl Debug for ByteProperty {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}u8", self.value)
+        // -1 to account for separator
+        let length = suggested_length.map(|e| e - 1).unwrap_or(1);
+
+        let value = match length {
+            1 | 0 => BytePropertyValue::Byte(cursor.read_u8()?),
+            _ => BytePropertyValue::Namespaced(cursor.read_string()?),
+        };
+
+        Ok(ByteProperty { name, value })
+    }
+
+    #[inline]
+    pub(crate) fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+        match &self.value {
+            BytePropertyValue::Byte(value) => {
+                cursor.write_u8(*value)?;
+            }
+            BytePropertyValue::Namespaced(name) => {
+                cursor.write_string(name)?;
+            }
+        };
+
+        Ok(())
     }
 }
 
@@ -178,13 +223,21 @@ impl PropertyTrait for ByteProperty {
         include_header: bool,
         _options: &mut PropertyOptions,
     ) -> Result<(), Error> {
-        if include_header {
-            cursor.write_string("ByteProperty")?;
-            cursor.write_u64::<LittleEndian>(1)?;
-            cursor.write_fstring(self.name.as_deref())?;
-            cursor.write_u8(0)?;
+        if !include_header {
+            return self.write_body(cursor);
         }
-        cursor.write_u8(self.value)?;
+
+        cursor.write_string("ByteProperty")?;
+
+        let buf = &mut Cursor::new(Vec::new());
+        self.write_body(buf)?;
+        let buf = buf.get_ref();
+
+        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+        cursor.write_fstring(self.name.as_deref())?;
+        cursor.write_u8(0)?;
+        cursor.write_all(buf)?;
+
         Ok(())
     }
 }

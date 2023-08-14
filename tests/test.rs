@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{Cursor, Read},
+    io::{Cursor, Read, Write},
     path::Path,
 };
 
@@ -30,8 +30,9 @@ use gvas::{
     properties::{
         array_property::ArrayProperty,
         int_property::{
-            ByteProperty, DoubleProperty, FloatProperty, Int16Property, Int64Property,
-            Int8Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
+            ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty, Int16Property,
+            Int64Property, Int8Property, IntProperty, UInt16Property, UInt32Property,
+            UInt64Property,
         },
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
@@ -47,7 +48,13 @@ fn verify_file_data(file: &GvasFile) {
     let properties = &file.properties;
 
     let none = Some(String::from("None"));
-    verify_property!(properties, "u8_test", ByteProperty, none, 129);
+    verify_property!(
+        properties,
+        "u8_test",
+        ByteProperty,
+        none,
+        BytePropertyValue::Byte(129)
+    );
     verify_property!(properties, "i8_test", Int8Property, -123);
     verify_property!(properties, "ushort_test", UInt16Property, 65530);
     verify_property!(properties, "short_test", Int16Property, -32764);

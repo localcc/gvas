@@ -8,9 +8,9 @@ use gvas::{
         array_property::ArrayProperty,
         enum_property::EnumProperty,
         int_property::{
-            BoolProperty, ByteProperty, DoubleProperty, FloatProperty, Int16Property,
-            Int64Property, Int8Property, IntProperty, UInt16Property, UInt32Property,
-            UInt64Property,
+            BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty,
+            Int16Property, Int64Property, Int8Property, IntProperty, UInt16Property,
+            UInt32Property, UInt64Property,
         },
         map_property::MapProperty,
         set_property::SetProperty,
@@ -62,7 +62,18 @@ test_property!(test_int8, Int8Property, Int8Property::new(i8::MAX));
 test_property!(
     test_byte,
     ByteProperty,
-    ByteProperty::new(Some(String::from("Test ByteProperty")), u8::MAX)
+    ByteProperty::new(
+        Some(String::from("Test ByteProperty")),
+        BytePropertyValue::Byte(2)
+    )
+);
+test_property!(
+    test_byte_namespaced,
+    ByteProperty,
+    ByteProperty::new(
+        Some(String::from("Test NamespacedByteproperty")),
+        BytePropertyValue::Namespaced(String::from("TestEnum::Value0"))
+    )
 );
 test_property!(test_int16, Int16Property, Int16Property::new(i16::MAX));
 test_property!(test_uint16, UInt16Property, UInt16Property::new(u16::MAX));

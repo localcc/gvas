@@ -440,7 +440,9 @@ impl Property {
         let _stack_entry = ScopedStackEntry::new(options.properties_stack, value_type.to_string());
         match value_type {
             "Int8Property" => Ok(Int8Property::read(cursor, include_header)?.into()),
-            "ByteProperty" => Ok(ByteProperty::read(cursor, include_header)?.into()),
+            "ByteProperty" => {
+                Ok(ByteProperty::read(cursor, include_header, suggested_length)?.into())
+            }
             "Int16Property" => Ok(Int16Property::read(cursor, include_header)?.into()),
             "UInt16Property" => Ok(UInt16Property::read(cursor, include_header)?.into()),
             "IntProperty" => Ok(IntProperty::read(cursor, include_header)?.into()),
