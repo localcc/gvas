@@ -94,12 +94,12 @@ impl StructProperty {
         } else {
             let struct_path = options.properties_stack.join(".");
             let Some(hint) = options.hints.get(&struct_path) else {
-                        Err(DeserializeError::MissingHint(
-                            "StructProperty".to_string(),
-                            struct_path,
-                            cursor.stream_position()?,
-                        ))?
-                    };
+                Err(DeserializeError::MissingHint(
+                    "StructProperty".to_string(),
+                    struct_path,
+                    cursor.stream_position()?,
+                ))?
+            };
             let hint = &hint.clone();
             Self::read_with_type_name(cursor, hint, options)
         }
@@ -173,7 +173,7 @@ impl StructProperty {
                     FloatProperty::read(cursor, false)?.value.0,
                 )),
             },
-            "DateTime" => StructPropertyValue::DateTime(DateTime {
+            "DateTime" | "Timespan" => StructPropertyValue::DateTime(DateTime {
                 ticks: UInt64Property::read(cursor, false)?.value,
             }),
             "IntPoint" => StructPropertyValue::IntPoint(IntPoint {
