@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{Cursor, Read, Write},
+    io::{Cursor, Read},
     path::Path,
 };
 

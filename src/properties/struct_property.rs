@@ -94,12 +94,12 @@ impl StructProperty {
         } else {
             let struct_path = options.properties_stack.join(".");
             let Some(hint) = options.hints.get(&struct_path) else {
-                        Err(DeserializeError::MissingHint(
-                            "StructProperty".to_string(),
-                            struct_path,
-                            cursor.stream_position()?,
-                        ))?
-                    };
+                Err(DeserializeError::MissingHint(
+                    "StructProperty".to_string(),
+                    struct_path,
+                    cursor.stream_position()?,
+                ))?
+            };
             let hint = &hint.clone();
             Self::read_with_type_name(cursor, hint, options)
         }
