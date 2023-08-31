@@ -61,6 +61,8 @@ pub enum StructPropertyValue {
     QuatD(QuatD),
     /// A `DateTime` value.
     DateTime(DateTime),
+    /// A `Timespan` value
+    Timespan(DateTime),
     /// A `Guid` value.
     Guid(Guid),
     /// An `IntPoint` value.
@@ -176,6 +178,9 @@ impl StructProperty {
             "DateTime" => StructPropertyValue::DateTime(DateTime {
                 ticks: UInt64Property::read(cursor, false)?.value,
             }),
+            "Timespan" => StructPropertyValue::Timespan(DateTime {
+                ticks: UInt64Property::read(cursor, false)?.value,
+            }),
             "IntPoint" => StructPropertyValue::IntPoint(IntPoint {
                 x: IntProperty::read(cursor, false)?.value,
                 y: IntProperty::read(cursor, false)?.value,
@@ -223,6 +228,7 @@ impl StructProperty {
             StructPropertyValue::RotatorF(_) | StructPropertyValue::RotatorD(_) => "Rotator",
             StructPropertyValue::QuatF(_) | StructPropertyValue::QuatD(_) => "Quat",
             StructPropertyValue::DateTime(_) => "DateTime",
+            StructPropertyValue::Timespan(_) => "Timespan",
             StructPropertyValue::Guid(_) => "Guid",
             StructPropertyValue::IntPoint(_) => "IntPoint",
             StructPropertyValue::CustomStruct(type_name, _) => type_name,
@@ -294,6 +300,9 @@ impl StructProperty {
                 cursor.write_f64::<LittleEndian>(quat.w.0)?;
             }
             StructPropertyValue::DateTime(date_time) => {
+                cursor.write_u64::<LittleEndian>(date_time.ticks)?;
+            }
+            StructPropertyValue::Timespan(date_time) => {
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
             }
             StructPropertyValue::IntPoint(int_point) => {
