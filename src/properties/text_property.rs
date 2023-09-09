@@ -167,7 +167,6 @@ impl TextProperty {
         } else if component_type == 2 {
             // Simple text
             let count = cursor.read_u32::<LittleEndian>()?;
-            validate!(cursor, count > 0, "Unexpected count {count}");
 
             let mut strings: Vec<String> = vec![];
             for _ in 0..count {
