@@ -25,6 +25,8 @@ pub enum TextProperty {
     Rich(RichText),
     /// A simple `TextProperty`.
     Simple(Vec<String>),
+    /// `TextProperty` type 8.
+    Type8(String, String, String),
 }
 
 /// A struct describing a rich `TextProperty`.
@@ -94,11 +96,15 @@ impl TextProperty {
         let component_type = cursor.read_u32::<LittleEndian>()?;
         validate!(
             cursor,
-            component_type <= 2,
+            component_type <= 2 || component_type == 8,
             "Unexpected component {component_type}"
         );
 
-        let expect_indicator = if component_type == 1 { 3 } else { 255 };
+        let expect_indicator = match component_type {
+            1 => 3,
+            8 => 0,
+            _ => 255,
+        };
         let indicator = cursor.read_u8()?;
         validate!(
             cursor,
@@ -175,6 +181,12 @@ impl TextProperty {
             }
 
             Ok(TextProperty::Simple(strings))
+        } else if component_type == 8 {
+            let unknown = cursor.read_string()?;
+            let guid = cursor.read_string()?;
+            let value = cursor.read_string()?;
+
+            Ok(TextProperty::Type8(unknown, guid, value))
         } else {
             // Unknown text
             Err(DeserializeError::InvalidProperty(
@@ -230,6 +242,14 @@ impl TextProperty {
                     cursor.write_string(value)?;
                 }
             }
+
+            TextProperty::Type8(unknown, guid, value) => {
+                cursor.write_u32::<LittleEndian>(8)?;
+                cursor.write_u8(0)?;
+                cursor.write_string(unknown)?;
+                cursor.write_string(guid)?;
+                cursor.write_string(value)?;
+            }
         }
 
         Ok(())
@@ -242,6 +262,7 @@ impl Debug for TextProperty {
             TextProperty::Rich(value) => value.fmt(f),
             TextProperty::Simple(values) => f.debug_list().entries(values).finish(),
             TextProperty::Empty(_) => f.write_str("Empty"),
+            TextProperty::Type8(_, _, value) => value.fmt(f),
         }
     }
 }
