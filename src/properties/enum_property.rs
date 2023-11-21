@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{DeserializeError, Error},
+    error::Error,
 };
 
 use super::{impl_read_header, impl_write, impl_write_header_part, PropertyOptions, PropertyTrait};
@@ -34,10 +34,7 @@ impl EnumProperty {
         if include_header {
             Self::read_header(cursor)
         } else {
-            Err(DeserializeError::invalid_property(
-                "EnumProperty is not supported in arrays",
-                cursor,
-            ))?
+            Self::read_body(cursor, String::from("<array>"))
         }
     }
 
