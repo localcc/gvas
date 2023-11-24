@@ -186,7 +186,7 @@ macro_rules! impl_read_header {
             assert_eq!(separator, 0);
 
             let start = reader.stream_position()?;
-            let result = Self::read_body(reader $(, $var)*)?;
+            let result = Self::read_body(reader $(, Some($var))*)?;
             let end = reader.stream_position()?;
             assert_eq!(end - start, length);
 
@@ -298,6 +298,10 @@ macro_rules! impl_write {
 ///
 /// This macro is used inside the `impl_write!` macro to write individual parts of a property header.
 macro_rules! impl_write_header_part {
+    ($self:ident, $writer:ident, (write_fstring, $member:ident)) => {
+        $writer.write_fstring($self.$member.as_deref())?;
+    };
+
     ($self:ident, $writer:ident, ($write_fn:ident, $member:ident)) => {
         $writer.$write_fn(&$self.$member)?;
     };
