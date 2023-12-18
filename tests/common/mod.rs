@@ -18,4 +18,5 @@ pub const REGRESSION_01_PATH: &str = "resources/test/regression_01.bin";
 pub const SLOT1_PATH: &str = "resources/test/Slot1.sav";
 pub const SLOT2_PATH: &str = "resources/test/Slot2.sav";
 pub const SLOT3_PATH: &str = "resources/test/Slot3.sav";
+pub const TEXT_PROPERTY_NOARRAY: &str = "resources/test/text_property_noarray.bin";
 pub const TRANSFORM_PATH: &str = "resources/test/transform.sav";

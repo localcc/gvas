@@ -104,6 +104,11 @@ fn slot3() {
 }
 
 #[test]
+fn text_property_noarray() {
+    test_gvas_file(TEXT_PROPERTY_NOARRAY);
+}
+
+#[test]
 fn transform() {
     test_gvas_file(TRANSFORM_PATH);
 }
