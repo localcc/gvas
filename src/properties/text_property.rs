@@ -10,7 +10,7 @@ use crate::{
     error::{DeserializeError, Error},
 };
 
-use super::{impl_write, PropertyOptions, PropertyTrait};
+use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
 
 /// A property that stores GVAS Text.
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -81,18 +81,14 @@ impl TextProperty {
         }
     }
 
+    impl_read!(options);
+    impl_read_header!(options);
+
     #[inline]
-    pub(crate) fn read<R: Read + Seek>(
+    pub(crate) fn read_body<R: Read + Seek>(
         cursor: &mut R,
-        include_header: bool,
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
-        validate!(
-            cursor,
-            !include_header,
-            "TextProperty only supported in arrays"
-        );
-
         let component_type = cursor.read_u32::<LittleEndian>()?;
         validate!(
             cursor,
