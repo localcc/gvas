@@ -4,6 +4,7 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
@@ -21,12 +22,14 @@ pub enum TextProperty {
         // Workaround for https://github.com/serde-rs/json/issues/664
         [u8; 0],
     ),
+    /// A triple `TextProperty`.
+    Triple(Option<String>, Option<String>, Option<String>),
     /// A rich `TextProperty`.
     Rich(RichText),
     /// A simple `TextProperty`.
     Simple(Vec<String>),
     /// `TextProperty` type 8.
-    Type8(String, String, String),
+    Type8(Option<String>, String, String),
 }
 
 /// A struct describing a rich `TextProperty`.
@@ -90,34 +93,22 @@ impl TextProperty {
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         let component_type = cursor.read_u32::<LittleEndian>()?;
-        validate!(
-            cursor,
-            component_type <= 2 || component_type == 8,
-            "Unexpected component {component_type}"
-        );
-
-        let expect_indicator = match component_type {
-            1 => 3,
-            8 => 0,
-            _ => 255,
-        };
         let indicator = cursor.read_u8()?;
-        validate!(
-            cursor,
-            indicator == expect_indicator,
-            "Unexpected indicator {} for component {}, expected {}",
-            indicator,
-            component_type,
-            expect_indicator
-        );
 
-        if component_type == 0 {
+        if component_type == 0 && indicator == 255 {
             // Empty text
             let count = cursor.read_u32::<LittleEndian>()?;
             validate!(cursor, count == 0, "Unexpected count {count}");
 
             Ok(TextProperty::Empty([]))
-        } else if component_type == 1 {
+        } else if component_type == 0 && indicator == 0 {
+            // Triple text
+            let string1 = cursor.read_fstring()?;
+            let string2 = cursor.read_fstring()?;
+            let string3 = cursor.read_fstring()?;
+
+            Ok(TextProperty::Triple(string1, string2, string3))
+        } else if component_type == 1 && indicator == 3 {
             // Rich text
             let num_flags = cursor.read_u8()?;
             validate!(cursor, num_flags == 8, "Unexpected num_flags {num_flags}");
@@ -166,7 +157,7 @@ impl TextProperty {
                 pattern,
                 text_format,
             }))
-        } else if component_type == 2 {
+        } else if component_type == 2 && indicator == 255 {
             // Simple text
             let count = cursor.read_u32::<LittleEndian>()?;
 
@@ -177,8 +168,8 @@ impl TextProperty {
             }
 
             Ok(TextProperty::Simple(strings))
-        } else if component_type == 8 {
-            let unknown = cursor.read_string()?;
+        } else if component_type == 8 && indicator == 0 {
+            let unknown = cursor.read_fstring()?;
             let guid = cursor.read_string()?;
             let value = cursor.read_string()?;
 
@@ -186,7 +177,7 @@ impl TextProperty {
         } else {
             // Unknown text
             Err(DeserializeError::InvalidProperty(
-                format!("Unexpected component_type {}", component_type),
+                format!("Unexpected component_type {component_type}, indicator {indicator}"),
                 cursor.stream_position()?,
             ))?
         }
@@ -203,6 +194,14 @@ impl TextProperty {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u8(255)?;
                 cursor.write_u32::<LittleEndian>(0)?;
+            }
+
+            TextProperty::Triple(string1, string2, string3) => {
+                cursor.write_u32::<LittleEndian>(0)?;
+                cursor.write_u8(0)?;
+                cursor.write_fstring(string1.as_deref())?;
+                cursor.write_fstring(string2.as_deref())?;
+                cursor.write_fstring(string3.as_deref())?;
             }
 
             TextProperty::Rich(value) => {
@@ -242,7 +241,7 @@ impl TextProperty {
             TextProperty::Type8(unknown, guid, value) => {
                 cursor.write_u32::<LittleEndian>(8)?;
                 cursor.write_u8(0)?;
-                cursor.write_string(unknown)?;
+                cursor.write_fstring(unknown.as_deref())?;
                 cursor.write_string(guid)?;
                 cursor.write_string(value)?;
             }
@@ -259,6 +258,11 @@ impl Debug for TextProperty {
             TextProperty::Simple(values) => f.debug_list().entries(values).finish(),
             TextProperty::Empty(_) => f.write_str("Empty"),
             TextProperty::Type8(_, _, value) => value.fmt(f),
+            TextProperty::Triple(string1, string2, string3) => {
+                string1.fmt(f)?;
+                string2.fmt(f)?;
+                string3.fmt(f)
+            }
         }
     }
 }
