@@ -59,6 +59,10 @@
 
 /// Extensions for `Cursor`.
 pub mod cursor_ext;
+/// Custom version information.
+pub mod custom_version;
+/// Engine version information.
+pub mod engine_version;
 /// Error types.
 pub mod error;
 /// Extensions for `Ord`.
@@ -71,118 +75,19 @@ pub mod types;
 
 use std::{
     collections::HashMap,
-    fmt::{Debug, Display},
+    fmt::{Debug},
     io::{Read, Seek, Write},
 };
 
+use crate::error::DeserializeError;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use cursor_ext::{ReadExt, WriteExt};
+use custom_version::FCustomVersion;
+use engine_version::FEngineVersion;
 use error::Error;
 use indexmap::IndexMap;
 use ord_ext::OrdExt;
 use properties::{Property, PropertyOptions, PropertyTrait};
-use types::Guid;
-
-use crate::error::DeserializeError;
-
-/// Stores UE4 version in which the GVAS file was saved
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct FEngineVersion {
-    /// Major version number.
-    pub major: u16,
-    /// Minor version number.
-    pub minor: u16,
-    /// Patch version number.
-    pub patch: u16,
-    /// Build id.
-    pub change_list: u32,
-    /// Build id string.
-    pub branch: String,
-}
-
-impl Display for FEngineVersion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}.{}.{}-{}+++{}",
-            self.major, self.minor, self.patch, self.change_list, self.branch
-        )
-    }
-}
-
-impl FEngineVersion {
-    /// Creates a new instance of `FEngineVersion`
-    #[inline]
-    pub fn new(major: u16, minor: u16, patch: u16, change_list: u32, branch: String) -> Self {
-        FEngineVersion {
-            major,
-            minor,
-            patch,
-            change_list,
-            branch,
-        }
-    }
-
-    /// Read FEngineVersion from a binary file
-    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
-        let major = cursor.read_u16::<LittleEndian>()?;
-        let minor = cursor.read_u16::<LittleEndian>()?;
-        let patch = cursor.read_u16::<LittleEndian>()?;
-        let change_list = cursor.read_u32::<LittleEndian>()?;
-        let branch = cursor.read_string()?;
-        Ok(FEngineVersion {
-            major,
-            minor,
-            patch,
-            change_list,
-            branch,
-        })
-    }
-
-    /// Write FEngineVersion to a binary file
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_u16::<LittleEndian>(self.major)?;
-        cursor.write_u16::<LittleEndian>(self.minor)?;
-        cursor.write_u16::<LittleEndian>(self.patch)?;
-        cursor.write_u32::<LittleEndian>(self.change_list)?;
-        cursor.write_string(&self.branch)?;
-        Ok(())
-    }
-}
-
-/// Stores CustomVersions serialized by UE4
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct FCustomVersion {
-    /// Key
-    pub key: Guid,
-    /// Value
-    pub version: u32,
-}
-
-impl FCustomVersion {
-    /// Creates a new instance of `FCustomVersion`
-    #[inline]
-    pub fn new(key: Guid, version: u32) -> Self {
-        FCustomVersion { key, version }
-    }
-
-    /// Read FCustomVersion from a binary file
-    pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
-        let key = cursor.read_guid()?;
-        let version = cursor.read_u32::<LittleEndian>()?;
-
-        Ok(FCustomVersion { key, version })
-    }
-
-    /// Write FCustomVersion to a binary file
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_guid(&self.key)?;
-        cursor.write_u32::<LittleEndian>(self.version)?;
-        Ok(())
-    }
-}
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.
 pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
@@ -371,6 +276,18 @@ impl GvasHeader {
         }
         Ok(())
     }
+
+    /// Get custom versions from this header
+    pub fn get_custom_versions(&self) -> &[FCustomVersion] {
+        match self {
+            GvasHeader::Version2 {
+                custom_versions, ..
+            } => custom_versions.as_slice(),
+            GvasHeader::Version3 {
+                custom_versions, ..
+            } => custom_versions.as_slice(),
+        }
+    }
 }
 
 /// Main UE4 save file struct
@@ -477,6 +394,7 @@ impl GvasFile {
             hints,
             properties_stack: &mut vec![],
             large_world_coordinates: header.use_large_world_coordinates(),
+            custom_versions: header.get_custom_versions(),
         };
 
         let mut properties = IndexMap::new();
@@ -529,6 +447,7 @@ impl GvasFile {
             hints: &HashMap::new(),
             properties_stack: &mut vec![],
             large_world_coordinates: self.header.use_large_world_coordinates(),
+            custom_versions: self.header.get_custom_versions(),
         };
 
         for (name, property) in &self.properties {

@@ -6,6 +6,8 @@ use std::{
     str::FromStr,
 };
 
+use gvas::custom_version::FCustomVersion;
+use gvas::engine_version::FEngineVersion;
 use gvas::{
     properties::{
         field_path_property::{FieldPath, FieldPathProperty},
@@ -19,7 +21,7 @@ use gvas::{
         Property,
     },
     types::Guid,
-    FCustomVersion, FEngineVersion, GvasFile, GvasHeader,
+    GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
 

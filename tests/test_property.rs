@@ -17,12 +17,13 @@ use gvas::{
         str_property::StrProperty,
         struct_property::StructProperty,
         struct_types::VectorF,
-        text_property::{RichText, RichTextFormat, TextProperty},
+        text_property::TextProperty,
         Property, PropertyOptions, PropertyTrait,
     },
     types::Guid,
 };
 
+use gvas::properties::text_property::FText;
 use indexmap::IndexMap;
 
 macro_rules! test_property {
@@ -35,6 +36,7 @@ macro_rules! test_property {
                 hints: &HashMap::new(),
                 properties_stack: &mut Vec::new(),
                 large_world_coordinates: false,
+                custom_versions: &[],
             };
 
             // Export the property to a byte array
@@ -145,19 +147,13 @@ test_property!(
         String::from("TextProperty"),
         None,
         vec![
-            Property::from(TextProperty::new(None, None)),
-            Property::from(TextProperty::new(
-                Some(RichText::new(
-                    String::from("identifier"),
-                    String::from("{0}<br>{1}"),
-                    vec![
-                        RichTextFormat::new(String::from("0"), 0, vec![String::from("line1")]),
-                        RichTextFormat::new(String::from("1"), 0, vec![String::from("line2")]),
-                    ]
-                )),
-                None
-            )),
-            Property::from(TextProperty::new(None, Some(vec![String::from("String")]))),
+            Property::from(TextProperty::new(FText::new_none(0, None))),
+            Property::from(TextProperty::new(FText::new_base(
+                0,
+                Some(String::from("identifier")),
+                Some(String::from("{0}<br>{1}")),
+                Some(String::from("test<br>test"))
+            ))),
         ]
     )
 );

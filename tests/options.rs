@@ -1,6 +1,8 @@
+use gvas::custom_version::FCustomVersion;
+use gvas::engine_version::FEngineVersion;
 use gvas::{
     properties::{int_property::FloatProperty, Property},
-    FCustomVersion, FEngineVersion, GvasFile, GvasHeader,
+    GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
 use std::{

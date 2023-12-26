@@ -20,12 +20,10 @@ impl Guid {
     pub fn is_zero(&self) -> bool {
         self.0.iter().all(|&x| x == 0)
     }
-}
 
-impl From<(u32, u32, u32, u32)> for Guid {
-    /// Create new instance of Guid struct from 4 u32 values
+    /// Create a guid from a tuple of 4 ints
     #[inline]
-    fn from(value: (u32, u32, u32, u32)) -> Self {
+    pub const fn from_ints(value: (u32, u32, u32, u32)) -> Self {
         let (a, b, c, d) = value;
         Guid([
             (a & 0xff) as u8,
@@ -45,6 +43,14 @@ impl From<(u32, u32, u32, u32)> for Guid {
             ((d >> 16) & 0xff) as u8,
             ((d >> 24) & 0xff) as u8,
         ])
+    }
+}
+
+impl From<(u32, u32, u32, u32)> for Guid {
+    /// Create new instance of Guid struct from 4 u32 values
+    #[inline]
+    fn from(value: (u32, u32, u32, u32)) -> Self {
+        Self::from_ints(value)
     }
 }
 

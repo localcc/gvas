@@ -5,6 +5,8 @@ use std::{
     str::FromStr,
 };
 
+use gvas::custom_version::FCustomVersion;
+use gvas::engine_version::FEngineVersion;
 use gvas::{
     properties::{
         delegate_property::{
@@ -14,7 +16,7 @@ use gvas::{
         Property,
     },
     types::Guid,
-    FCustomVersion, FEngineVersion, GvasFile, GvasHeader,
+    GvasFile, GvasHeader,
 };
 
 #[test]
