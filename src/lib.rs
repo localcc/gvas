@@ -75,7 +75,7 @@ pub mod types;
 
 use std::{
     collections::HashMap,
-    fmt::{Debug},
+    fmt::Debug,
     io::{Read, Seek, Write},
 };
 
