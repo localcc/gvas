@@ -1,3 +1,4 @@
+use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use std::io;
 
 use thiserror::Error;
@@ -27,6 +28,15 @@ pub enum DeserializeError {
     /// If a Property creation fails
     #[error("Invalid property {0} at position {1}")]
     InvalidProperty(String, u64),
+    /// Invalid enum value
+    #[error("{0}")]
+    InvalidEnumValue(Box<str>),
+}
+
+impl<T: TryFromPrimitive> From<TryFromPrimitiveError<T>> for DeserializeError {
+    fn from(value: TryFromPrimitiveError<T>) -> Self {
+        DeserializeError::InvalidEnumValue(value.to_string().into_boxed_str())
+    }
 }
 
 impl DeserializeError {

@@ -347,6 +347,7 @@ macro_rules! make_matcher {
     };
 }
 
+use crate::custom_version::{CustomVersionTrait, FCustomVersion};
 pub(crate) use make_matcher;
 
 /// Property options used for reading and writing.
@@ -355,8 +356,24 @@ pub struct PropertyOptions<'a> {
     pub hints: &'a HashMap<String, String>,
     /// Tracks the property tree location in a GVAS file.
     pub properties_stack: &'a mut Vec<String>,
+    /// Custom versions
+    pub custom_versions: &'a [FCustomVersion],
     /// Enables large world coordinates.
     pub large_world_coordinates: bool,
+}
+
+impl<'a> PropertyOptions<'a> {
+    /// Get custom version
+    pub fn get_custom_version<T>(&self) -> FCustomVersion
+    where
+        T: CustomVersionTrait + Into<i32>,
+    {
+        self.custom_versions
+            .iter()
+            .find(|e| e.key == T::GUID)
+            .cloned()
+            .unwrap_or_else(|| FCustomVersion::new(T::GUID, 0))
+    }
 }
 
 /// Property traits.
