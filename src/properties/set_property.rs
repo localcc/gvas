@@ -58,15 +58,15 @@ impl SetProperty {
     pub(crate) fn read_body<R: Read + Seek>(
         cursor: &mut R,
         options: &mut PropertyOptions,
-        length: u64,
+        length: u32,
         property_type: String,
     ) -> Result<Self, Error> {
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
 
-        let element_count = cursor.read_u32::<LittleEndian>()? as usize;
-        let mut properties: Vec<Property> = Vec::with_capacity(element_count);
+        let element_count = cursor.read_u32::<LittleEndian>()?;
+        let mut properties: Vec<Property> = Vec::with_capacity(element_count as usize);
 
-        let total_bytes_per_property = (length - 8) / element_count as u64;
+        let total_bytes_per_property = (length - 8) / element_count;
 
         for _ in 0..element_count {
             properties.push(Property::new(

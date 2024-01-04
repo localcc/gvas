@@ -305,9 +305,7 @@ fn read_save_slot_03() {
                     0,
                     IndexMap::from([
                         (
-                            Property::from(NameProperty {
-                                value: String::from("unlock.welcomescreen.seen")
-                            }),
+                            Property::from(NameProperty::from("unlock.welcomescreen.seen")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct(
@@ -326,9 +324,7 @@ fn read_save_slot_03() {
                             ))
                         ),
                         (
-                            Property::from(NameProperty {
-                                value: String::from("game.tutorial.finished")
-                            }),
+                            Property::from(NameProperty::from("game.tutorial.finished")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct(
@@ -347,9 +343,7 @@ fn read_save_slot_03() {
                             )),
                         ),
                         (
-                            Property::from(NameProperty {
-                                value: String::from("game.tutorial.skipped")
-                            }),
+                            Property::from(NameProperty::from("game.tutorial.skipped")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct(
@@ -368,9 +362,7 @@ fn read_save_slot_03() {
                             )),
                         ),
                         (
-                            Property::from(NameProperty {
-                                value: String::from("dialogs.messages.seen.Rumiko.0.50")
-                            }),
+                            Property::from(NameProperty::from("dialogs.messages.seen.Rumiko.0.50")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct(
@@ -389,9 +381,7 @@ fn read_save_slot_03() {
                             )),
                         ),
                         (
-                            Property::from(NameProperty {
-                                value: String::from("codex.Rumiko")
-                            }),
+                            Property::from(NameProperty::from("codex.Rumiko")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct(
