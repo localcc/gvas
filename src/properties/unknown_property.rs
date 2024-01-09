@@ -25,7 +25,7 @@ impl UnknownProperty {
     pub(crate) fn read_with_length<R: Read + Seek>(
         cursor: &mut R,
         property_name: String,
-        length: u64,
+        length: u32,
     ) -> Result<Self, Error> {
         let mut data = vec![0u8; length as usize];
         cursor.read_exact(&mut data)?;
@@ -41,7 +41,14 @@ impl UnknownProperty {
         cursor: &mut R,
         property_name: String,
     ) -> Result<Self, Error> {
-        let length = cursor.read_u64::<LittleEndian>()?;
+        let length = cursor.read_u32::<LittleEndian>()?;
+        let array_index = cursor.read_u32::<LittleEndian>()?;
+        assert_eq!(
+            array_index,
+            0,
+            "Expected array_index value zero @ {:#x}",
+            cursor.stream_position()? - 4
+        );
         let separator = cursor.read_u8()?;
         assert_eq!(separator, 0);
 

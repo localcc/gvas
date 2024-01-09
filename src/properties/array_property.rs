@@ -96,11 +96,11 @@ impl ArrayProperty {
     pub(crate) fn read_body<R: Read + Seek>(
         cursor: &mut R,
         options: &mut PropertyOptions,
-        length: u64,
+        length: u32,
         property_type: String,
     ) -> Result<Self, Error> {
-        let property_count = cursor.read_u32::<LittleEndian>()? as usize;
-        let mut properties: Vec<Property> = Vec::with_capacity(property_count);
+        let property_count = cursor.read_u32::<LittleEndian>()?;
+        let mut properties: Vec<Property> = Vec::with_capacity(property_count as usize);
 
         let mut array_struct_info = None;
 
@@ -139,7 +139,7 @@ impl ArrayProperty {
             }
             _ => {
                 let suggested_length = if property_count > 0 && length >= 4 {
-                    Some((length - 4) / property_count as u64)
+                    Some((length - 4) / property_count)
                 } else {
                     None
                 };

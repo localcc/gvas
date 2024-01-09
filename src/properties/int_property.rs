@@ -177,11 +177,18 @@ impl ByteProperty {
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
         include_header: bool,
-        mut suggested_length: Option<u64>,
+        mut suggested_length: Option<u32>,
     ) -> Result<Self, Error> {
         let mut name = None;
         if include_header {
-            let length = cursor.read_u64::<LittleEndian>()?;
+            let length = cursor.read_u32::<LittleEndian>()?;
+            let array_index = cursor.read_u32::<LittleEndian>()?;
+            assert_eq!(
+                array_index,
+                0,
+                "Expected array_index value zero @ {:#x}",
+                cursor.stream_position()? - 4
+            );
             suggested_length = Some(length);
 
             name = Some(cursor.read_string()?);
