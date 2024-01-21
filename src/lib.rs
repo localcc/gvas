@@ -11,9 +11,10 @@
 //! use std::{
 //!     fs::File,
 //! };
+//! use gvas::game_version::GameVersion;
 //!
 //! let mut file = File::open("save.sav")?;
-//! let gvas_file = GvasFile::read(&mut file);
+//! let gvas_file = GvasFile::read(&mut file, GameVersion::Default);
 //!
 //! println!("{:#?}", gvas_file);
 //! # Ok::<(), Error>(())
@@ -45,13 +46,14 @@
 //!     collections::HashMap,
 //!     fs::File,
 //! };
+//! use gvas::game_version::GameVersion;
 //!
 //! let mut file = File::open("save.sav")?;
 //!
 //! let mut hints = HashMap::new();
 //! hints.insert("UnLockedMissionParameters.MapProperty.Key.StructProperty".to_string(), "Guid".to_string());
 //!
-//! let gvas_file = GvasFile::read_with_hints(&mut file, &hints);
+//! let gvas_file = GvasFile::read_with_hints(&mut file, GameVersion::Default, &hints);
 //!
 //! println!("{:#?}", gvas_file);
 //! # Ok::<(), Error>(())
@@ -65,6 +67,8 @@ pub mod custom_version;
 pub mod engine_version;
 /// Error types.
 pub mod error;
+/// Game version enumeration.
+pub mod game_version;
 /// Extensions for `Ord`.
 mod ord_ext;
 /// Property types.
@@ -73,6 +77,7 @@ pub(crate) mod scoped_stack_entry;
 /// Various types.
 pub mod types;
 
+use std::io::Cursor;
 use std::{
     collections::HashMap,
     fmt::Debug,
@@ -80,11 +85,17 @@ use std::{
 };
 
 use crate::error::DeserializeError;
+use crate::game_version::{
+    DeserializedGameVersion, GameVersion, PalworldCompressionType, PLZ_MAGIC,
+};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use cursor_ext::{ReadExt, WriteExt};
 use custom_version::FCustomVersion;
 use engine_version::FEngineVersion;
 use error::Error;
+use flate2::read::ZlibDecoder;
+use flate2::write::ZlibEncoder;
+use flate2::Compression;
 use indexmap::IndexMap;
 use ord_ext::OrdExt;
 use properties::{Property, PropertyOptions, PropertyTrait};
@@ -294,6 +305,8 @@ impl GvasHeader {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
+    /// Game version
+    pub deserialized_game_version: DeserializedGameVersion,
     /// GVAS file header.
     pub header: GvasHeader,
     /// GVAS properties.
@@ -343,16 +356,17 @@ impl GvasFile {
     /// ```no_run
     /// use gvas::{error::Error, GvasFile};
     /// use std::fs::File;
+    /// use gvas::game_version::GameVersion;
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let gvas_file = GvasFile::read(&mut file);
+    /// let gvas_file = GvasFile::read(&mut file, GameVersion::Default);
     ///
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+    pub fn read<R: Read + Seek>(cursor: &mut R, game_version: GameVersion) -> Result<Self, Error> {
         let hints = HashMap::new();
-        Self::read_with_hints(cursor, &hints)
+        Self::read_with_hints(cursor, game_version, &hints)
     }
 
     /// Read GvasFile from a binary file
@@ -370,6 +384,7 @@ impl GvasFile {
     /// ```no_run
     /// use gvas::{error::Error, GvasFile};
     /// use std::{collections::HashMap, fs::File};
+    /// use gvas::game_version::GameVersion;
     ///
     /// let mut file = File::open("save.sav")?;
     ///
@@ -379,16 +394,70 @@ impl GvasFile {
     ///     "Guid".to_string(),
     /// );
     ///
-    /// let gvas_file = GvasFile::read_with_hints(&mut file, &hints);
+    /// let gvas_file = GvasFile::read_with_hints(&mut file, GameVersion::Default, &hints);
     ///
     /// println!("{:#?}", gvas_file);
     /// # Ok::<(), Error>(())
     /// ```
     pub fn read_with_hints<R: Read + Seek>(
         cursor: &mut R,
+        game_version: GameVersion,
         hints: &HashMap<String, String>,
     ) -> Result<Self, Error> {
-        let header = GvasHeader::read(cursor)?;
+        let deserialized_game_version: DeserializedGameVersion;
+        let mut cursor = match game_version {
+            GameVersion::Default => {
+                deserialized_game_version = DeserializedGameVersion::Default;
+                let mut data = Vec::new();
+                cursor.read_to_end(&mut data)?;
+                Cursor::new(data)
+            }
+            GameVersion::Palworld => {
+                let decompresed_length = cursor.read_u32::<LittleEndian>()?;
+                let _compressed_length = cursor.read_u32::<LittleEndian>()?;
+
+                let mut magic = [0u8; 3];
+                cursor.read_exact(&mut magic)?;
+                if &magic != PLZ_MAGIC {
+                    Err(DeserializeError::InvalidHeader(format!(
+                        "Invalid PlZ magic {magic:?}"
+                    )))?
+                }
+
+                let compression_type = PalworldCompressionType::try_from(cursor.read_u8()?)
+                    .map_err(DeserializeError::from)?;
+
+                deserialized_game_version = DeserializedGameVersion::Palworld(compression_type);
+
+                match compression_type {
+                    PalworldCompressionType::None => {
+                        let mut data = vec![0u8; decompresed_length as usize];
+
+                        cursor.read_exact(&mut data)?;
+                        Cursor::new(data)
+                    }
+                    PalworldCompressionType::Zlib => {
+                        let mut zlib_data = vec![0u8; decompresed_length as usize];
+
+                        let mut decoder = ZlibDecoder::new(cursor);
+                        decoder.read_exact(&mut zlib_data)?;
+
+                        Cursor::new(zlib_data)
+                    }
+                    PalworldCompressionType::ZlibTwice => {
+                        let decoder = ZlibDecoder::new(cursor);
+                        let mut decoder = ZlibDecoder::new(decoder);
+
+                        let mut zlib_data = Vec::new();
+                        decoder.read_to_end(&mut zlib_data)?;
+
+                        Cursor::new(zlib_data)
+                    }
+                }
+            }
+        };
+
+        let header = GvasHeader::read(&mut cursor)?;
 
         let mut options = PropertyOptions {
             hints,
@@ -408,13 +477,17 @@ impl GvasFile {
 
             options.properties_stack.push(property_name.clone());
 
-            let property = Property::new(cursor, &property_type, true, &mut options, None)?;
+            let property = Property::new(&mut cursor, &property_type, true, &mut options, None)?;
             properties.insert(property_name, property);
 
             let _ = options.properties_stack.pop();
         }
 
-        Ok(GvasFile { header, properties })
+        Ok(GvasFile {
+            deserialized_game_version,
+            header,
+            properties,
+        })
     }
 
     /// Write GvasFile to a binary file
@@ -431,9 +504,10 @@ impl GvasFile {
     ///     fs::File,
     ///     io::Cursor,
     /// };
+    /// use gvas::game_version::GameVersion;
     ///
     /// let mut file = File::open("save.sav")?;
-    /// let gvas_file = GvasFile::read(&mut file)?;
+    /// let gvas_file = GvasFile::read(&mut file, GameVersion::Default)?;
     ///
     /// let mut writer = Cursor::new(Vec::new());
     /// gvas_file.write(&mut writer)?;
@@ -441,7 +515,9 @@ impl GvasFile {
     /// # Ok::<(), Error>(())
     /// ```
     pub fn write<W: Write + Seek>(&self, cursor: &mut W) -> Result<(), Error> {
-        self.header.write(cursor)?;
+        let mut writing_cursor = Cursor::new(Vec::new());
+
+        self.header.write(&mut writing_cursor)?;
 
         let mut options = PropertyOptions {
             hints: &HashMap::new(),
@@ -451,11 +527,39 @@ impl GvasFile {
         };
 
         for (name, property) in &self.properties {
-            cursor.write_string(name)?;
-            property.write(cursor, true, &mut options)?;
+            writing_cursor.write_string(name)?;
+            property.write(&mut writing_cursor, true, &mut options)?;
         }
-        cursor.write_string("None")?;
-        cursor.write_i32::<LittleEndian>(0)?; // padding
+        writing_cursor.write_string("None")?;
+        writing_cursor.write_i32::<LittleEndian>(0)?; // padding
+
+        match self.deserialized_game_version {
+            DeserializedGameVersion::Default => cursor.write_all(&writing_cursor.into_inner())?,
+            DeserializedGameVersion::Palworld(compression_type) => {
+                let decompressed = writing_cursor.into_inner();
+                let mut compressor = Cursor::new(Vec::new());
+                match compression_type {
+                    PalworldCompressionType::None => compressor.write_all(&decompressed)?,
+                    PalworldCompressionType::Zlib => {
+                        let mut encoder = ZlibEncoder::new(&mut compressor, Compression::new(6));
+                        encoder.write_all(&decompressed)?;
+                    }
+                    PalworldCompressionType::ZlibTwice => {
+                        let encoder = ZlibEncoder::new(&mut compressor, Compression::default());
+                        let mut encoder = ZlibEncoder::new(encoder, Compression::default());
+                        encoder.write_all(&decompressed)?;
+                    }
+                }
+
+                let compressed = compressor.into_inner();
+
+                cursor.write_u32::<LittleEndian>(decompressed.len() as u32)?;
+                cursor.write_u32::<LittleEndian>(compressed.len() as u32)?;
+                cursor.write_all(PLZ_MAGIC)?;
+                cursor.write_u8(compression_type as u8)?;
+                cursor.write_all(&compressed)?;
+            }
+        }
         Ok(())
     }
 }

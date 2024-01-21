@@ -1,3 +1,4 @@
+use gvas::game_version::GameVersion;
 use std::{collections::HashMap, fs::File, path::Path};
 
 use gvas::GvasFile;
@@ -26,7 +27,7 @@ fn deserialize() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/SaveSlot_03.sav");
     let mut file = File::open(path).expect("Failed to open test asset");
 
-    let file =
-        GvasFile::read_with_hints(&mut file, &get_hints()).expect("Failed to parse gvas file");
+    let file = GvasFile::read_with_hints(&mut file, GameVersion::Default, &get_hints())
+        .expect("Failed to parse gvas file");
     serde_json::to_value(&file).unwrap();
 }

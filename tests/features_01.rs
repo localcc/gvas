@@ -1,3 +1,4 @@
+use gvas::game_version::GameVersion;
 use std::{
     collections::HashMap,
     fs::File,
@@ -112,7 +113,8 @@ fn read_features_01() {
 
     // Read the file in to a GvasFile
     let hints = get_hints();
-    GvasFile::read_with_hints(&mut file, &hints).expect("Failed to parse gvas file");
+    GvasFile::read_with_hints(&mut file, GameVersion::Default, &hints)
+        .expect("Failed to parse gvas file");
 }
 
 #[test]
@@ -128,7 +130,8 @@ fn write_features_01() {
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
     let hints = get_hints();
-    let file = GvasFile::read_with_hints(&mut cursor, &hints).expect("Failed to parse gvas file");
+    let file = GvasFile::read_with_hints(&mut cursor, GameVersion::Default, &hints)
+        .expect("Failed to parse gvas file");
 
     // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());
@@ -140,7 +143,7 @@ fn write_features_01() {
 
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let read_back = GvasFile::read_with_hints(&mut reader, &hints)
+    let read_back = GvasFile::read_with_hints(&mut reader, GameVersion::Default, &hints)
         .expect("Failed to read serialized gvas file");
 
     // Compare the two GvasFiles

@@ -19,6 +19,7 @@ indexmap = "1.9.3"
 unreal_helpers = { version = "0.1.13", features = ["read_write"] }
 thiserror = "1.0.40"
 num_enum = "0.7.1"
+flate2 = "1.0.28"
 
 [features]
 serde = ["dep:serde", "ordered-float/serde", "indexmap/serde"]

@@ -1,3 +1,4 @@
+use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use std::{
     fs::File,
@@ -11,7 +12,7 @@ fn read_slot2() {
     let mut file = File::open(path).expect("Failed to open test asset");
 
     // Read the file in to a GvasFile
-    let _gvas = GvasFile::read(&mut file).expect("Failed to parse gvas file");
+    let _gvas = GvasFile::read(&mut file, GameVersion::Default).expect("Failed to parse gvas file");
 }
 
 #[test]
@@ -26,7 +27,8 @@ fn write_slot2() {
 
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-    let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+    let file =
+        GvasFile::read(&mut cursor, GameVersion::Default).expect("Failed to parse gvas file");
 
     // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());
@@ -38,7 +40,8 @@ fn write_slot2() {
 
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let read_back = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
+    let read_back = GvasFile::read(&mut reader, GameVersion::Default)
+        .expect("Failed to parse serialized save file");
 
     // Compare the two GvasFiles
     assert_eq!(file, read_back);

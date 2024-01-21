@@ -26,6 +26,7 @@ macro_rules! verify_property {
     };
 }
 
+use gvas::game_version::GameVersion;
 use gvas::{
     properties::{
         array_property::ArrayProperty,
@@ -162,7 +163,7 @@ fn read_file() {
     let mut file = File::open(path).expect("Failed to open test asset");
 
     // Read the file in to a GvasFile
-    let file = GvasFile::read(&mut file).expect("Failed to parse gvas file");
+    let file = GvasFile::read(&mut file, GameVersion::Default).expect("Failed to parse gvas file");
 
     // Verify GvasFile contents
     verify_file_data(&file);
@@ -180,7 +181,8 @@ fn write_file() {
 
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-    let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+    let file =
+        GvasFile::read(&mut cursor, GameVersion::Default).expect("Failed to parse gvas file");
 
     // Verify GvasFile contents
     verify_file_data(&file);
@@ -195,7 +197,8 @@ fn write_file() {
 
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let file2 = GvasFile::read(&mut reader).expect("Failed to parse serialized save file");
+    let file2 = GvasFile::read(&mut reader, GameVersion::Default)
+        .expect("Failed to parse serialized save file");
 
     // Verify GvasFile contents
     verify_file_data(&file2);

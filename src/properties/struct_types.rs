@@ -142,6 +142,15 @@ make_struct!(
 );
 
 make_struct!(
+    LinearColor,
+    "A structure storing linear color.",
+    (r, f32, "Red component."),
+    (g, f32, "Green component."),
+    (b, f32, "Blue component"),
+    (a, f32, "Alpha component."),
+);
+
+make_struct!(
     IntPoint,
     "A struct that stores a 2D integer point.",
     (x, i32, "X value."),

@@ -1,3 +1,4 @@
+use gvas::game_version::GameVersion;
 use std::{
     fs::File,
     io::{Cursor, Read},
@@ -18,7 +19,8 @@ fn assert_failed() {
 
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-    let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+    let file =
+        GvasFile::read(&mut cursor, GameVersion::Default).expect("Failed to parse gvas file");
 
     // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());

@@ -6,6 +6,7 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
+use crate::properties::struct_types::LinearColor;
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
@@ -65,6 +66,8 @@ pub enum StructPropertyValue {
     Timespan(DateTime),
     /// A `Guid` value.
     Guid(Guid),
+    /// A `LinearColor` value.
+    LinearColor(LinearColor),
     /// An `IntPoint` value.
     IntPoint(IntPoint),
     /// A custom struct value.
@@ -181,6 +184,12 @@ impl StructProperty {
             "Timespan" => StructPropertyValue::Timespan(DateTime {
                 ticks: UInt64Property::read(cursor, false)?.value,
             }),
+            "LinearColor" => StructPropertyValue::LinearColor(LinearColor::new(
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+                FloatProperty::read(cursor, false)?.value.0,
+            )),
             "IntPoint" => StructPropertyValue::IntPoint(IntPoint {
                 x: IntProperty::read(cursor, false)?.value,
                 y: IntProperty::read(cursor, false)?.value,
@@ -230,6 +239,7 @@ impl StructProperty {
             StructPropertyValue::DateTime(_) => "DateTime",
             StructPropertyValue::Timespan(_) => "Timespan",
             StructPropertyValue::Guid(_) => "Guid",
+            StructPropertyValue::LinearColor(_) => "LinearColor",
             StructPropertyValue::IntPoint(_) => "IntPoint",
             StructPropertyValue::CustomStruct(type_name, _) => type_name,
         };
@@ -304,6 +314,12 @@ impl StructProperty {
             }
             StructPropertyValue::Timespan(date_time) => {
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
+            }
+            StructPropertyValue::LinearColor(linear_color) => {
+                cursor.write_f32::<LittleEndian>(linear_color.r.0)?;
+                cursor.write_f32::<LittleEndian>(linear_color.g.0)?;
+                cursor.write_f32::<LittleEndian>(linear_color.b.0)?;
+                cursor.write_f32::<LittleEndian>(linear_color.a.0)?;
             }
             StructPropertyValue::IntPoint(int_point) => {
                 cursor.write_i32::<LittleEndian>(int_point.x)?;
