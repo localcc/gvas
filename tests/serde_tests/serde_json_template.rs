@@ -79,6 +79,11 @@ fn file_with_hints<P: AsRef<Path>>(path: P, hints: &HashMap<String, String>, jso
 }
 
 #[test]
+fn file_profile_0() {
+    file_with_hints(PROFILE_0_PATH, &profile0::hints(), profile0::PROFILE_0_JSON);
+}
+
+#[test]
 fn file_regression_01() {
     file(REGRESSION_01_PATH, regression::REGRESSION_01_JSON);
 }
