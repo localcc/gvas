@@ -8,6 +8,7 @@ use std::{
 
 use gvas::custom_version::FCustomVersion;
 use gvas::engine_version::FEngineVersion;
+use gvas::game_version::GameVersion;
 use gvas::{
     properties::{
         field_path_property::{FieldPath, FieldPathProperty},
@@ -51,7 +52,8 @@ fn read_save_slot_03() {
 
     // Read the file in to a GvasFile
     let hints = get_hints();
-    let file = GvasFile::read_with_hints(&mut file, &hints).expect("Failed to parse gvas file");
+    let file = GvasFile::read_with_hints(&mut file, GameVersion::Default, &hints)
+        .expect("Failed to parse gvas file");
 
     assert_eq!(
         file.header,
@@ -485,7 +487,8 @@ fn write_save_slot_03() {
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
     let hints = get_hints();
-    let file = GvasFile::read_with_hints(&mut cursor, &hints).expect("Failed to parse gvas file");
+    let file = GvasFile::read_with_hints(&mut cursor, GameVersion::Default, &hints)
+        .expect("Failed to parse gvas file");
 
     // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());
@@ -498,7 +501,7 @@ fn write_save_slot_03() {
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
     let hints = get_hints();
-    let read_back = GvasFile::read_with_hints(&mut reader, &hints)
+    let read_back = GvasFile::read_with_hints(&mut reader, GameVersion::Default, &hints)
         .expect("Failed to read serialized gvas file");
 
     // Compare the two GvasFiles

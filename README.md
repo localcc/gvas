@@ -35,7 +35,7 @@ use gvas::GvasFile;
 use std::fs::File;
 
 let mut file = File::open("save.sav")?;
-let gvas_file = GvasFile::read(&mut file);
+let gvas_file = GvasFile::read(&mut file, GameVersion::Default);
 
 println!("{:#?}", gvas_file);
 ```

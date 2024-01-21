@@ -7,6 +7,7 @@ use std::{
 
 use gvas::custom_version::FCustomVersion;
 use gvas::engine_version::FEngineVersion;
+use gvas::game_version::GameVersion;
 use gvas::{
     properties::{
         delegate_property::{
@@ -24,7 +25,7 @@ fn read_delegate() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/Delegate.sav");
     let mut file = File::open(path).expect("Failed to open test asset");
 
-    let file = GvasFile::read(&mut file).expect("Failed to parse gvas file");
+    let file = GvasFile::read(&mut file, GameVersion::Default).expect("Failed to parse gvas file");
 
     assert_eq!(
         file.header,
@@ -263,7 +264,8 @@ fn write_delegate() {
 
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-    let file = GvasFile::read(&mut cursor).expect("Failed to parse gvas file");
+    let file =
+        GvasFile::read(&mut cursor, GameVersion::Default).expect("Failed to parse gvas file");
 
     // Convert the GvasFile back to a Vec<u8>
     let mut writer = Cursor::new(Vec::new());
@@ -275,7 +277,8 @@ fn write_delegate() {
 
     // Read the file back in again
     let mut reader = Cursor::new(writer.get_ref().to_owned());
-    let read_back = GvasFile::read(&mut reader).expect("Failed to read serialized gvas file");
+    let read_back = GvasFile::read(&mut reader, GameVersion::Default)
+        .expect("Failed to read serialized gvas file");
 
     // Compare the two GvasFiles
     assert_eq!(file, read_back);
