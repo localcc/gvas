@@ -55,6 +55,11 @@ fn serde_package_version_524() {
 }
 
 #[test]
+fn serde_profile_0() {
+    test_file_with_hints(PROFILE_0_PATH, &profile0::hints());
+}
+
+#[test]
 fn serde_regression_01() {
     test_file(REGRESSION_01_PATH);
 }
