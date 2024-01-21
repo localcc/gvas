@@ -25,8 +25,12 @@ flate2 = "1.0.28"
 serde = ["dep:serde", "ordered-float/serde", "indexmap/serde"]
 
 [dev-dependencies]
-serde_json = "1.0.96"
+serde_json = { version = "1.0.96", features = ["float_roundtrip"] }
 
 [[test]]
 name = "serde"
+required-features = ["serde"]
+
+[[test]]
+name = "serde_json"
 required-features = ["serde"]
