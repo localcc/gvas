@@ -99,6 +99,7 @@ use flate2::Compression;
 use indexmap::IndexMap;
 use ord_ext::OrdExt;
 use properties::{Property, PropertyOptions, PropertyTrait};
+use types::Guid;
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.
 pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
@@ -117,7 +118,7 @@ pub enum GvasHeader {
         /// Custom version format.
         custom_version_format: u32,
         /// Custom versions.
-        custom_versions: Vec<FCustomVersion>,
+        custom_versions: IndexMap<Guid, u32>,
         /// Save game class name.
         save_game_class_name: String,
     },
@@ -132,7 +133,7 @@ pub enum GvasHeader {
         /// Custom version format.
         custom_version_format: u32,
         /// Custom versions.
-        custom_versions: Vec<FCustomVersion>,
+        custom_versions: IndexMap<Guid, u32>,
         /// Save game class name.
         save_game_class_name: String,
     },
@@ -197,9 +198,10 @@ impl GvasHeader {
         }
 
         let custom_versions_len = cursor.read_u32::<LittleEndian>()? as usize;
-        let mut custom_versions = Vec::with_capacity(custom_versions_len);
+        let mut custom_versions = IndexMap::new();
         for _ in 0..custom_versions_len {
-            custom_versions.push(FCustomVersion::read(cursor)?);
+            let FCustomVersion { key, version } = FCustomVersion::read(cursor)?;
+            custom_versions.insert(key, version);
         }
 
         let save_game_class_name = cursor.read_string()?;
@@ -257,8 +259,8 @@ impl GvasHeader {
                 cursor.write_u32::<LittleEndian>(*custom_version_format)?;
                 cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
 
-                for custom_version in custom_versions {
-                    custom_version.write(cursor)?;
+                for (&key, &version) in custom_versions {
+                    FCustomVersion::new(key, version).write(cursor)?;
                 }
 
                 cursor.write_string(save_game_class_name)?;
@@ -278,8 +280,8 @@ impl GvasHeader {
                 cursor.write_u32::<LittleEndian>(*custom_version_format)?;
                 cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
 
-                for custom_version in custom_versions {
-                    custom_version.write(cursor)?;
+                for (&key, &version) in custom_versions {
+                    FCustomVersion::new(key, version).write(cursor)?
                 }
 
                 cursor.write_string(save_game_class_name)?;
@@ -289,14 +291,14 @@ impl GvasHeader {
     }
 
     /// Get custom versions from this header
-    pub fn get_custom_versions(&self) -> &[FCustomVersion] {
+    pub fn get_custom_versions(&self) -> &IndexMap<Guid, u32> {
         match self {
             GvasHeader::Version2 {
                 custom_versions, ..
-            } => custom_versions.as_slice(),
+            } => custom_versions,
             GvasHeader::Version3 {
                 custom_versions, ..
-            } => custom_versions.as_slice(),
+            } => custom_versions,
         }
     }
 }
