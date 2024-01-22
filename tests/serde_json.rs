@@ -368,7 +368,6 @@ fn enum_property() {
         &Property::EnumProperty(EnumProperty::new(None, String::from("a"))),
         r#"{
   "type": "EnumProperty",
-  "enum_type": null,
   "value": "a"
 }"#,
     );
@@ -723,9 +722,7 @@ fn text_none_none() {
   "type": "TextProperty",
   "flags": 0,
   "history": {
-    "None": {
-      "culture_invariant_string": null
-    }
+    "None": {}
   }
 }"#,
     );
@@ -767,11 +764,7 @@ fn text_base() {
   "type": "TextProperty",
   "flags": 0,
   "history": {
-    "Base": {
-      "namespace": null,
-      "key": null,
-      "source_string": null
-    }
+    "Base": {}
   }
 }"#,
     );

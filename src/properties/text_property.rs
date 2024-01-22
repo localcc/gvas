@@ -157,6 +157,7 @@ pub enum TextHistoryType {
 
 /// FText history
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum FTextHistory {
     /// None
