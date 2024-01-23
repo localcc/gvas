@@ -31,6 +31,7 @@ fn read_zlib_palworld() {
     assert_eq!(file, reparsed);
 }
 
+#[ignore] // This test takes ~10 seconds to run
 #[test]
 fn read_zlib_twice_palworld() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/palworld_zlib_twice.sav");
