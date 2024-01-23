@@ -29,7 +29,7 @@ use gvas::{
     types::Guid,
     GvasFile,
 };
-use indexmap::IndexMap;
+use indexmap::{indexmap, IndexMap};
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::Debug,
@@ -209,7 +209,7 @@ fn array_int16() {
 }
 
 #[test]
-fn array_int() {
+fn array_int32() {
     serde_json(
         &Property::ArrayProperty(
             ArrayProperty::new(
@@ -388,6 +388,195 @@ fn array_uint64() {
 }
 
 #[test]
+fn array_bool() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("BoolProperty"),
+                None,
+                vec![
+                    Property::BoolProperty(BoolProperty::new(false)),
+                    Property::BoolProperty(BoolProperty::new(true)),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "BoolProperty",
+  "properties": [
+    {
+      "type": "BoolProperty",
+      "value": false
+    },
+    {
+      "type": "BoolProperty",
+      "value": true
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_double() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("DoubleProperty"),
+                None,
+                vec![
+                    Property::DoubleProperty(DoubleProperty::new(1f64)),
+                    Property::DoubleProperty(DoubleProperty::new(2f64)),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "DoubleProperty",
+  "properties": [
+    {
+      "type": "DoubleProperty",
+      "value": 1.0
+    },
+    {
+      "type": "DoubleProperty",
+      "value": 2.0
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_float() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("FloatProperty"),
+                None,
+                vec![
+                    Property::FloatProperty(FloatProperty::new(1f32)),
+                    Property::FloatProperty(FloatProperty::new(2f32)),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "FloatProperty",
+  "properties": [
+    {
+      "type": "FloatProperty",
+      "value": 1.0
+    },
+    {
+      "type": "FloatProperty",
+      "value": 2.0
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_enum() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("EnumProperty"),
+                None,
+                vec![
+                    Property::EnumProperty(EnumProperty::new(None, "a".to_string())),
+                    Property::EnumProperty(EnumProperty::new(
+                        Some("ns".to_string()),
+                        "b".to_string(),
+                    )),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "EnumProperty",
+  "properties": [
+    {
+      "type": "EnumProperty",
+      "value": "a"
+    },
+    {
+      "type": "EnumProperty",
+      "enum_type": "ns",
+      "value": "b"
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_name() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("NameProperty"),
+                None,
+                vec![
+                    Property::NameProperty(NameProperty::from(None)),
+                    Property::NameProperty(NameProperty::from("b")),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "NameProperty",
+  "properties": [
+    {
+      "type": "NameProperty"
+    },
+    {
+      "type": "NameProperty",
+      "value": "b"
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_object() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("ObjectProperty"),
+                None,
+                vec![
+                    Property::ObjectProperty(ObjectProperty::from("a")),
+                    Property::ObjectProperty(ObjectProperty::from("b")),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "ObjectProperty",
+  "properties": [
+    {
+      "type": "ObjectProperty",
+      "value": "a"
+    },
+    {
+      "type": "ObjectProperty",
+      "value": "b"
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
 fn array_str() {
     serde_json(
         &Property::ArrayProperty(
@@ -395,7 +584,7 @@ fn array_str() {
                 String::from("StrProperty"),
                 None,
                 vec![
-                    Property::StrProperty(StrProperty::from("a")),
+                    Property::StrProperty(StrProperty::new(None)),
                     Property::StrProperty(StrProperty::from("b")),
                 ],
             )
@@ -406,12 +595,58 @@ fn array_str() {
   "property_type": "StrProperty",
   "properties": [
     {
-      "type": "StrProperty",
-      "value": "a"
+      "type": "StrProperty"
     },
     {
       "type": "StrProperty",
       "value": "b"
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_map() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("MapProperty"),
+                None,
+                vec![
+                    Property::MapProperty(MapProperty::new(
+                        "kta".to_string(),
+                        "vta".to_string(),
+                        0,
+                        indexmap! {},
+                    )),
+                    Property::MapProperty(MapProperty::new(
+                        "ktb".to_string(),
+                        "vtb".to_string(),
+                        1,
+                        indexmap! {},
+                    )),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "MapProperty",
+  "properties": [
+    {
+      "type": "MapProperty",
+      "key_type": "kta",
+      "value_type": "vta",
+      "allocation_flags": 0,
+      "value": []
+    },
+    {
+      "type": "MapProperty",
+      "key_type": "ktb",
+      "value_type": "vtb",
+      "allocation_flags": 1,
+      "value": []
     }
   ]
 }"#,
@@ -746,8 +981,7 @@ fn name_array_index() {
         }),
         r#"{
   "type": "NameProperty",
-  "array_index": 1,
-  "value": null
+  "array_index": 1
 }"#,
     )
 }
@@ -760,8 +994,7 @@ fn name_none() {
             value: None,
         }),
         r#"{
-  "type": "NameProperty",
-  "value": null
+  "type": "NameProperty"
 }"#,
     )
 }
@@ -947,8 +1180,7 @@ fn str_none() {
     serde_json(
         &Property::StrProperty(StrProperty { value: None }),
         r#"{
-  "type": "StrProperty",
-  "value": null
+  "type": "StrProperty"
 }"#,
     )
 }
