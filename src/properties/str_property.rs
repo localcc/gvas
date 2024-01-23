@@ -9,6 +9,7 @@ use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTr
 
 /// A property that holds a GVAS string value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StrProperty {
     /// Value of the GVAS string.
