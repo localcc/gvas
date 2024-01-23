@@ -12,6 +12,7 @@ use super::{impl_read_header, impl_write, impl_write_header_part, PropertyOption
 
 /// A property that holds an enum value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnumProperty {
     enum_type: Option<String>,
