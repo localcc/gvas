@@ -16,7 +16,10 @@ use gvas::{
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::{DateTime, VectorF},
-        text_property::{FText, TextProperty},
+        text_property::{
+            DateTimeStyle, FText, FTextHistory, FormatArgumentData, FormatArgumentValue,
+            NumberFormattingOptions, RoundingMode, TextProperty, TransformType,
+        },
         unknown_property::UnknownProperty,
         Property,
     },
@@ -757,7 +760,7 @@ fn text_none_some_some() {
 }
 
 #[test]
-fn text_base() {
+fn text_base_none() {
     serde_json(
         &Property::TextProperty(TextProperty::new(FText::new_base(0, None, None, None))),
         r#"{
@@ -768,6 +771,10 @@ fn text_base() {
   }
 }"#,
     );
+}
+
+#[test]
+fn text_base_filled() {
     serde_json(
         &Property::TextProperty(TextProperty::new(FText::new_base(
             1,
@@ -783,6 +790,349 @@ fn text_base() {
       "namespace": "ns",
       "key": "k",
       "source_string": "ss"
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_namedformat() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::NamedFormat {
+                source_format: Box::new(FText {
+                    flags: 1,
+                    history: FTextHistory::None {
+                        culture_invariant_string: None,
+                    },
+                }),
+                arguments: IndexMap::from([(String::from("key"), FormatArgumentValue::Int(2))]),
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "NamedFormat": {
+      "source_format": {
+        "flags": 1,
+        "history": {
+          "None": {}
+        }
+      },
+      "arguments": {
+        "key": {
+          "Int": 2
+        }
+      }
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_orderedformat() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::OrderedFormat {
+                source_format: Box::new(FText {
+                    flags: 1,
+                    history: FTextHistory::None {
+                        culture_invariant_string: None,
+                    },
+                }),
+                arguments: vec![FormatArgumentValue::UInt(2)],
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "OrderedFormat": {
+      "source_format": {
+        "flags": 1,
+        "history": {
+          "None": {}
+        }
+      },
+      "arguments": [
+        {
+          "UInt": 2
+        }
+      ]
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_argumentformat() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::ArgumentFormat {
+                source_format: Box::new(FText {
+                    flags: 1,
+                    history: FTextHistory::None {
+                        culture_invariant_string: None,
+                    },
+                }),
+                arguments: vec![FormatArgumentData {
+                    name: String::from("key"),
+                    value: FormatArgumentValue::UInt(2),
+                }],
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "ArgumentFormat": {
+      "source_format": {
+        "flags": 1,
+        "history": {
+          "None": {}
+        }
+      },
+      "arguments": [
+        {
+          "name": "key",
+          "value": {
+            "UInt": 2
+          }
+        }
+      ]
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_asnumber() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::AsNumber {
+                source_value: Box::new(FormatArgumentValue::Text(FText {
+                    flags: 1,
+                    history: FTextHistory::None {
+                        culture_invariant_string: None,
+                    },
+                })),
+                format_options: Some(NumberFormattingOptions {
+                    always_include_sign: true,
+                    use_grouping: true,
+                    rounding_mode: RoundingMode::ToZero,
+                    minimum_integral_digits: 2,
+                    maximum_integral_digits: 3,
+                    minimum_fractional_digits: 4,
+                    maximum_fractional_digits: 5,
+                }),
+                target_culture: Some(String::from("culture")),
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "AsNumber": {
+      "source_value": {
+        "Text": {
+          "flags": 1,
+          "history": {
+            "None": {}
+          }
+        }
+      },
+      "format_options": {
+        "always_include_sign": true,
+        "use_grouping": true,
+        "rounding_mode": "ToZero",
+        "minimum_integral_digits": 2,
+        "maximum_integral_digits": 3,
+        "minimum_fractional_digits": 4,
+        "maximum_fractional_digits": 5
+      },
+      "target_culture": "culture"
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_ascurrency() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::AsNumber {
+                source_value: Box::new(FormatArgumentValue::Text(FText {
+                    flags: 1,
+                    history: FTextHistory::None {
+                        culture_invariant_string: None,
+                    },
+                })),
+                format_options: Some(NumberFormattingOptions {
+                    always_include_sign: true,
+                    use_grouping: true,
+                    rounding_mode: RoundingMode::ToZero,
+                    minimum_integral_digits: 2,
+                    maximum_integral_digits: 3,
+                    minimum_fractional_digits: 4,
+                    maximum_fractional_digits: 5,
+                }),
+                target_culture: Some(String::from("culture")),
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "AsNumber": {
+      "source_value": {
+        "Text": {
+          "flags": 1,
+          "history": {
+            "None": {}
+          }
+        }
+      },
+      "format_options": {
+        "always_include_sign": true,
+        "use_grouping": true,
+        "rounding_mode": "ToZero",
+        "minimum_integral_digits": 2,
+        "maximum_integral_digits": 3,
+        "minimum_fractional_digits": 4,
+        "maximum_fractional_digits": 5
+      },
+      "target_culture": "culture"
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_asdate() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::AsDate {
+                date_time: DateTime { ticks: 1 },
+                date_style: DateTimeStyle::Default,
+                target_culture: String::from("culture"),
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "AsDate": {
+      "date_time": {
+        "ticks": 1
+      },
+      "date_style": "Default",
+      "target_culture": "culture"
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_astime() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::AsTime {
+                source_date_time: DateTime { ticks: 1 },
+                time_style: DateTimeStyle::Default,
+                time_zone: String::from("zone"),
+                target_culture: String::from("culture"),
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "AsTime": {
+      "source_date_time": {
+        "ticks": 1
+      },
+      "time_style": "Default",
+      "time_zone": "zone",
+      "target_culture": "culture"
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_asdatetime() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::AsDateTime {
+                source_date_time: DateTime { ticks: 1 },
+                date_style: DateTimeStyle::Default,
+                time_style: DateTimeStyle::Default,
+                time_zone: String::from("zone"),
+                target_culture: String::from("culture"),
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "AsDateTime": {
+      "source_date_time": {
+        "ticks": 1
+      },
+      "date_style": "Default",
+      "time_style": "Default",
+      "time_zone": "zone",
+      "target_culture": "culture"
+    }
+  }
+}"#,
+    );
+}
+
+#[test]
+fn text_transform() {
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText {
+            flags: 0,
+            history: FTextHistory::Transform {
+                source_text: Box::new(FText {
+                    flags: 1,
+                    history: FTextHistory::None {
+                        culture_invariant_string: None,
+                    },
+                }),
+                transform_type: TransformType::ToLower,
+            },
+        })),
+        r#"{
+  "type": "TextProperty",
+  "flags": 0,
+  "history": {
+    "Transform": {
+      "source_text": {
+        "flags": 1,
+        "history": {
+          "None": {}
+        }
+      },
+      "transform_type": "ToLower"
     }
   }
 }"#,
