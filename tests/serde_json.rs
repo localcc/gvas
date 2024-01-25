@@ -724,9 +724,7 @@ fn text_none_none() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "None": {}
-  }
+  "history": "None"
 }"#,
     );
 }
@@ -736,7 +734,7 @@ fn text_none_none() {
 fn text_none_some_none() {
     // serde_json(
     //     &Property::TextProperty(TextProperty::new(FText::new_none(1, Some(None)))),
-    //     "{\n  \"type\": \"TextProperty\",\n  \"flags\": 1,\n  \"history\": {\n    \"None\": {\n      \"culture_invariant_string\": null\n    }\n  }\n}",
+    //     "{\n  \"type\": \"TextProperty\",\n  \"flags\": 1,\n  \"history\": \"None\"\n}",
     // );
 }
 
@@ -750,11 +748,8 @@ fn text_none_some_some() {
         r#"{
   "type": "TextProperty",
   "flags": 2,
-  "history": {
-    "None": {
-      "culture_invariant_string": "a"
-    }
-  }
+  "history": "None",
+  "culture_invariant_string": "a"
 }"#,
     );
 }
@@ -766,9 +761,7 @@ fn text_base_none() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "Base": {}
-  }
+  "history": "Base"
 }"#,
     );
 }
@@ -785,13 +778,10 @@ fn text_base_filled() {
         r#"{
   "type": "TextProperty",
   "flags": 1,
-  "history": {
-    "Base": {
-      "namespace": "ns",
-      "key": "k",
-      "source_string": "ss"
-    }
-  }
+  "history": "Base",
+  "namespace": "ns",
+  "key": "k",
+  "source_string": "ss"
 }"#,
     );
 }
@@ -814,19 +804,14 @@ fn text_namedformat() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "NamedFormat": {
-      "source_format": {
-        "flags": 1,
-        "history": {
-          "None": {}
-        }
-      },
-      "arguments": {
-        "key": {
-          "Int": 2
-        }
-      }
+  "history": "NamedFormat",
+  "source_format": {
+    "flags": 1,
+    "history": "None"
+  },
+  "arguments": {
+    "key": {
+      "Int": 2
     }
   }
 }"#,
@@ -851,21 +836,16 @@ fn text_orderedformat() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "OrderedFormat": {
-      "source_format": {
-        "flags": 1,
-        "history": {
-          "None": {}
-        }
-      },
-      "arguments": [
-        {
-          "UInt": 2
-        }
-      ]
+  "history": "OrderedFormat",
+  "source_format": {
+    "flags": 1,
+    "history": "None"
+  },
+  "arguments": [
+    {
+      "UInt": 2
     }
-  }
+  ]
 }"#,
     );
 }
@@ -891,24 +871,19 @@ fn text_argumentformat() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "ArgumentFormat": {
-      "source_format": {
-        "flags": 1,
-        "history": {
-          "None": {}
-        }
-      },
-      "arguments": [
-        {
-          "name": "key",
-          "value": {
-            "UInt": 2
-          }
-        }
-      ]
+  "history": "ArgumentFormat",
+  "source_format": {
+    "flags": 1,
+    "history": "None"
+  },
+  "arguments": [
+    {
+      "name": "key",
+      "value": {
+        "UInt": 2
+      }
     }
-  }
+  ]
 }"#,
     );
 }
@@ -940,28 +915,23 @@ fn text_asnumber() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "AsNumber": {
-      "source_value": {
-        "Text": {
-          "flags": 1,
-          "history": {
-            "None": {}
-          }
-        }
-      },
-      "format_options": {
-        "always_include_sign": true,
-        "use_grouping": true,
-        "rounding_mode": "ToZero",
-        "minimum_integral_digits": 2,
-        "maximum_integral_digits": 3,
-        "minimum_fractional_digits": 4,
-        "maximum_fractional_digits": 5
-      },
-      "target_culture": "culture"
+  "history": "AsNumber",
+  "source_value": {
+    "Text": {
+      "flags": 1,
+      "history": "None"
     }
-  }
+  },
+  "format_options": {
+    "always_include_sign": true,
+    "use_grouping": true,
+    "rounding": "ToZero",
+    "minimum_integral_digits": 2,
+    "maximum_integral_digits": 3,
+    "minimum_fractional_digits": 4,
+    "maximum_fractional_digits": 5
+  },
+  "target_culture": "culture"
 }"#,
     );
 }
@@ -993,28 +963,23 @@ fn text_ascurrency() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "AsNumber": {
-      "source_value": {
-        "Text": {
-          "flags": 1,
-          "history": {
-            "None": {}
-          }
-        }
-      },
-      "format_options": {
-        "always_include_sign": true,
-        "use_grouping": true,
-        "rounding_mode": "ToZero",
-        "minimum_integral_digits": 2,
-        "maximum_integral_digits": 3,
-        "minimum_fractional_digits": 4,
-        "maximum_fractional_digits": 5
-      },
-      "target_culture": "culture"
+  "history": "AsNumber",
+  "source_value": {
+    "Text": {
+      "flags": 1,
+      "history": "None"
     }
-  }
+  },
+  "format_options": {
+    "always_include_sign": true,
+    "use_grouping": true,
+    "rounding": "ToZero",
+    "minimum_integral_digits": 2,
+    "maximum_integral_digits": 3,
+    "minimum_fractional_digits": 4,
+    "maximum_fractional_digits": 5
+  },
+  "target_culture": "culture"
 }"#,
     );
 }
@@ -1033,15 +998,12 @@ fn text_asdate() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "AsDate": {
-      "date_time": {
-        "ticks": 1
-      },
-      "date_style": "Default",
-      "target_culture": "culture"
-    }
-  }
+  "history": "AsDate",
+  "date_time": {
+    "ticks": 1
+  },
+  "date_style": "Default",
+  "target_culture": "culture"
 }"#,
     );
 }
@@ -1061,16 +1023,13 @@ fn text_astime() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "AsTime": {
-      "source_date_time": {
-        "ticks": 1
-      },
-      "time_style": "Default",
-      "time_zone": "zone",
-      "target_culture": "culture"
-    }
-  }
+  "history": "AsTime",
+  "source_date_time": {
+    "ticks": 1
+  },
+  "time_style": "Default",
+  "time_zone": "zone",
+  "target_culture": "culture"
 }"#,
     );
 }
@@ -1091,17 +1050,14 @@ fn text_asdatetime() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "AsDateTime": {
-      "source_date_time": {
-        "ticks": 1
-      },
-      "date_style": "Default",
-      "time_style": "Default",
-      "time_zone": "zone",
-      "target_culture": "culture"
-    }
-  }
+  "history": "AsDateTime",
+  "source_date_time": {
+    "ticks": 1
+  },
+  "date_style": "Default",
+  "time_style": "Default",
+  "time_zone": "zone",
+  "target_culture": "culture"
 }"#,
     );
 }
@@ -1124,17 +1080,12 @@ fn text_transform() {
         r#"{
   "type": "TextProperty",
   "flags": 0,
-  "history": {
-    "Transform": {
-      "source_text": {
-        "flags": 1,
-        "history": {
-          "None": {}
-        }
-      },
-      "transform_type": "ToLower"
-    }
-  }
+  "history": "Transform",
+  "source_text": {
+    "flags": 1,
+    "history": "None"
+  },
+  "transform": "ToLower"
 }"#,
     );
 }
