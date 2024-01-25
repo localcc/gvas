@@ -310,7 +310,6 @@ pub struct GvasFile {
     /// GVAS file header.
     pub header: GvasHeader,
     /// GVAS properties.
-    #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
     pub properties: IndexMap<String, Property>,
 }
 
