@@ -65,6 +65,7 @@ pub struct FText {
     /// Text flags
     pub flags: u32,
     /// Text history
+    #[cfg_attr(feature = "serde", serde(flatten))]
     pub history: FTextHistory,
 }
 
@@ -159,6 +160,7 @@ pub enum TextHistoryType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(tag = "history"))]
 pub enum FTextHistory {
     /// None
     None {
@@ -263,6 +265,7 @@ pub enum FTextHistory {
         /// Source text
         source_text: Box<FText>,
         /// Transform type
+        #[cfg_attr(feature = "serde", serde(flatten))]
         transform_type: TransformType,
     },
     /// String table entry
@@ -940,6 +943,7 @@ impl FormatArgumentValue {
 /// Rounding mode
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, IntoPrimitive, TryFromPrimitive)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(tag = "rounding"))]
 #[repr(i8)]
 pub enum RoundingMode {
     /// Rounds to the nearest place, equidistant ties go to the value which is closest to an even value: 1.5 becomes 2, 0.5 becomes 0
@@ -967,6 +971,7 @@ pub struct NumberFormattingOptions {
     /// Use grouping
     pub use_grouping: bool,
     /// Rounding mode
+    #[cfg_attr(feature = "serde", serde(flatten))]
     pub rounding_mode: RoundingMode,
     /// Minimum integral digits
     pub minimum_integral_digits: i32,
@@ -1035,6 +1040,7 @@ pub enum DateTimeStyle {
 /// Transform type
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, IntoPrimitive, TryFromPrimitive)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(tag = "transform"))]
 #[repr(u8)]
 pub enum TransformType {
     /// To lowercase
