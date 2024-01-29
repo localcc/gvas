@@ -82,201 +82,63 @@ fn file_regression_01() {
       "branch": "++UE4+Release-4.23"
     },
     "custom_version_format": 3,
-    "custom_versions": [
-      {
-        "key": "22D5549C-BE4F-26A8-4607-2194D082B461",
-        "version": 23
-      },
-      {
-        "key": "E432D8B0-0D4F-891F-B77E-CFACA24AFD36",
-        "version": 10
-      },
-      {
-        "key": "2843C6E1-534D-2CA2-868E-6CA38CBD1764",
-        "version": 0
-      },
-      {
-        "key": "3CC15E37-FB48-E406-F084-00B57E712A26",
-        "version": 3
-      },
-      {
-        "key": "ED68B0E4-E942-94F4-0BDA-31A241BB462E",
-        "version": 34
-      },
-      {
-        "key": "3F74FCCF-8044-B043-DF14-919373201D17",
-        "version": 35
-      },
-      {
-        "key": "B5492BB0-E944-20BB-B732-04A36003E452",
-        "version": 2
-      },
-      {
-        "key": "5C10E4A4-B549-A159-C440-C5A7EEDF7E54",
-        "version": 0
-      },
-      {
-        "key": "C931C839-DC47-E65A-179C-449A7C8E1C3E",
-        "version": 0
-      },
-      {
-        "key": "331BF078-984F-EAEB-EA84-B4B9A25AB9CC",
-        "version": 0
-      },
-      {
-        "key": "0F383166-E043-4D2D-27CF-09805AA95669",
-        "version": 0
-      },
-      {
-        "key": "9F8BF812-FC4A-7588-0CD9-7CA629BD3A38",
-        "version": 31
-      },
-      {
-        "key": "4CE75A7B-104C-70D2-9857-58A95A2A210B",
-        "version": 11
-      },
-      {
-        "key": "186929D7-DD4B-D61D-A864-E29D8438C13C",
-        "version": 2
-      },
-      {
-        "key": "7852A1C2-FE4A-E7BF-FF90-176C55F71D53",
-        "version": 1
-      },
-      {
-        "key": "D4A3AC6E-C14C-EC40-ED8B-86B7C58F4209",
-        "version": 3
-      },
-      {
-        "key": "DD75E529-2746-A3E0-76D2-109DEADC2C23",
-        "version": 17
-      },
-      {
-        "key": "5DA643AF-4749-D37F-8E3E-739805BBC1D9",
-        "version": 2
-      },
-      {
-        "key": "EC6C266B-8F4B-C71E-D9E4-0BA307FC4209",
-        "version": 1
-      },
-      {
-        "key": "613DF70D-EA47-3FA2-E989-27B79A49410C",
-        "version": 1
-      },
-      {
-        "key": "86181D60-844F-64AC-DED3-16AAD6C7EA0D",
-        "version": 27
-      },
-      {
-        "key": "D6BCFF9D-5801-4F49-8212-21E288A8923C",
-        "version": 6
-      },
-      {
-        "key": "ACD0AEF2-6F41-FE9A-7FAA-6486FCD626FA",
-        "version": 1
-      },
-      {
-        "key": "0B1F4F17-A545-C6B4-E82E-3FB17D91FBD0",
-        "version": 9
-      },
-      {
-        "key": "E79E7F71-3A49-B0E9-3291-B3880781381B",
-        "version": 6
-      },
-      {
-        "key": "B3DC7D8E-BB47-DA80-A246-D39FF64D9893",
-        "version": 1
-      },
-      {
-        "key": "CDB08ACB-DE4B-8CE7-9313-62A862EFE914",
-        "version": 0
-      },
-      {
-        "key": "F20A68FB-A34B-EF59-B519-A8BA3D44C873",
-        "version": 1
-      },
-      {
-        "key": "9186E0AF-5249-0D3A-3B67-73B61E2DF27C",
-        "version": 2
-      },
-      {
-        "key": "BDFDB52E-104D-AC01-8FF3-3681DAA59333",
-        "version": 5
-      },
-      {
-        "key": "4F359D50-2F49-E6F6-B285-49A71C633C07",
-        "version": 0
-      },
-      {
-        "key": "EAB762A4-3A4E-99F4-1FEC-C199B2E12482",
-        "version": 2
-      },
-      {
-        "key": "194D0C43-7049-5471-699B-6987E5B090DF",
-        "version": 13
-      },
-      {
-        "key": "BD32FEAA-144C-9553-255E-6AB6DDD13210",
-        "version": 1
-      },
-      {
-        "key": "8EE1AF23-584E-E14C-52C2-618DB7BE53B9",
-        "version": 8
-      },
-      {
-        "key": "40EB564A-DC11-F510-7E34-D392E76AC9B2",
-        "version": 2
-      },
-      {
-        "key": "004A8AD7-9746-58E8-B519-A8BAB4467D48",
-        "version": 17
-      },
-      {
-        "key": "86F87955-1F4C-3A93-7B08-BA832FB96163",
-        "version": 1
-      },
-      {
-        "key": "52BE2F61-0B40-53DA-914F-0D917C85B19F",
-        "version": 1
-      },
-      {
-        "key": "367A23A4-C941-EACA-F818-A28FF31B6858",
-        "version": 4
-      },
-      {
-        "key": "753F4E80-494B-8870-068C-D6A4DCB67E3C",
-        "version": 5
-      },
-      {
-        "key": "ED0A3111-614D-552E-A39A-67AF2C08A1C5",
-        "version": 17
-      },
-      {
-        "key": "965196AB-FC08-D845-8D22-D7B79E56AD78",
-        "version": 1
-      },
-      {
-        "key": "F37ABB24-834F-4656-C22D-2F1FFF96AD49",
-        "version": 4
-      },
-      {
-        "key": "12E426FB-4D4B-151F-0A55-7293702F1D96",
-        "version": 3
-      }
-    ],
+    "custom_versions": {
+      "22D5549C-BE4F-26A8-4607-2194D082B461": 23,
+      "E432D8B0-0D4F-891F-B77E-CFACA24AFD36": 10,
+      "2843C6E1-534D-2CA2-868E-6CA38CBD1764": 0,
+      "3CC15E37-FB48-E406-F084-00B57E712A26": 3,
+      "ED68B0E4-E942-94F4-0BDA-31A241BB462E": 34,
+      "3F74FCCF-8044-B043-DF14-919373201D17": 35,
+      "B5492BB0-E944-20BB-B732-04A36003E452": 2,
+      "5C10E4A4-B549-A159-C440-C5A7EEDF7E54": 0,
+      "C931C839-DC47-E65A-179C-449A7C8E1C3E": 0,
+      "331BF078-984F-EAEB-EA84-B4B9A25AB9CC": 0,
+      "0F383166-E043-4D2D-27CF-09805AA95669": 0,
+      "9F8BF812-FC4A-7588-0CD9-7CA629BD3A38": 31,
+      "4CE75A7B-104C-70D2-9857-58A95A2A210B": 11,
+      "186929D7-DD4B-D61D-A864-E29D8438C13C": 2,
+      "7852A1C2-FE4A-E7BF-FF90-176C55F71D53": 1,
+      "D4A3AC6E-C14C-EC40-ED8B-86B7C58F4209": 3,
+      "DD75E529-2746-A3E0-76D2-109DEADC2C23": 17,
+      "5DA643AF-4749-D37F-8E3E-739805BBC1D9": 2,
+      "EC6C266B-8F4B-C71E-D9E4-0BA307FC4209": 1,
+      "613DF70D-EA47-3FA2-E989-27B79A49410C": 1,
+      "86181D60-844F-64AC-DED3-16AAD6C7EA0D": 27,
+      "D6BCFF9D-5801-4F49-8212-21E288A8923C": 6,
+      "ACD0AEF2-6F41-FE9A-7FAA-6486FCD626FA": 1,
+      "0B1F4F17-A545-C6B4-E82E-3FB17D91FBD0": 9,
+      "E79E7F71-3A49-B0E9-3291-B3880781381B": 6,
+      "B3DC7D8E-BB47-DA80-A246-D39FF64D9893": 1,
+      "CDB08ACB-DE4B-8CE7-9313-62A862EFE914": 0,
+      "F20A68FB-A34B-EF59-B519-A8BA3D44C873": 1,
+      "9186E0AF-5249-0D3A-3B67-73B61E2DF27C": 2,
+      "BDFDB52E-104D-AC01-8FF3-3681DAA59333": 5,
+      "4F359D50-2F49-E6F6-B285-49A71C633C07": 0,
+      "EAB762A4-3A4E-99F4-1FEC-C199B2E12482": 2,
+      "194D0C43-7049-5471-699B-6987E5B090DF": 13,
+      "BD32FEAA-144C-9553-255E-6AB6DDD13210": 1,
+      "8EE1AF23-584E-E14C-52C2-618DB7BE53B9": 8,
+      "40EB564A-DC11-F510-7E34-D392E76AC9B2": 2,
+      "004A8AD7-9746-58E8-B519-A8BAB4467D48": 17,
+      "86F87955-1F4C-3A93-7B08-BA832FB96163": 1,
+      "52BE2F61-0B40-53DA-914F-0D917C85B19F": 1,
+      "367A23A4-C941-EACA-F818-A28FF31B6858": 4,
+      "753F4E80-494B-8870-068C-D6A4DCB67E3C": 5,
+      "ED0A3111-614D-552E-A39A-67AF2C08A1C5": 17,
+      "965196AB-FC08-D845-8D22-D7B79E56AD78": 1,
+      "F37ABB24-834F-4656-C22D-2F1FFF96AD49": 4,
+      "12E426FB-4D4B-151F-0A55-7293702F1D96": 3
+    },
     "save_game_class_name": "/Script/SaveTest.TestSaveGame"
   },
-  "properties": [
-    [
-      "Thing",
-      {
-        "type": "StructProperty",
-        "value": {
-          "Guid": "D49982B3-DF3D-D549-B4AE-57C71D5838E4"
-        }
+  "properties": {
+    "Thing": {
+      "type": "StructProperty",
+      "value": {
+        "Guid": "D49982B3-DF3D-D549-B4AE-57C71D5838E4"
       }
-    ]
-  ]
+    }
+  }
 }"#,
     );
 }

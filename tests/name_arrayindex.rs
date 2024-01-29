@@ -1,4 +1,5 @@
 use gvas::properties::{name_property::NameProperty, PropertyOptions, PropertyTrait};
+use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::io::Cursor;
 use unreal_helpers::UnrealReadExt;
@@ -32,7 +33,7 @@ fn name_property_with_array_index() {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
         large_world_coordinates: false,
-        custom_versions: &[],
+        custom_versions: &IndexMap::new(),
     };
     let mut writer = Cursor::new(Vec::new());
     prop.write(&mut writer, true, &mut options)

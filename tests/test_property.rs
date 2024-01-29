@@ -36,7 +36,7 @@ macro_rules! test_property {
                 hints: &HashMap::new(),
                 properties_stack: &mut Vec::new(),
                 large_world_coordinates: false,
-                custom_versions: &[],
+                custom_versions: &IndexMap::new(),
             };
 
             // Export the property to a byte array
