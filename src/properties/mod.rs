@@ -525,13 +525,23 @@ pub struct PropertyOptions<'a> {
 
 impl<'a> PropertyOptions<'a> {
     /// Get custom version
+    #[inline]
     pub fn get_custom_version<T>(&self) -> FCustomVersion
     where
-        T: CustomVersionTrait + Into<i32>,
+        T: CustomVersionTrait + Into<u32>,
     {
         let key = T::GUID;
-        let version = self.custom_versions.get(&key).map_or(0, |&version| version);
+        let version = self.custom_versions.get(&key).copied().unwrap_or(0);
         FCustomVersion { key, version }
+    }
+
+    /// Check for custom version support
+    #[inline]
+    pub fn supports_version<T>(&self, required: T) -> bool
+    where
+        T: CustomVersionTrait + Into<u32>,
+    {
+        self.get_custom_version::<T>().version >= required.into()
     }
 }
 

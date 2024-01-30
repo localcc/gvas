@@ -288,12 +288,10 @@ impl FTextHistory {
 
         Ok(match history_type {
             TextHistoryType::None => {
-                let culture_invariant_string = if options
-                    .get_custom_version::<FEditorObjectVersion>()
-                    .version
-                    >= FEditorObjectVersion::CultureInvariantTextSerializationKeyStability as u32
-                {
-                    let has_culture_invariant_string = cursor.read_u32::<LittleEndian>()? != 0;
+                let culture_invariant_string = if options.supports_version(
+                    FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
+                ) {
+                    let has_culture_invariant_string = cursor.read_b32()?;
                     if has_culture_invariant_string {
                         Some(cursor.read_fstring()?)
                     } else {
@@ -367,7 +365,7 @@ impl FTextHistory {
             TextHistoryType::AsNumber => {
                 let source_value = Box::new(FormatArgumentValue::read(cursor, options)?);
 
-                let has_format_options = cursor.read_u32::<LittleEndian>()? != 0;
+                let has_format_options = cursor.read_b32()?;
                 let format_options = if has_format_options {
                     Some(NumberFormattingOptions::read(cursor)?)
                 } else {
@@ -385,7 +383,7 @@ impl FTextHistory {
             TextHistoryType::AsPercent => {
                 let source_value = Box::new(FormatArgumentValue::read(cursor, options)?);
 
-                let has_format_options = cursor.read_u32::<LittleEndian>()? != 0;
+                let has_format_options = cursor.read_b32()?;
                 let format_options = if has_format_options {
                     Some(NumberFormattingOptions::read(cursor)?)
                 } else {
@@ -405,7 +403,7 @@ impl FTextHistory {
 
                 let source_value = Box::new(FormatArgumentValue::read(cursor, options)?);
 
-                let has_format_options = cursor.read_u32::<LittleEndian>()? != 0;
+                let has_format_options = cursor.read_b32()?;
                 let format_options = if has_format_options {
                     Some(NumberFormattingOptions::read(cursor)?)
                 } else {
@@ -502,13 +500,10 @@ impl FTextHistory {
             } => {
                 cursor.write_i8(TextHistoryType::None as i8)?;
 
-                if options.get_custom_version::<FEditorObjectVersion>().version
-                    >= FEditorObjectVersion::CultureInvariantTextSerializationKeyStability as u32
-                {
-                    cursor.write_u32::<LittleEndian>(match culture_invariant_string.is_some() {
-                        true => 1,
-                        false => 0,
-                    })?;
+                if options.supports_version(
+                    FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
+                ) {
+                    cursor.write_b32(culture_invariant_string.is_some())?;
 
                     if let Some(culture_invariant_string) = culture_invariant_string {
                         cursor.write_fstring(culture_invariant_string.as_deref())?;
@@ -575,10 +570,7 @@ impl FTextHistory {
 
                 source_value.write(cursor, options)?;
 
-                cursor.write_u32::<LittleEndian>(match format_options.is_some() {
-                    true => 1,
-                    false => 0,
-                })?;
+                cursor.write_b32(format_options.is_some())?;
                 if let Some(format_options) = format_options {
                     format_options.write(cursor)?;
                 };
@@ -594,10 +586,7 @@ impl FTextHistory {
 
                 source_value.write(cursor, options)?;
 
-                cursor.write_u32::<LittleEndian>(match format_options.is_some() {
-                    true => 1,
-                    false => 0,
-                })?;
+                cursor.write_b32(format_options.is_some())?;
                 if let Some(format_options) = format_options {
                     format_options.write(cursor)?;
                 }
@@ -614,10 +603,7 @@ impl FTextHistory {
 
                 source_value.write(cursor, options)?;
 
-                cursor.write_u32::<LittleEndian>(match format_options.is_some() {
-                    true => 1,
-                    false => 0,
-                })?;
+                cursor.write_b32(format_options.is_some())?;
                 if let Some(format_options) = format_options {
                     format_options.write(cursor)?;
                 }
@@ -986,8 +972,8 @@ pub struct NumberFormattingOptions {
 impl NumberFormattingOptions {
     /// Read [`NumberFormattingOptions`] from a cursor
     pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
-        let always_include_sign = cursor.read_u32::<LittleEndian>()? != 0;
-        let use_grouping = cursor.read_u32::<LittleEndian>()? != 0;
+        let always_include_sign = cursor.read_b32()?;
+        let use_grouping = cursor.read_b32()?;
         let rounding_mode =
             RoundingMode::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
         let minimum_integral_digits = cursor.read_i32::<LittleEndian>()?;
