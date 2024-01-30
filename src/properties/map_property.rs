@@ -28,7 +28,7 @@ pub struct MapProperty {
     /// Allocation flags.
     pub allocation_flags: u32,
     /// Map entries.
-    #[cfg_attr(feature = "serde", serde(with = "indexmap::serde_seq"))]
+    #[cfg_attr(feature = "serde", serde(with = "indexmap::map::serde_seq"))]
     pub value: IndexMap<Property, Property>,
 }
 
