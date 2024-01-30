@@ -71,7 +71,7 @@ macro_rules! impl_custom_version_trait {
 
 /// Custom serialization version for changes made in Dev-Editor stream.
 #[derive(IntoPrimitive)]
-#[repr(i32)]
+#[repr(u32)]
 pub enum FEditorObjectVersion {
     /// Before any version changes were made
     /// Introduced: ObjectVersion.VER_UE4_OLDEST_LOADABLE_PACKAGE
@@ -240,7 +240,7 @@ pub enum FEditorObjectVersion {
     /// Introduced: ObjectVersion.VER_UE4_AUTOMATIC_VERSION_PLUS_ONE
     VersionPlusOne,
     /// Introduced: ObjectVersion.VER_UE4_AUTOMATIC_VERSION
-    LatestVersion = (FEditorObjectVersion::VersionPlusOne as i32) + 1,
+    LatestVersion = (FEditorObjectVersion::VersionPlusOne as u32) + 1,
 }
 
 impl_custom_version_trait!(

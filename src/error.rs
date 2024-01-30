@@ -16,6 +16,9 @@ pub enum DeserializeError {
     /// If a string has invalid size
     #[error("Invalid string size, got {0} at position {1}")]
     InvalidString(u32, u64),
+    /// If a boolean has invalid value
+    #[error("Invalid boolean value, got {0} at position {1}")]
+    InvalidBoolean(u32, u64),
     /// If a hint is missing.
     #[error("Missing hint for struct {0} at path {1}, cursor position: {2}")]
     MissingHint(String, String, u64),

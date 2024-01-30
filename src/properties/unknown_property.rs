@@ -73,7 +73,8 @@ impl PropertyTrait for UnknownProperty {
         let buf = buf.get_ref();
 
         cursor.write_string(&self.property_name)?;
-        cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
+        cursor.write_u32::<LittleEndian>(buf.len() as u32)?;
+        cursor.write_u32::<LittleEndian>(0)?;
         cursor.write_u8(0)?;
         cursor.write_all(buf)?;
 
