@@ -6,8 +6,9 @@ use gvas::{
         enum_property::EnumProperty,
         field_path_property::{FieldPath, FieldPathProperty},
         int_property::{
-            DoubleProperty, FloatProperty, Int16Property, Int64Property, IntProperty,
-            UInt16Property, UInt32Property, UInt64Property,
+            ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty, Int16Property,
+            Int64Property, Int8Property, IntProperty, UInt16Property, UInt32Property,
+            UInt64Property,
         },
         map_property::MapProperty,
         name_property::NameProperty,
@@ -410,7 +411,36 @@ fn map_struct_float() {
 }
 
 #[test]
-fn name() {
+fn name_array_index() {
+    serde_json(
+        &Property::NameProperty(NameProperty {
+            array_index: 1,
+            value: None,
+        }),
+        r#"{
+  "type": "NameProperty",
+  "array_index": 1,
+  "value": null
+}"#,
+    )
+}
+
+#[test]
+fn name_none() {
+    serde_json(
+        &Property::NameProperty(NameProperty {
+            array_index: 0,
+            value: None,
+        }),
+        r#"{
+  "type": "NameProperty",
+  "value": null
+}"#,
+    )
+}
+
+#[test]
+fn name_some() {
     serde_json(
         &Property::NameProperty(NameProperty::from("a")),
         r#"{
@@ -438,6 +468,48 @@ fn double() {
         r#"{
   "type": "DoubleProperty",
   "value": 0.0
+}"#,
+    )
+}
+
+#[test]
+fn byte_none_byte() {
+    serde_json(
+        &Property::ByteProperty(ByteProperty::new(None, BytePropertyValue::Byte(0))),
+        r#"{
+  "type": "ByteProperty",
+  "name": null,
+  "value": {
+    "Byte": 0
+  }
+}"#,
+    )
+}
+
+#[test]
+fn byte_some_ns() {
+    serde_json(
+        &Property::ByteProperty(ByteProperty::new(
+            Some(String::from("test name")),
+            BytePropertyValue::Namespaced(String::from("ns")),
+        )),
+        r#"{
+  "type": "ByteProperty",
+  "name": "test name",
+  "value": {
+    "Namespaced": "ns"
+  }
+}"#,
+    )
+}
+
+#[test]
+fn int8() {
+    serde_json(
+        &Property::from(Int8Property::new(0i8)),
+        r#"{
+  "type": "Int8Property",
+  "value": 0
 }"#,
     )
 }
@@ -549,7 +621,18 @@ fn set_int() {
 }
 
 #[test]
-fn str() {
+fn str_none() {
+    serde_json(
+        &Property::StrProperty(StrProperty { value: None }),
+        r#"{
+  "type": "StrProperty",
+  "value": null
+}"#,
+    )
+}
+
+#[test]
+fn str_some() {
     serde_json(
         &Property::StrProperty(StrProperty::from("a")),
         r#"{
