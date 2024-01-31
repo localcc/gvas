@@ -6,8 +6,9 @@ use gvas::{
         enum_property::EnumProperty,
         field_path_property::{FieldPath, FieldPathProperty},
         int_property::{
-            DoubleProperty, FloatProperty, Int16Property, Int64Property, IntProperty,
-            UInt16Property, UInt32Property, UInt64Property,
+            BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty,
+            Int16Property, Int64Property, Int8Property, IntProperty, UInt16Property,
+            UInt32Property, UInt64Property,
         },
         map_property::MapProperty,
         name_property::NameProperty,
@@ -259,26 +260,89 @@ fn field_path() {
 }
 
 #[test]
+fn map_int_bool() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("IntProperty"),
+            String::from("BoolProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::IntProperty(IntProperty::new(0)),
+                    Property::BoolProperty(BoolProperty::new(false)),
+                ),
+                (
+                    Property::IntProperty(IntProperty::new(1)),
+                    Property::BoolProperty(BoolProperty::new(true)),
+                ),
+                (
+                    Property::IntProperty(IntProperty::new(2)),
+                    Property::BoolProperty(BoolProperty::new(false)),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "IntProperty",
+  "value_type": "BoolProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "IntProperty",
+        "value": 0
+      },
+      {
+        "type": "BoolProperty",
+        "value": false
+      }
+    ],
+    [
+      {
+        "type": "IntProperty",
+        "value": 1
+      },
+      {
+        "type": "BoolProperty",
+        "value": true
+      }
+    ],
+    [
+      {
+        "type": "IntProperty",
+        "value": 2
+      },
+      {
+        "type": "BoolProperty",
+        "value": false
+      }
+    ]
+  ]
+}"#,
+    )
+}
+
+#[test]
 fn map_str_int() {
-    let mut index_map = IndexMap::new();
-    index_map.insert(
-        Property::StrProperty(StrProperty::from("zero")),
-        Property::IntProperty(IntProperty::new(0)),
-    );
-    index_map.insert(
-        Property::StrProperty(StrProperty::from("one")),
-        Property::IntProperty(IntProperty::new(1)),
-    );
-    index_map.insert(
-        Property::StrProperty(StrProperty::from("two")),
-        Property::IntProperty(IntProperty::new(2)),
-    );
     serde_json(
         &Property::MapProperty(MapProperty::new(
             String::from("StrProperty"),
             String::from("IntProperty"),
             0,
-            index_map,
+            IndexMap::from([
+                (
+                    Property::StrProperty(StrProperty::from("zero")),
+                    Property::IntProperty(IntProperty::new(0)),
+                ),
+                (
+                    Property::StrProperty(StrProperty::from("one")),
+                    Property::IntProperty(IntProperty::new(1)),
+                ),
+                (
+                    Property::StrProperty(StrProperty::from("two")),
+                    Property::IntProperty(IntProperty::new(2)),
+                ),
+            ]),
         )),
         r#"{
   "type": "MapProperty",
@@ -323,34 +387,34 @@ fn map_str_int() {
 
 #[test]
 fn map_struct_float() {
-    let mut index_map = IndexMap::new();
-    index_map.insert(
-        Property::StructProperty(StructProperty::new(
-            Guid::new([0u8; 16]),
-            StructPropertyValue::VectorF(VectorF::new(0f32, 1f32, 2f32)),
-        )),
-        Property::FloatProperty(FloatProperty::new(0f32)),
-    );
-    index_map.insert(
-        Property::StructProperty(StructProperty::new(
-            Guid::new([0x11u8; 16]),
-            StructPropertyValue::Timespan(DateTime::new(0)),
-        )),
-        Property::FloatProperty(FloatProperty::new(1f32)),
-    );
-    index_map.insert(
-        Property::StructProperty(StructProperty::new(
-            Guid::new([0x22u8; 16]),
-            StructPropertyValue::DateTime(DateTime::new(0)),
-        )),
-        Property::FloatProperty(FloatProperty::new(2f32)),
-    );
     serde_json(
         &Property::MapProperty(MapProperty::new(
             String::from("StructProperty"),
             String::from("FloatProperty"),
             0,
-            index_map,
+            IndexMap::from([
+                (
+                    Property::StructProperty(StructProperty::new(
+                        Guid::new([0u8; 16]),
+                        StructPropertyValue::VectorF(VectorF::new(0f32, 1f32, 2f32)),
+                    )),
+                    Property::FloatProperty(FloatProperty::new(0f32)),
+                ),
+                (
+                    Property::StructProperty(StructProperty::new(
+                        Guid::new([0x11u8; 16]),
+                        StructPropertyValue::Timespan(DateTime::new(0)),
+                    )),
+                    Property::FloatProperty(FloatProperty::new(1f32)),
+                ),
+                (
+                    Property::StructProperty(StructProperty::new(
+                        Guid::new([0x22u8; 16]),
+                        StructPropertyValue::DateTime(DateTime::new(0)),
+                    )),
+                    Property::FloatProperty(FloatProperty::new(2f32)),
+                ),
+            ]),
         )),
         r#"{
   "type": "MapProperty",
@@ -410,7 +474,36 @@ fn map_struct_float() {
 }
 
 #[test]
-fn name() {
+fn name_array_index() {
+    serde_json(
+        &Property::NameProperty(NameProperty {
+            array_index: 1,
+            value: None,
+        }),
+        r#"{
+  "type": "NameProperty",
+  "array_index": 1,
+  "value": null
+}"#,
+    )
+}
+
+#[test]
+fn name_none() {
+    serde_json(
+        &Property::NameProperty(NameProperty {
+            array_index: 0,
+            value: None,
+        }),
+        r#"{
+  "type": "NameProperty",
+  "value": null
+}"#,
+    )
+}
+
+#[test]
+fn name_some() {
     serde_json(
         &Property::NameProperty(NameProperty::from("a")),
         r#"{
@@ -438,6 +531,48 @@ fn double() {
         r#"{
   "type": "DoubleProperty",
   "value": 0.0
+}"#,
+    )
+}
+
+#[test]
+fn byte_none_byte() {
+    serde_json(
+        &Property::ByteProperty(ByteProperty::new(None, BytePropertyValue::Byte(0))),
+        r#"{
+  "type": "ByteProperty",
+  "name": null,
+  "value": {
+    "Byte": 0
+  }
+}"#,
+    )
+}
+
+#[test]
+fn byte_some_ns() {
+    serde_json(
+        &Property::ByteProperty(ByteProperty::new(
+            Some(String::from("test name")),
+            BytePropertyValue::Namespaced(String::from("ns")),
+        )),
+        r#"{
+  "type": "ByteProperty",
+  "name": "test name",
+  "value": {
+    "Namespaced": "ns"
+  }
+}"#,
+    )
+}
+
+#[test]
+fn int8() {
+    serde_json(
+        &Property::from(Int8Property::new(0i8)),
+        r#"{
+  "type": "Int8Property",
+  "value": 0
 }"#,
     )
 }
@@ -549,7 +684,18 @@ fn set_int() {
 }
 
 #[test]
-fn str() {
+fn str_none() {
+    serde_json(
+        &Property::StrProperty(StrProperty { value: None }),
+        r#"{
+  "type": "StrProperty",
+  "value": null
+}"#,
+    )
+}
+
+#[test]
+fn str_some() {
     serde_json(
         &Property::StrProperty(StrProperty::from("a")),
         r#"{
