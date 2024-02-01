@@ -1,3 +1,5 @@
+mod common;
+use common::PACKAGE_VERSION_524_PATH;
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use std::{
@@ -8,7 +10,7 @@ use std::{
 
 #[test]
 fn write_slot3() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/package_version_524.sav");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(PACKAGE_VERSION_524_PATH);
     let mut file = File::open(path).expect("Failed to open test asset");
 
     // Read the file in to a Vec<u8>
