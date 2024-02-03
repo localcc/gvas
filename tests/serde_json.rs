@@ -147,14 +147,17 @@ fn file_regression_01() {
 #[test]
 fn array_int8() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("Int8Property"),
-            None,
-            vec![
-                Property::Int8Property(Int8Property { value: 0 }),
-                Property::Int8Property(Int8Property { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("Int8Property"),
+                None,
+                vec![
+                    Property::Int8Property(Int8Property { value: 0 }),
+                    Property::Int8Property(Int8Property { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "Int8Property",
@@ -175,14 +178,17 @@ fn array_int8() {
 #[test]
 fn array_int16() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("Int16Property"),
-            None,
-            vec![
-                Property::Int16Property(Int16Property { value: 0 }),
-                Property::Int16Property(Int16Property { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("Int16Property"),
+                None,
+                vec![
+                    Property::Int16Property(Int16Property { value: 0 }),
+                    Property::Int16Property(Int16Property { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "Int16Property",
@@ -203,14 +209,17 @@ fn array_int16() {
 #[test]
 fn array_int() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("IntProperty"),
-            None,
-            vec![
-                Property::IntProperty(IntProperty { value: 0 }),
-                Property::IntProperty(IntProperty { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("IntProperty"),
+                None,
+                vec![
+                    Property::IntProperty(IntProperty { value: 0 }),
+                    Property::IntProperty(IntProperty { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "IntProperty",
@@ -231,14 +240,17 @@ fn array_int() {
 #[test]
 fn array_int64() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("Int64Property"),
-            None,
-            vec![
-                Property::Int64Property(Int64Property { value: 0 }),
-                Property::Int64Property(Int64Property { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("Int64Property"),
+                None,
+                vec![
+                    Property::Int64Property(Int64Property { value: 0 }),
+                    Property::Int64Property(Int64Property { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "Int64Property",
@@ -259,32 +271,22 @@ fn array_int64() {
 #[test]
 fn array_uint8() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("ByteProperty"),
-            None,
-            vec![
-                Property::ByteProperty(ByteProperty::new_byte(None, 0)),
-                Property::ByteProperty(ByteProperty::new_byte(None, 1)),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("ByteProperty"),
+                None,
+                vec![
+                    Property::ByteProperty(ByteProperty::new_byte(None, 0)),
+                    Property::ByteProperty(ByteProperty::new_byte(None, 1)),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
-  "property_type": "ByteProperty",
-  "properties": [
-    {
-      "type": "ByteProperty",
-      "name": null,
-      "value": {
-        "Byte": 0
-      }
-    },
-    {
-      "type": "ByteProperty",
-      "name": null,
-      "value": {
-        "Byte": 1
-      }
-    }
+  "bytes": [
+    0,
+    1
   ]
 }"#,
     )
@@ -293,14 +295,17 @@ fn array_uint8() {
 #[test]
 fn array_uint16() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("UInt16Property"),
-            None,
-            vec![
-                Property::UInt16Property(UInt16Property { value: 0 }),
-                Property::UInt16Property(UInt16Property { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("UInt16Property"),
+                None,
+                vec![
+                    Property::UInt16Property(UInt16Property { value: 0 }),
+                    Property::UInt16Property(UInt16Property { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "UInt16Property",
@@ -321,14 +326,17 @@ fn array_uint16() {
 #[test]
 fn array_uint32() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("UInt32Property"),
-            None,
-            vec![
-                Property::UInt32Property(UInt32Property { value: 0 }),
-                Property::UInt32Property(UInt32Property { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("UInt32Property"),
+                None,
+                vec![
+                    Property::UInt32Property(UInt32Property { value: 0 }),
+                    Property::UInt32Property(UInt32Property { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "UInt32Property",
@@ -349,14 +357,17 @@ fn array_uint32() {
 #[test]
 fn array_uint64() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("UInt64Property"),
-            None,
-            vec![
-                Property::UInt64Property(UInt64Property { value: 0 }),
-                Property::UInt64Property(UInt64Property { value: 1 }),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("UInt64Property"),
+                None,
+                vec![
+                    Property::UInt64Property(UInt64Property { value: 0 }),
+                    Property::UInt64Property(UInt64Property { value: 1 }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "UInt64Property",
@@ -377,14 +388,17 @@ fn array_uint64() {
 #[test]
 fn array_str() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("StrProperty"),
-            None,
-            vec![
-                Property::StrProperty(StrProperty::from("a")),
-                Property::StrProperty(StrProperty::from("b")),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("StrProperty"),
+                None,
+                vec![
+                    Property::StrProperty(StrProperty::from("a")),
+                    Property::StrProperty(StrProperty::from("b")),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
   "property_type": "StrProperty",
@@ -405,26 +419,30 @@ fn array_str() {
 #[test]
 fn array_struct() {
     serde_json(
-        &Property::ArrayProperty(ArrayProperty::new(
-            String::from("StructProperty"),
-            Some((String::from("fn"), String::from("tn"), Guid([0x11u8; 16]))),
-            vec![
-                Property::StructProperty(StructProperty::new(
-                    Guid([0x22u8; 16]),
-                    StructPropertyValue::DateTime(DateTime { ticks: 0 }),
-                )),
-                Property::StructProperty(StructProperty::new(
-                    Guid::default(),
-                    StructPropertyValue::DateTime(DateTime { ticks: 1 }),
-                )),
-            ],
-        )),
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("StructProperty"),
+                Some((String::from("fn"), String::from("tn"), Guid([0x11u8; 16]))),
+                vec![
+                    Property::StructProperty(StructProperty::new(
+                        Guid([0x22u8; 16]),
+                        StructPropertyValue::DateTime(DateTime { ticks: 0 }),
+                    )),
+                    Property::StructProperty(StructProperty::new(
+                        Guid::default(),
+                        StructPropertyValue::DateTime(DateTime { ticks: 1 }),
+                    )),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
         r#"{
   "type": "ArrayProperty",
-  "property_type": "StructProperty",
-  "properties": [
+  "field_name": "fn",
+  "type_name": "tn",
+  "guid": "11111111-1111-1111-1111-111111111111",
+  "structs": [
     {
-      "type": "StructProperty",
       "guid": "22222222-2222-2222-2222-222222222222",
       "value": {
         "DateTime": {
@@ -433,17 +451,13 @@ fn array_struct() {
       }
     },
     {
-      "type": "StructProperty",
       "value": {
         "DateTime": {
           "ticks": 1
         }
       }
     }
-  ],
-  "type_name": "tn",
-  "field_name": "fn",
-  "guid": "11111111-1111-1111-1111-111111111111"
+  ]
 }"#,
     )
 }
@@ -789,10 +803,7 @@ fn byte_none_byte() {
         &Property::ByteProperty(ByteProperty::new(None, BytePropertyValue::Byte(0))),
         r#"{
   "type": "ByteProperty",
-  "name": null,
-  "value": {
-    "Byte": 0
-  }
+  "Byte": 0
 }"#,
     )
 }
@@ -800,16 +811,14 @@ fn byte_none_byte() {
 #[test]
 fn byte_some_ns() {
     serde_json(
-        &Property::ByteProperty(ByteProperty::new(
+        &Property::ByteProperty(ByteProperty::new_namespaced(
             Some(String::from("test name")),
-            BytePropertyValue::Namespaced(String::from("ns")),
+            String::from("ns"),
         )),
         r#"{
   "type": "ByteProperty",
   "name": "test name",
-  "value": {
-    "Namespaced": "ns"
-  }
+  "Namespaced": "ns"
 }"#,
     )
 }

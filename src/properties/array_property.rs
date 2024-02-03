@@ -12,31 +12,42 @@ use crate::{
 };
 
 use super::{
-    impl_read_header, impl_write, impl_write_header_part, struct_property::StructProperty,
+    impl_read_header, impl_write, impl_write_header_part,
+    int_property::{ByteProperty, BytePropertyValue},
+    struct_property::StructProperty,
     Property, PropertyOptions, PropertyTrait,
 };
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-struct ArrayStructInfo {
-    type_name: String,
-    field_name: String,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Guid::is_zero"))]
-    #[cfg_attr(feature = "serde", serde(default))]
-    guid: Guid,
-}
 
 /// A property that holds an array of values.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ArrayProperty {
-    /// The type of Property in `properties`.
-    pub property_type: String,
-    /// An array of values.
-    pub properties: Vec<Property>,
-
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    array_struct_info: Option<ArrayStructInfo>,
+#[cfg_attr(feature = "serde", serde(untagged))]
+pub enum ArrayProperty {
+    /// An array of ByteProperty values.
+    Bytes {
+        /// An array of values.
+        bytes: Vec<u8>,
+    },
+    /// An array of StructProperty values.
+    Structs {
+        /// Field name.
+        field_name: String,
+        /// Type name.
+        type_name: String,
+        /// The unique identifier of the property.
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Guid::is_zero"))]
+        #[cfg_attr(feature = "serde", serde(default))]
+        guid: Guid,
+        /// An array of values.
+        structs: Vec<StructProperty>,
+    },
+    /// Any other Property value
+    Properties {
+        /// The type of Property in `properties`.
+        property_type: String,
+        /// An array of values.
+        properties: Vec<Property>,
+    },
 }
 
 macro_rules! validate {
@@ -50,7 +61,7 @@ macro_rules! validate {
     }};
 }
 
-impl_write!(ArrayProperty, options, (write_string, property_type));
+impl_write!(ArrayProperty, options, (write_string, fn, get_property_type));
 
 impl ArrayProperty {
     /// Creates a new `ArrayProperty` instance.
@@ -59,19 +70,71 @@ impl ArrayProperty {
         property_type: String,
         struct_info: Option<(String, String, Guid)>,
         properties: Vec<Property>,
-    ) -> Self {
-        let array_struct_info = struct_info.map(|(field_name, type_name, guid)| ArrayStructInfo {
-            field_name,
-            type_name,
-            guid,
-        });
+    ) -> Result<Self, Error> {
+        match (property_type.as_str(), struct_info) {
+            ("StructProperty", Some((field_name, type_name, guid))) => match properties
+                .iter()
+                .map(|p| match p {
+                    Property::StructProperty(struct_property) => Ok(struct_property.clone()),
+                    _ => Err(p),
+                })
+                .collect::<Result<_, _>>()
+            {
+                Ok(structs) => Ok(ArrayProperty::Structs {
+                    field_name,
+                    type_name,
+                    guid,
+                    structs,
+                }),
+                Err(p) => Err(SerializeError::invalid_value(&format!(
+                    "Array property_type {} doesn't match property inside array: {:#?}",
+                    property_type, p
+                )))?,
+            },
 
-        ArrayProperty {
-            property_type,
-            properties,
+            (_, Some(_)) => Err(SerializeError::invalid_value(
+                "struct_info is only supported for StructProperty",
+            ))?,
 
-            array_struct_info,
+            ("ByteProperty", None) => match properties
+                .iter()
+                .map(|p| match p {
+                    Property::ByteProperty(ByteProperty {
+                        name: None,
+                        value: BytePropertyValue::Byte(value),
+                    }) => Ok(*value),
+                    _ => Err(()),
+                })
+                .collect::<Result<_, _>>()
+            {
+                Ok(bytes) => Ok(ArrayProperty::Bytes { bytes }),
+                Err(()) => Ok(ArrayProperty::Properties {
+                    property_type,
+                    properties,
+                }),
+            },
+
+            (_, None) => Ok(ArrayProperty::Properties {
+                property_type,
+                properties,
+            }),
         }
+    }
+
+    pub(crate) fn get_property_type(&self) -> Result<String, Error> {
+        Ok(match self {
+            ArrayProperty::Bytes { bytes: _ } => "ByteProperty".to_string(),
+            ArrayProperty::Structs {
+                field_name: _,
+                type_name: _,
+                guid: _,
+                structs: _,
+            } => "StructProperty".to_string(),
+            ArrayProperty::Properties {
+                property_type,
+                properties: _,
+            } => property_type.clone(),
+        })
     }
 
     #[inline]
@@ -131,11 +194,7 @@ impl ArrayProperty {
                     "{actual_size} != {properties_size}",
                 );
 
-                array_struct_info = Some(ArrayStructInfo {
-                    type_name: struct_name,
-                    field_name,
-                    guid,
-                });
+                array_struct_info = Some((field_name, struct_name, guid));
             }
             _ => {
                 let suggested_length = if property_count > 0 && length >= 4 {
@@ -155,12 +214,7 @@ impl ArrayProperty {
             }
         };
 
-        Ok(ArrayProperty {
-            property_type,
-            properties,
-
-            array_struct_info,
-        })
+        ArrayProperty::new(property_type, array_struct_info, properties)
     }
 
     #[inline]
@@ -169,57 +223,49 @@ impl ArrayProperty {
         cursor: &mut W,
         options: &mut PropertyOptions,
     ) -> Result<(), Error> {
-        cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
-
-        match self.property_type.as_str() {
-            "StructProperty" => {
-                let array_struct_info = self.array_struct_info.as_ref().ok_or_else(|| {
-                    SerializeError::invalid_value(
-                        "Array type is StructProperty but array_struct_info is None",
-                    )
-                })?;
-
-                cursor.write_string(&array_struct_info.field_name)?;
-                cursor.write_string(&self.property_type)?;
+        match self {
+            ArrayProperty::Structs {
+                field_name,
+                type_name,
+                guid,
+                structs,
+            } => {
+                cursor.write_u32::<LittleEndian>(structs.len() as u32)?;
+                cursor.write_string(field_name)?;
+                cursor.write_string("StructProperty")?;
 
                 let buf = &mut Cursor::new(Vec::new());
-                self.write_properties(buf, options)?;
+                for property in structs {
+                    property.write(buf, false, options)?;
+                }
                 let buf = buf.get_ref();
 
                 cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-                cursor.write_string(&array_struct_info.type_name)?;
-                cursor.write_guid(&array_struct_info.guid)?;
+                cursor.write_string(type_name)?;
+                cursor.write_guid(guid)?;
                 cursor.write_u8(0)?;
                 cursor.write_all(buf)?;
             }
-            _ => {
-                for property in &self.properties {
+
+            ArrayProperty::Bytes { bytes } => {
+                cursor.write_u32::<LittleEndian>(bytes.len() as u32)?;
+                for b in bytes {
+                    let property = Property::from(ByteProperty::new_byte(None, *b));
+                    property.write(cursor, false, options)?;
+                }
+            }
+
+            ArrayProperty::Properties {
+                property_type: _,
+                properties,
+            } => {
+                cursor.write_u32::<LittleEndian>(properties.len() as u32)?;
+                for property in properties {
                     property.write(cursor, false, options)?;
                 }
             }
         }
 
-        Ok(())
-    }
-
-    #[inline]
-    fn write_properties<W: Write>(
-        &self,
-        cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        for property in &self.properties {
-            let res: Result<(), Error> = match property {
-                Property::StructProperty(e) => {
-                    e.write(cursor, false, options)?;
-                    Ok(())
-                }
-                _ => Err(SerializeError::invalid_value(
-                    "Array property_type doesn't match property inside array",
-                ))?,
-            };
-            res?;
-        }
         Ok(())
     }
 }

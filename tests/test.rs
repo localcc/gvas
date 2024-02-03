@@ -129,31 +129,48 @@ fn verify_file_data(file: &GvasFile) {
                 }),
             ]
         )
+        .expect("ArrayProperty::new")
     );
 
     let array_of_ints = get_or_panic!(properties, "array_of_ints", ArrayProperty);
-    for property in &array_of_ints.properties {
-        match property {
-            Property::IntProperty(e) => {
-                if e.value != 12 {
-                    panic!(
-                        "Property value value doesn't match, expected 12 got {}",
-                        e.value
-                    );
+    if let ArrayProperty::Properties {
+        property_type: _,
+        properties,
+    } = array_of_ints
+    {
+        for property in properties {
+            match property {
+                Property::IntProperty(e) => {
+                    if e.value != 12 {
+                        panic!(
+                            "Property value value doesn't match, expected 12 got {}",
+                            e.value
+                        );
+                    }
                 }
+                _ => panic!("array_of_ints elements are not IntProperty"),
             }
-            _ => panic!("array_of_ints elements are not IntProperty"),
         }
+    } else {
+        panic!("{:#?}", array_of_ints);
     }
 
     let array_of_strings = get_or_panic!(properties, "array_of_strings", ArrayProperty);
-    for property in &array_of_strings.properties {
-        match property {
-            Property::StrProperty(e) => {
-                assert_eq!(e.value, Some(String::from("Hello world from array")));
+    if let ArrayProperty::Properties {
+        property_type: _,
+        properties,
+    } = array_of_strings
+    {
+        for property in properties {
+            match property {
+                Property::StrProperty(e) => {
+                    assert_eq!(e.value, Some(String::from("Hello world from array")));
+                }
+                _ => panic!("array_of_strings elements are not StrProperty"),
             }
-            _ => panic!("array_of_strings elements are not StrProperty"),
         }
+    } else {
+        panic!("{:#?}", array_of_strings);
     }
 }
 
