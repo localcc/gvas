@@ -145,6 +145,62 @@ fn file_regression_01() {
 }
 
 #[test]
+fn array_int8() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("Int8Property"),
+            None,
+            vec![
+                Property::Int8Property(Int8Property { value: 0 }),
+                Property::Int8Property(Int8Property { value: 1 }),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "Int8Property",
+  "properties": [
+    {
+      "type": "Int8Property",
+      "value": 0
+    },
+    {
+      "type": "Int8Property",
+      "value": 1
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_int16() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("Int16Property"),
+            None,
+            vec![
+                Property::Int16Property(Int16Property { value: 0 }),
+                Property::Int16Property(Int16Property { value: 1 }),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "Int16Property",
+  "properties": [
+    {
+      "type": "Int16Property",
+      "value": 0
+    },
+    {
+      "type": "Int16Property",
+      "value": 1
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
 fn array_int() {
     serde_json(
         &Property::ArrayProperty(ArrayProperty::new(
@@ -165,6 +221,152 @@ fn array_int() {
     },
     {
       "type": "IntProperty",
+      "value": 1
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_int64() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("Int64Property"),
+            None,
+            vec![
+                Property::Int64Property(Int64Property { value: 0 }),
+                Property::Int64Property(Int64Property { value: 1 }),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "Int64Property",
+  "properties": [
+    {
+      "type": "Int64Property",
+      "value": 0
+    },
+    {
+      "type": "Int64Property",
+      "value": 1
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_uint8() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("ByteProperty"),
+            None,
+            vec![
+                Property::ByteProperty(ByteProperty::new_byte(None, 0)),
+                Property::ByteProperty(ByteProperty::new_byte(None, 1)),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "ByteProperty",
+  "properties": [
+    {
+      "type": "ByteProperty",
+      "name": null,
+      "value": {
+        "Byte": 0
+      }
+    },
+    {
+      "type": "ByteProperty",
+      "name": null,
+      "value": {
+        "Byte": 1
+      }
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_uint16() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("UInt16Property"),
+            None,
+            vec![
+                Property::UInt16Property(UInt16Property { value: 0 }),
+                Property::UInt16Property(UInt16Property { value: 1 }),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "UInt16Property",
+  "properties": [
+    {
+      "type": "UInt16Property",
+      "value": 0
+    },
+    {
+      "type": "UInt16Property",
+      "value": 1
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_uint32() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("UInt32Property"),
+            None,
+            vec![
+                Property::UInt32Property(UInt32Property { value: 0 }),
+                Property::UInt32Property(UInt32Property { value: 1 }),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "UInt32Property",
+  "properties": [
+    {
+      "type": "UInt32Property",
+      "value": 0
+    },
+    {
+      "type": "UInt32Property",
+      "value": 1
+    }
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_uint64() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("UInt64Property"),
+            None,
+            vec![
+                Property::UInt64Property(UInt64Property { value: 0 }),
+                Property::UInt64Property(UInt64Property { value: 1 }),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "UInt64Property",
+  "properties": [
+    {
+      "type": "UInt64Property",
+      "value": 0
+    },
+    {
+      "type": "UInt64Property",
       "value": 1
     }
   ]
@@ -196,6 +398,52 @@ fn array_str() {
       "value": "b"
     }
   ]
+}"#,
+    )
+}
+
+#[test]
+fn array_struct() {
+    serde_json(
+        &Property::ArrayProperty(ArrayProperty::new(
+            String::from("StructProperty"),
+            Some((String::from("fn"), String::from("tn"), Guid([0x11u8; 16]))),
+            vec![
+                Property::StructProperty(StructProperty::new(
+                    Guid([0x22u8; 16]),
+                    StructPropertyValue::DateTime(DateTime { ticks: 0 }),
+                )),
+                Property::StructProperty(StructProperty::new(
+                    Guid::default(),
+                    StructPropertyValue::DateTime(DateTime { ticks: 1 }),
+                )),
+            ],
+        )),
+        r#"{
+  "type": "ArrayProperty",
+  "property_type": "StructProperty",
+  "properties": [
+    {
+      "type": "StructProperty",
+      "guid": "22222222-2222-2222-2222-222222222222",
+      "value": {
+        "DateTime": {
+          "ticks": 0
+        }
+      }
+    },
+    {
+      "type": "StructProperty",
+      "value": {
+        "DateTime": {
+          "ticks": 1
+        }
+      }
+    }
+  ],
+  "type_name": "tn",
+  "field_name": "fn",
+  "guid": "11111111-1111-1111-1111-111111111111"
 }"#,
     )
 }
