@@ -106,7 +106,7 @@ test_property!(
 test_property!(
     test_array_empty,
     ArrayProperty,
-    ArrayProperty::new(String::from("FloatProperty"), None, vec![],)
+    ArrayProperty::new(String::from("FloatProperty"), None, vec![]).expect("ArrayProperty::new")
 );
 
 test_property!(
@@ -120,6 +120,7 @@ test_property!(
             Property::from(FloatProperty::new(1f32)),
         ],
     )
+    .expect("ArrayProperty::new")
 );
 
 test_property!(
@@ -137,6 +138,7 @@ test_property!(
             Property::from(StructProperty::from(VectorF::new(3f32, 4f32, 5f32))),
         ],
     )
+    .expect("ArrayProperty::new")
 );
 
 // TextProperty
@@ -156,6 +158,7 @@ test_property!(
             ))),
         ]
     )
+    .expect("ArrayProperty::new")
 );
 
 // SetProperty

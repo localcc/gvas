@@ -140,11 +140,13 @@ pub enum BytePropertyValue {
 
 /// A property that stores a `u8` or the property's namespaced name.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ByteProperty {
     /// Property name.
     pub name: Option<String>,
     /// Property value.
+    #[cfg_attr(feature = "serde", serde(flatten))]
     pub value: BytePropertyValue,
 }
 
