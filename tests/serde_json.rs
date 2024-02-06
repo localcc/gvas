@@ -1,3 +1,5 @@
+mod common;
+use common::REGRESSION_01_PATH;
 use gvas::{
     game_version::GameVersion,
     properties::{
@@ -54,7 +56,7 @@ where
 
 #[test]
 fn file_regression_01() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/regression_01.bin");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGRESSION_01_PATH);
     let mut file = File::open(path).expect("Failed to open test asset");
 
     // Read the file in to a Vec<u8>
