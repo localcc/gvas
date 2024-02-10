@@ -194,12 +194,12 @@ impl StructProperty {
                 x: IntProperty::read(cursor, false)?.value,
                 y: IntProperty::read(cursor, false)?.value,
             }),
-            "Guid" => StructPropertyValue::Guid(Guid::from((
+            "Guid" => StructPropertyValue::Guid(Guid::from([
                 UInt32Property::read(cursor, false)?.value,
                 UInt32Property::read(cursor, false)?.value,
                 UInt32Property::read(cursor, false)?.value,
                 UInt32Property::read(cursor, false)?.value,
-            ))),
+            ])),
             _ => {
                 let mut properties = Vec::new();
                 loop {

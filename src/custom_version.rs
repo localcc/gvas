@@ -246,7 +246,7 @@ pub enum FEditorObjectVersion {
 impl_custom_version_trait!(
     FEditorObjectVersion,
     "FEditorObjectVersion",
-    Guid::from_ints((0xE4B068ED, 0xF49442E9, 0xA231DA0B, 0x2E46BB41)),
+    Guid::from_u32([0xE4B068ED, 0xF49442E9, 0xA231DA0B, 0x2E46BB41]),
     VER_UE4_AUTOMATIC_VERSION: LatestVersion,
     VER_UE4_AUTOMATIC_VERSION_PLUS_ONE: VersionPlusOne,
     VER_UE4_26: SkeletalMeshSourceDataSupport16bitOfMaterialNumber,

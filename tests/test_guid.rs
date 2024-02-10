@@ -46,8 +46,8 @@ fn test_guid_from_u32() {
         (GUID_3_BYTES, 0x1dec0538, 0xa9455fd2, 0x65aa42ec, 0xc56a4180),
     ] {
         let guid = Guid(value);
-        assert_eq!(<(u32, u32, u32, u32)>::from(guid), (a, b, c, d));
-        assert_eq!(guid, Guid::from((a, b, c, d)));
+        assert_eq!(<[u32; 4]>::from(guid), [a, b, c, d]);
+        assert_eq!(guid, Guid::from([a, b, c, d]));
     }
 }
 
