@@ -73,7 +73,6 @@ fn file_regression_01() {
     serde_json(
         &file,
         r#"{
-  "deserialized_game_version": "Default",
   "header": {
     "type": "Version2",
     "package_file_version": 517,
