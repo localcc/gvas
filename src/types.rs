@@ -9,119 +9,84 @@ use std::{
 pub struct Guid(pub [u8; 16]);
 
 impl Guid {
-    /// Create new instance of Guid struct from a [0u8; 16] byte array
+    /// Create a guid from an array of sixteen u8s
     #[inline]
-    pub fn new(guid: [u8; 16]) -> Self {
-        Guid(guid)
+    pub const fn from_u8(value: [u8; 16]) -> Self {
+        Guid(value)
+    }
+
+    /// Create a guid from an array of four u32s
+    #[inline]
+    pub const fn from_u32(value: [u32; 4]) -> Self {
+        Guid(transmute_4u32_16u8(value))
+    }
+
+    /// Create a guid from a u128
+    #[inline]
+    pub const fn from_u128(value: u128) -> Self {
+        Guid(u128::to_le_bytes(value))
     }
 
     /// Returns true if the guid is zero.
     #[inline]
-    pub fn is_zero(&self) -> bool {
-        self.0.iter().all(|&x| x == 0)
+    pub const fn is_zero(&self) -> bool {
+        Guid::to_u128(self) == 0
     }
 
-    /// Create a guid from a tuple of 4 ints
+    /// Create an array of sixteen u8s from a guid
     #[inline]
-    pub const fn from_ints(value: (u32, u32, u32, u32)) -> Self {
-        let (a, b, c, d) = value;
-        Guid([
-            (a & 0xff) as u8,
-            ((a >> 8) & 0xff) as u8,
-            ((a >> 16) & 0xff) as u8,
-            ((a >> 24) & 0xff) as u8,
-            (b & 0xff) as u8,
-            ((b >> 8) & 0xff) as u8,
-            ((b >> 16) & 0xff) as u8,
-            ((b >> 24) & 0xff) as u8,
-            (c & 0xff) as u8,
-            ((c >> 8) & 0xff) as u8,
-            ((c >> 16) & 0xff) as u8,
-            ((c >> 24) & 0xff) as u8,
-            (d & 0xff) as u8,
-            ((d >> 8) & 0xff) as u8,
-            ((d >> 16) & 0xff) as u8,
-            ((d >> 24) & 0xff) as u8,
-        ])
+    pub const fn to_u8(&self) -> [u8; 16] {
+        self.0
+    }
+
+    /// Create an array of four u32s from a guid
+    #[inline]
+    pub const fn to_u32(&self) -> [u32; 4] {
+        transmute_16u8_4u32(self.0)
+    }
+
+    /// Create a u128 from a guid
+    #[inline]
+    pub const fn to_u128(&self) -> u128 {
+        u128::from_le_bytes(self.0)
     }
 }
 
-impl From<(u32, u32, u32, u32)> for Guid {
-    /// Create new instance of Guid struct from 4 u32 values
+#[inline]
+const fn transmute_4u32_16u8(value: [u32; 4]) -> [u8; 16] {
+    unsafe { std::mem::transmute(value) }
+}
+
+#[inline]
+const fn transmute_16u8_4u32(src: [u8; 16]) -> [u32; 4] {
+    unsafe { std::mem::transmute(src) }
+}
+
+impl From<[u32; 4]> for Guid {
     #[inline]
-    fn from(value: (u32, u32, u32, u32)) -> Self {
-        Self::from_ints(value)
+    fn from(value: [u32; 4]) -> Self {
+        Self::from_u32(value)
     }
 }
 
-impl From<Guid> for (u32, u32, u32, u32) {
-    /// Convert Guid struct into 4 u32 values
+impl From<Guid> for [u32; 4] {
     #[inline]
-    fn from(guid: Guid) -> Self {
-        let a = guid.0[0] as u32
-            | ((guid.0[1] as u32) << 8)
-            | ((guid.0[2] as u32) << 16)
-            | ((guid.0[3] as u32) << 24);
-        let b = guid.0[4] as u32
-            | ((guid.0[5] as u32) << 8)
-            | ((guid.0[6] as u32) << 16)
-            | ((guid.0[7] as u32) << 24);
-        let c = guid.0[8] as u32
-            | ((guid.0[9] as u32) << 8)
-            | ((guid.0[10] as u32) << 16)
-            | ((guid.0[11] as u32) << 24);
-        let d = guid.0[12] as u32
-            | ((guid.0[13] as u32) << 8)
-            | ((guid.0[14] as u32) << 16)
-            | ((guid.0[15] as u32) << 24);
-
-        (a, b, c, d)
+    fn from(value: Guid) -> Self {
+        Guid::to_u32(&value)
     }
 }
 
 impl From<u128> for Guid {
     #[inline]
     fn from(value: u128) -> Self {
-        Guid([
-            (value & 0xff) as u8,
-            ((value >> 8) & 0xff) as u8,
-            ((value >> (8 * 2)) & 0xff) as u8,
-            ((value >> (8 * 3)) & 0xff) as u8,
-            ((value >> (8 * 4)) & 0xff) as u8,
-            ((value >> (8 * 5)) & 0xff) as u8,
-            ((value >> (8 * 6)) & 0xff) as u8,
-            ((value >> (8 * 7)) & 0xff) as u8,
-            ((value >> (8 * 8)) & 0xff) as u8,
-            ((value >> (8 * 9)) & 0xff) as u8,
-            ((value >> (8 * 10)) & 0xff) as u8,
-            ((value >> (8 * 11)) & 0xff) as u8,
-            ((value >> (8 * 12)) & 0xff) as u8,
-            ((value >> (8 * 13)) & 0xff) as u8,
-            ((value >> (8 * 14)) & 0xff) as u8,
-            ((value >> (8 * 15)) & 0xff) as u8,
-        ])
+        Self::from_u128(value)
     }
 }
 
 impl From<Guid> for u128 {
     #[inline]
     fn from(value: Guid) -> Self {
-        (value.0[0] as u128)
-            | ((value.0[1] as u128) << 8)
-            | ((value.0[2] as u128) << (8 * 2))
-            | ((value.0[3] as u128) << (8 * 3))
-            | ((value.0[4] as u128) << (8 * 4))
-            | ((value.0[5] as u128) << (8 * 5))
-            | ((value.0[6] as u128) << (8 * 6))
-            | ((value.0[7] as u128) << (8 * 7))
-            | ((value.0[8] as u128) << (8 * 8))
-            | ((value.0[9] as u128) << (8 * 9))
-            | ((value.0[10] as u128) << (8 * 10))
-            | ((value.0[11] as u128) << (8 * 11))
-            | ((value.0[12] as u128) << (8 * 12))
-            | ((value.0[13] as u128) << (8 * 13))
-            | ((value.0[14] as u128) << (8 * 14))
-            | ((value.0[15] as u128) << (8 * 15))
+        Guid::to_u128(&value)
     }
 }
 
@@ -193,7 +158,7 @@ impl FromStr for Guid {
         let cleaned = cleaned.strip_suffix('}').unwrap_or(cleaned);
 
         if cleaned.len() == 1 && cleaned == "0" {
-            return Ok(Guid::new([0u8; 16]));
+            return Ok(Guid([0u8; 16]));
         }
 
         if cleaned.len() != 32 {

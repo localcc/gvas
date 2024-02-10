@@ -1344,21 +1344,21 @@ fn map_struct_float() {
             IndexMap::from([
                 (
                     Property::StructProperty(StructProperty::new(
-                        Guid::new([0u8; 16]),
+                        Guid([0u8; 16]),
                         StructPropertyValue::VectorF(VectorF::new(0f32, 1f32, 2f32)),
                     )),
                     Property::FloatProperty(FloatProperty::new(0f32)),
                 ),
                 (
                     Property::StructProperty(StructProperty::new(
-                        Guid::new([0x11u8; 16]),
+                        Guid([0x11u8; 16]),
                         StructPropertyValue::Timespan(DateTime::new(0)),
                     )),
                     Property::FloatProperty(FloatProperty::new(1f32)),
                 ),
                 (
                     Property::StructProperty(StructProperty::new(
-                        Guid::new([0x22u8; 16]),
+                        Guid([0x22u8; 16]),
                         StructPropertyValue::DateTime(DateTime::new(0)),
                     )),
                     Property::FloatProperty(FloatProperty::new(2f32)),
@@ -1650,7 +1650,7 @@ fn str_some() {
 fn struct_vectorf() {
     serde_json(
         &Property::StructProperty(StructProperty::new(
-            Guid::new([0u8; 16]),
+            Guid([0u8; 16]),
             StructPropertyValue::VectorF(VectorF::new(0f32, 1f32, 2f32)),
         )),
         r#"{
