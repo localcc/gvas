@@ -367,25 +367,17 @@ pub(crate) fn expected() -> GvasFile {
             ),
             (
                 String::from("array_of_ints"),
-                Property::from(ArrayProperty::Properties {
-                    property_type: String::from("IntProperty"),
-                    properties: vec![
-                        Property::from(IntProperty::new(12)),
-                        Property::from(IntProperty::new(12)),
-                        Property::from(IntProperty::new(12)),
-                        Property::from(IntProperty::new(12)),
-                        Property::from(IntProperty::new(12)),
-                    ],
+                Property::from(ArrayProperty::Ints {
+                    ints: vec![12, 12, 12, 12, 12],
                 }),
             ),
             (
                 String::from("array_of_strings"),
-                Property::from(ArrayProperty::Properties {
-                    property_type: String::from("StrProperty"),
-                    properties: vec![
-                        Property::from(StrProperty::from("Hello world from array")),
-                        Property::from(StrProperty::from("Hello world from array")),
-                        Property::from(StrProperty::from("Hello world from array")),
+                Property::from(ArrayProperty::Strings {
+                    strings: vec![
+                        Some(String::from("Hello world from array")),
+                        Some(String::from("Hello world from array")),
+                        Some(String::from("Hello world from array")),
                     ],
                 }),
             ),

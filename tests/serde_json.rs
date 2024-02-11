@@ -223,16 +223,9 @@ fn array_int32() {
         ),
         r#"{
   "type": "ArrayProperty",
-  "property_type": "IntProperty",
-  "properties": [
-    {
-      "type": "IntProperty",
-      "value": 0
-    },
-    {
-      "type": "IntProperty",
-      "value": 1
-    }
+  "ints": [
+    0,
+    1
   ]
 }"#,
     )
@@ -400,16 +393,9 @@ fn array_bool() {
         ),
         r#"{
   "type": "ArrayProperty",
-  "property_type": "BoolProperty",
-  "properties": [
-    {
-      "type": "BoolProperty",
-      "value": false
-    },
-    {
-      "type": "BoolProperty",
-      "value": true
-    }
+  "bools": [
+    false,
+    true
   ]
 }"#,
     )
@@ -462,16 +448,9 @@ fn array_float() {
         ),
         r#"{
   "type": "ArrayProperty",
-  "property_type": "FloatProperty",
-  "properties": [
-    {
-      "type": "FloatProperty",
-      "value": 1.0
-    },
-    {
-      "type": "FloatProperty",
-      "value": 2.0
-    }
+  "floats": [
+    1.0,
+    2.0
   ]
 }"#,
     )
@@ -479,6 +458,30 @@ fn array_float() {
 
 #[test]
 fn array_enum() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("EnumProperty"),
+                None,
+                vec![
+                    Property::EnumProperty(EnumProperty::new(None, "a".to_string())),
+                    Property::EnumProperty(EnumProperty::new(None, "b".to_string())),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
+  "enums": [
+    "a",
+    "b"
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_enum_ns() {
     serde_json(
         &Property::ArrayProperty(
             ArrayProperty::new(
@@ -528,6 +531,33 @@ fn array_name() {
         ),
         r#"{
   "type": "ArrayProperty",
+  "names": [
+    null,
+    "b"
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn array_name_array_index() {
+    serde_json(
+        &Property::ArrayProperty(
+            ArrayProperty::new(
+                String::from("NameProperty"),
+                None,
+                vec![
+                    Property::NameProperty(NameProperty::from(None)),
+                    Property::NameProperty(NameProperty {
+                        array_index: 1,
+                        value: Some("b".to_string()),
+                    }),
+                ],
+            )
+            .expect("ArrayProperty::new"),
+        ),
+        r#"{
+  "type": "ArrayProperty",
   "property_type": "NameProperty",
   "properties": [
     {
@@ -535,6 +565,7 @@ fn array_name() {
     },
     {
       "type": "NameProperty",
+      "array_index": 1,
       "value": "b"
     }
   ]
@@ -589,15 +620,9 @@ fn array_str() {
         ),
         r#"{
   "type": "ArrayProperty",
-  "property_type": "StrProperty",
-  "properties": [
-    {
-      "type": "StrProperty"
-    },
-    {
-      "type": "StrProperty",
-      "value": "b"
-    }
+  "strings": [
+    null,
+    "b"
   ]
 }"#,
     )
