@@ -15,8 +15,10 @@ use super::{impl_read_header, impl_write, impl_write_header_part, PropertyOption
 #[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnumProperty {
-    enum_type: Option<String>,
-    value: String,
+    /// Enum Type.
+    pub enum_type: Option<String>,
+    /// Enum Value.
+    pub value: String,
 }
 
 impl_write!(EnumProperty, (write_fstring, enum_type));

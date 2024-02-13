@@ -777,31 +777,10 @@ fn map_enum_bool() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "EnumProperty",
-  "value_type": "BoolProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "EnumProperty",
-        "value": "a"
-      },
-      {
-        "type": "BoolProperty",
-        "value": false
-      }
-    ],
-    [
-      {
-        "type": "EnumProperty",
-        "value": "b"
-      },
-      {
-        "type": "BoolProperty",
-        "value": true
-      }
-    ]
-  ]
+  "enum_bools": {
+    "a": false,
+    "b": true
+  }
 }"#,
     )
 }
@@ -826,31 +805,10 @@ fn map_enum_int() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "EnumProperty",
-  "value_type": "IntProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "EnumProperty",
-        "value": "a"
-      },
-      {
-        "type": "IntProperty",
-        "value": 0
-      }
-    ],
-    [
-      {
-        "type": "EnumProperty",
-        "value": "b"
-      },
-      {
-        "type": "IntProperty",
-        "value": 1
-      }
-    ]
-  ]
+  "enum_ints": {
+    "a": 0,
+    "b": 1
+  }
 }"#,
     )
 }
@@ -875,35 +833,21 @@ fn map_enum_unknown() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "EnumProperty",
   "value_type": "UnknownProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "EnumProperty",
-        "value": "a"
-      },
-      {
-        "type": "UnknownProperty",
-        "property_name": "n",
-        "raw": []
-      }
-    ],
-    [
-      {
-        "type": "EnumProperty",
-        "value": "b"
-      },
-      {
-        "type": "UnknownProperty",
-        "property_name": "m",
-        "raw": [
-          1
-        ]
-      }
-    ]
-  ]
+  "enum_props": {
+    "a": {
+      "type": "UnknownProperty",
+      "property_name": "n",
+      "raw": []
+    },
+    "b": {
+      "type": "UnknownProperty",
+      "property_name": "m",
+      "raw": [
+        1
+      ]
+    }
+  }
 }"#,
     )
 }
@@ -991,31 +935,10 @@ fn map_name_bool() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "NameProperty",
-  "value_type": "BoolProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "NameProperty",
-        "value": "a"
-      },
-      {
-        "type": "BoolProperty",
-        "value": false
-      }
-    ],
-    [
-      {
-        "type": "NameProperty",
-        "value": "b"
-      },
-      {
-        "type": "BoolProperty",
-        "value": true
-      }
-    ]
-  ]
+  "name_bools": {
+    "a": false,
+    "b": true
+  }
 }"#,
     );
 }
@@ -1040,31 +963,10 @@ fn map_name_int() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "NameProperty",
-  "value_type": "IntProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "NameProperty",
-        "value": "a"
-      },
-      {
-        "type": "IntProperty",
-        "value": 0
-      }
-    ],
-    [
-      {
-        "type": "NameProperty",
-        "value": "b"
-      },
-      {
-        "type": "IntProperty",
-        "value": 1
-      }
-    ]
-  ]
+  "name_ints": {
+    "a": 0,
+    "b": 1
+  }
 }"#,
     );
 }
@@ -1089,35 +991,21 @@ fn map_name_property() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "NameProperty",
   "value_type": "UnknownProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "NameProperty",
-        "value": "a"
-      },
-      {
-        "type": "UnknownProperty",
-        "property_name": "b",
-        "raw": []
-      }
-    ],
-    [
-      {
-        "type": "NameProperty",
-        "value": "c"
-      },
-      {
-        "type": "UnknownProperty",
-        "property_name": "d",
-        "raw": [
-          1
-        ]
-      }
-    ]
-  ]
+  "name_props": {
+    "a": {
+      "type": "UnknownProperty",
+      "property_name": "b",
+      "raw": []
+    },
+    "c": {
+      "type": "UnknownProperty",
+      "property_name": "d",
+      "raw": [
+        1
+      ]
+    }
+  }
 }"#,
     );
 }
@@ -1142,31 +1030,10 @@ fn map_str_bool() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "StrProperty",
-  "value_type": "BoolProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "StrProperty",
-        "value": "a"
-      },
-      {
-        "type": "BoolProperty",
-        "value": false
-      }
-    ],
-    [
-      {
-        "type": "StrProperty",
-        "value": "b"
-      },
-      {
-        "type": "BoolProperty",
-        "value": true
-      }
-    ]
-  ]
+  "str_bools": {
+    "a": false,
+    "b": true
+  }
 }"#,
     );
 }
@@ -1195,41 +1062,11 @@ fn map_str_int() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "StrProperty",
-  "value_type": "IntProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "StrProperty",
-        "value": "zero"
-      },
-      {
-        "type": "IntProperty",
-        "value": 0
-      }
-    ],
-    [
-      {
-        "type": "StrProperty",
-        "value": "one"
-      },
-      {
-        "type": "IntProperty",
-        "value": 1
-      }
-    ],
-    [
-      {
-        "type": "StrProperty",
-        "value": "two"
-      },
-      {
-        "type": "IntProperty",
-        "value": 2
-      }
-    ]
-  ]
+  "str_ints": {
+    "zero": 0,
+    "one": 1,
+    "two": 2
+  }
 }"#,
     )
 }
@@ -1254,35 +1091,21 @@ fn map_str_property() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "StrProperty",
   "value_type": "UnknownProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "StrProperty",
-        "value": "a"
-      },
-      {
-        "type": "UnknownProperty",
-        "property_name": "b",
-        "raw": []
-      }
-    ],
-    [
-      {
-        "type": "StrProperty",
-        "value": "c"
-      },
-      {
-        "type": "UnknownProperty",
-        "property_name": "d",
-        "raw": [
-          1
-        ]
-      }
-    ]
-  ]
+  "str_props": {
+    "a": {
+      "type": "UnknownProperty",
+      "property_name": "b",
+      "raw": []
+    },
+    "c": {
+      "type": "UnknownProperty",
+      "property_name": "d",
+      "raw": [
+        1
+      ]
+    }
+  }
 }"#,
     );
 }
@@ -1307,31 +1130,10 @@ fn map_str_str() {
         )),
         r#"{
   "type": "MapProperty",
-  "key_type": "StrProperty",
-  "value_type": "StrProperty",
-  "allocation_flags": 0,
-  "value": [
-    [
-      {
-        "type": "StrProperty",
-        "value": "a"
-      },
-      {
-        "type": "StrProperty",
-        "value": "b"
-      }
-    ],
-    [
-      {
-        "type": "StrProperty",
-        "value": "c"
-      },
-      {
-        "type": "StrProperty",
-        "value": "d"
-      }
-    ]
-  ]
+  "str_strs": {
+    "a": "b",
+    "c": "d"
+  }
 }"#,
     );
 }
