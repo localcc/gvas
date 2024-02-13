@@ -406,7 +406,7 @@ fn read_save_slot_03() {
                         ),
                     ]),
                 )),
-                (4, "PlayerAttributes") => Property::from(MapProperty {
+                (4, "PlayerAttributes") => Property::from(MapProperty::Properties {
                     key_type: String::from("StructProperty"),
                     value_type: String::from("FloatProperty"),
                     allocation_flags: 0,
