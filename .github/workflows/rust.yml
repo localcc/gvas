@@ -39,53 +39,28 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.config.toolchain }}
 
       - name: Install Rust ${{ matrix.config.toolchain }}
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.config.toolchain }}
-          override: true
-
-      - run: rustup component add clippy
-      - run: rustup component add rustfmt
+          components: clippy, rustfmt
 
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-targets --verbose --workspace
+        run: cargo build --all-targets --verbose --workspace
 
       - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-targets --verbose --workspace
+        run: cargo test --all-targets --verbose --workspace
 
       - name: Build --all-features
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-targets --all-features --verbose --workspace
+        run: cargo build --all-targets --all-features --verbose --workspace
 
       - name: Test --all-features
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-targets --all-features --verbose --workspace
+        run: cargo test --all-targets --all-features --verbose --workspace
 
       - name: Check formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --check --all
+        run: cargo fmt --check --all
 
       - name: Clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-features -- -D warnings -D clippy::expect_used -D clippy::panic -D clippy::unwrap_used
+        run: cargo clippy --all-features -- -D warnings -D clippy::expect_used -D clippy::panic -D clippy::unwrap_used
 
       - name: Clippy (tests)
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-features --all-targets -- -D warnings
+        run: cargo clippy --all-features --all-targets -- -D warnings
