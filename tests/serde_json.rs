@@ -285,10 +285,7 @@ fn array_uint8() {
         ),
         r#"{
   "type": "ArrayProperty",
-  "bytes": [
-    0,
-    1
-  ]
+  "bytes": "AAE="
 }"#,
     )
 }

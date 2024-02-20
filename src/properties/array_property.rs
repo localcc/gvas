@@ -18,14 +18,19 @@ use super::{
     Property, PropertyOptions, PropertyTrait,
 };
 
+#[cfg(feature = "serde")]
+use serde_with::{base64::Base64, serde, serde_as};
+
 /// A property that holds an array of values.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", cfg_eval::cfg_eval, serde_as)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(untagged))]
 pub enum ArrayProperty {
     /// An array of ByteProperty values.
     Bytes {
         /// An array of values.
+        #[cfg_attr(feature = "serde", serde_as(as = "Base64"))]
         bytes: Vec<u8>,
     },
     /// An array of StructProperty values.
