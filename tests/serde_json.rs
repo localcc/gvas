@@ -73,7 +73,6 @@ fn file_regression_01() {
     serde_json(
         &file,
         r#"{
-  "deserialized_game_version": "Default",
   "header": {
     "type": "Version2",
     "package_file_version": 517,
@@ -759,6 +758,157 @@ fn field_path() {
 }
 
 #[test]
+fn map_enum_bool() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("EnumProperty"),
+            String::from("BoolProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::from(EnumProperty::new(None, String::from("a"))),
+                    Property::from(BoolProperty::new(false)),
+                ),
+                (
+                    Property::from(EnumProperty::new(None, String::from("b"))),
+                    Property::from(BoolProperty::new(true)),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "EnumProperty",
+  "value_type": "BoolProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "EnumProperty",
+        "value": "a"
+      },
+      {
+        "type": "BoolProperty",
+        "value": false
+      }
+    ],
+    [
+      {
+        "type": "EnumProperty",
+        "value": "b"
+      },
+      {
+        "type": "BoolProperty",
+        "value": true
+      }
+    ]
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn map_enum_int() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("EnumProperty"),
+            String::from("IntProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::from(EnumProperty::new(None, String::from("a"))),
+                    Property::from(IntProperty::new(0)),
+                ),
+                (
+                    Property::from(EnumProperty::new(None, String::from("b"))),
+                    Property::from(IntProperty::new(1)),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "EnumProperty",
+  "value_type": "IntProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "EnumProperty",
+        "value": "a"
+      },
+      {
+        "type": "IntProperty",
+        "value": 0
+      }
+    ],
+    [
+      {
+        "type": "EnumProperty",
+        "value": "b"
+      },
+      {
+        "type": "IntProperty",
+        "value": 1
+      }
+    ]
+  ]
+}"#,
+    )
+}
+
+#[test]
+fn map_enum_unknown() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("EnumProperty"),
+            String::from("UnknownProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::from(EnumProperty::new(None, String::from("a"))),
+                    Property::from(UnknownProperty::new(String::from("n"), vec![])),
+                ),
+                (
+                    Property::from(EnumProperty::new(None, String::from("b"))),
+                    Property::from(UnknownProperty::new(String::from("m"), vec![1])),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "EnumProperty",
+  "value_type": "UnknownProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "EnumProperty",
+        "value": "a"
+      },
+      {
+        "type": "UnknownProperty",
+        "property_name": "n",
+        "raw": []
+      }
+    ],
+    [
+      {
+        "type": "EnumProperty",
+        "value": "b"
+      },
+      {
+        "type": "UnknownProperty",
+        "property_name": "m",
+        "raw": [
+          1
+        ]
+      }
+    ]
+  ]
+}"#,
+    )
+}
+
+#[test]
 fn map_int_bool() {
     serde_json(
         &Property::MapProperty(MapProperty::new(
@@ -822,6 +972,206 @@ fn map_int_bool() {
 }
 
 #[test]
+fn map_name_bool() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("NameProperty"),
+            String::from("BoolProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::NameProperty(NameProperty::from("a")),
+                    Property::BoolProperty(BoolProperty::new(false)),
+                ),
+                (
+                    Property::NameProperty(NameProperty::from("b")),
+                    Property::BoolProperty(BoolProperty::new(true)),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "NameProperty",
+  "value_type": "BoolProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "NameProperty",
+        "value": "a"
+      },
+      {
+        "type": "BoolProperty",
+        "value": false
+      }
+    ],
+    [
+      {
+        "type": "NameProperty",
+        "value": "b"
+      },
+      {
+        "type": "BoolProperty",
+        "value": true
+      }
+    ]
+  ]
+}"#,
+    );
+}
+
+#[test]
+fn map_name_int() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("NameProperty"),
+            String::from("IntProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::NameProperty(NameProperty::from("a")),
+                    Property::IntProperty(IntProperty::new(0)),
+                ),
+                (
+                    Property::NameProperty(NameProperty::from("b")),
+                    Property::IntProperty(IntProperty::new(1)),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "NameProperty",
+  "value_type": "IntProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "NameProperty",
+        "value": "a"
+      },
+      {
+        "type": "IntProperty",
+        "value": 0
+      }
+    ],
+    [
+      {
+        "type": "NameProperty",
+        "value": "b"
+      },
+      {
+        "type": "IntProperty",
+        "value": 1
+      }
+    ]
+  ]
+}"#,
+    );
+}
+
+#[test]
+fn map_name_property() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("NameProperty"),
+            String::from("UnknownProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::NameProperty(NameProperty::from("a")),
+                    Property::UnknownProperty(UnknownProperty::new(String::from("b"), vec![])),
+                ),
+                (
+                    Property::NameProperty(NameProperty::from("c")),
+                    Property::UnknownProperty(UnknownProperty::new(String::from("d"), vec![1])),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "NameProperty",
+  "value_type": "UnknownProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "NameProperty",
+        "value": "a"
+      },
+      {
+        "type": "UnknownProperty",
+        "property_name": "b",
+        "raw": []
+      }
+    ],
+    [
+      {
+        "type": "NameProperty",
+        "value": "c"
+      },
+      {
+        "type": "UnknownProperty",
+        "property_name": "d",
+        "raw": [
+          1
+        ]
+      }
+    ]
+  ]
+}"#,
+    );
+}
+
+#[test]
+fn map_str_bool() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("StrProperty"),
+            String::from("BoolProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::StrProperty(StrProperty::from("a")),
+                    Property::BoolProperty(BoolProperty::new(false)),
+                ),
+                (
+                    Property::StrProperty(StrProperty::from("b")),
+                    Property::BoolProperty(BoolProperty::new(true)),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "StrProperty",
+  "value_type": "BoolProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "StrProperty",
+        "value": "a"
+      },
+      {
+        "type": "BoolProperty",
+        "value": false
+      }
+    ],
+    [
+      {
+        "type": "StrProperty",
+        "value": "b"
+      },
+      {
+        "type": "BoolProperty",
+        "value": true
+      }
+    ]
+  ]
+}"#,
+    );
+}
+
+#[test]
 fn map_str_int() {
     serde_json(
         &Property::MapProperty(MapProperty::new(
@@ -882,6 +1232,108 @@ fn map_str_int() {
   ]
 }"#,
     )
+}
+
+#[test]
+fn map_str_property() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("StrProperty"),
+            String::from("UnknownProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::StrProperty(StrProperty::from("a")),
+                    Property::UnknownProperty(UnknownProperty::new(String::from("b"), vec![])),
+                ),
+                (
+                    Property::StrProperty(StrProperty::from("c")),
+                    Property::UnknownProperty(UnknownProperty::new(String::from("d"), vec![1])),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "StrProperty",
+  "value_type": "UnknownProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "StrProperty",
+        "value": "a"
+      },
+      {
+        "type": "UnknownProperty",
+        "property_name": "b",
+        "raw": []
+      }
+    ],
+    [
+      {
+        "type": "StrProperty",
+        "value": "c"
+      },
+      {
+        "type": "UnknownProperty",
+        "property_name": "d",
+        "raw": [
+          1
+        ]
+      }
+    ]
+  ]
+}"#,
+    );
+}
+
+#[test]
+fn map_str_str() {
+    serde_json(
+        &Property::MapProperty(MapProperty::new(
+            String::from("StrProperty"),
+            String::from("StrProperty"),
+            0,
+            IndexMap::from([
+                (
+                    Property::StrProperty(StrProperty::from("a")),
+                    Property::StrProperty(StrProperty::from("b")),
+                ),
+                (
+                    Property::StrProperty(StrProperty::from("c")),
+                    Property::StrProperty(StrProperty::from("d")),
+                ),
+            ]),
+        )),
+        r#"{
+  "type": "MapProperty",
+  "key_type": "StrProperty",
+  "value_type": "StrProperty",
+  "allocation_flags": 0,
+  "value": [
+    [
+      {
+        "type": "StrProperty",
+        "value": "a"
+      },
+      {
+        "type": "StrProperty",
+        "value": "b"
+      }
+    ],
+    [
+      {
+        "type": "StrProperty",
+        "value": "c"
+      },
+      {
+        "type": "StrProperty",
+        "value": "d"
+      }
+    ]
+  ]
+}"#,
+    );
 }
 
 #[test]

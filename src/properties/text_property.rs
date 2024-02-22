@@ -983,8 +983,8 @@ impl NumberFormattingOptions {
 
     /// Write [`NumberFormattingOptions`] to a cursor
     pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_bool(self.always_include_sign)?;
-        cursor.write_bool(self.use_grouping)?;
+        cursor.write_b32(self.always_include_sign)?;
+        cursor.write_b32(self.use_grouping)?;
         cursor.write_enum(self.rounding_mode)?;
         cursor.write_i32::<LittleEndian>(self.minimum_integral_digits)?;
         cursor.write_i32::<LittleEndian>(self.maximum_integral_digits)?;

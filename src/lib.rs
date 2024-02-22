@@ -308,6 +308,10 @@ impl GvasHeader {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GvasFile {
     /// Game version
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "DeserializedGameVersion::is_default")
+    )]
     pub deserialized_game_version: DeserializedGameVersion,
     /// GVAS file header.
     pub header: GvasHeader,
