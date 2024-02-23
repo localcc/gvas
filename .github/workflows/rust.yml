@@ -61,3 +61,44 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --all-features --all-targets -- -D warnings
+
+  cross-test:
+    name: cross / ${{ matrix.arch }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        toolchain:
+          - stable
+        arch:
+          - i686-unknown-linux-gnu
+          - powerpc-unknown-linux-gnu
+          - powerpc64le-unknown-linux-gnu
+          - riscv64gc-unknown-linux-gnu
+          - s390x-unknown-linux-gnu
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo
+            ~/.rustup
+          key: ${{ runner.os }}-${{ matrix.toolchain }}
+
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          targets: ${{ matrix.arch }}
+
+      - run: cargo install cross
+      - run: cross build --target ${{ matrix.arch }}
+      - run: cross test --target ${{ matrix.arch }}
+      - run: cross build --target ${{ matrix.arch }} --all-features
+      - run: cross test --target ${{ matrix.arch }} --all-features
