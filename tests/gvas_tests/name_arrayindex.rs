@@ -1,8 +1,8 @@
+use gvas::cursor_ext::ReadExt;
 use gvas::properties::{name_property::NameProperty, PropertyOptions, PropertyTrait};
 use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::io::Cursor;
-use unreal_helpers::UnrealReadExt;
 
 #[test]
 fn name_property_with_array_index() {

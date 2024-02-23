@@ -1,9 +1,11 @@
 use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
-use crate::{cursor_ext::WriteExt, error::Error};
+use crate::{
+    cursor_ext::{ReadExt, WriteExt},
+    error::Error,
+};
 
 use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
 

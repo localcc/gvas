@@ -1,7 +1,9 @@
-use std::io;
+use std::{
+    io,
+    string::{FromUtf16Error, FromUtf8Error},
+};
 
 use thiserror::Error;
-use unreal_helpers::error::FStringError;
 
 /// Gets thrown when there is a deserialization error
 #[derive(Error, Debug)]
@@ -14,7 +16,10 @@ pub enum DeserializeError {
     InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
     #[error("Invalid string size {0} at position {1:#x}")]
-    InvalidString(u32, u64),
+    InvalidString(i32, u64),
+    /// Invalid string terminator
+    #[error("Invalid string terminator {0} at position {1:#x}")]
+    InvalidStringTerminator(u16, u64),
     /// If a boolean has invalid value
     #[error("Invalid boolean value {0} at position {1:#x}")]
     InvalidBoolean(u32, u64),
@@ -36,6 +41,12 @@ pub enum DeserializeError {
     /// Invalid terminator
     #[error("Unexpected terminator value {0} at position {1:#x}")]
     InvalidTerminator(u8, u64),
+    /// If a string has invalid UTF-16 formatting
+    #[error("Invalid UTF-16 string at position {1:#x}")]
+    FromUtf16Error(#[source] FromUtf16Error, u64),
+    /// If a string has invalid UTF-8 formatting
+    #[error("Invalid UTF-8 string at position {1:#x}")]
+    FromUtf8Error(#[source] FromUtf8Error, u64),
 }
 
 impl DeserializeError {
@@ -112,9 +123,6 @@ pub enum Error {
     /// A `SerializeError` occurred
     #[error(transparent)]
     Serialize(#[from] SerializeError),
-    /// An `FStringError` occured
-    #[error(transparent)]
-    FString(#[from] FStringError),
     /// An `std::io::Error` occured
     #[error(transparent)]
     Io(#[from] io::Error),

@@ -8,7 +8,6 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use indexmap::IndexMap;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use ordered_float::OrderedFloat;
-use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use crate::custom_version::FEditorObjectVersion;
 use crate::properties::int_property::UInt64Property;

@@ -1,7 +1,6 @@
 use std::io::{Cursor, Read, Seek, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use unreal_helpers::UnrealWriteExt;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},

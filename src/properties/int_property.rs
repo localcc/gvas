@@ -5,7 +5,6 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
-use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 
 use super::{
     impl_write,
