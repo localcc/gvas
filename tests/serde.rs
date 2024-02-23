@@ -1,9 +1,5 @@
 mod common;
-use common::{
-    features, ASSERT_FAILED_PATH, COMPONENT8_PATH, DELEGATE_PATH, ENUM_ARRAY_PATH,
-    FEATURES_01_PATH, OPTIONS_PATH, PACKAGE_VERSION_524_PATH, REGRESSION_01_PATH, SLOT1_PATH,
-    SLOT2_PATH, SLOT3_PATH, TRANSFORM_PATH,
-};
+use common::*;
 use gvas::{game_version::GameVersion, GvasFile};
 use std::{collections::HashMap, fs::File, path::Path};
 
