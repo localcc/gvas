@@ -1,5 +1,5 @@
 mod common;
-use common::{delegate, features, options, palworld, *};
+use common::*;
 use gvas::{game_version::GameVersion, GvasFile};
 use std::{collections::HashMap, fs, io::Cursor, path::Path};
 
@@ -90,7 +90,7 @@ fn regression_01() {
 
 #[test]
 fn slot1() {
-    test_gvas_file(SLOT1_PATH);
+    assert_eq!(test_gvas_file(SLOT1_PATH), slot1::expected());
 }
 
 #[test]

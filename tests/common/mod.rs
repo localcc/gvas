@@ -4,6 +4,7 @@ pub mod delegate;
 pub mod features;
 pub mod options;
 pub mod palworld;
+pub mod slot1;
 
 pub const ASSERT_FAILED_PATH: &str = "resources/test/assert_failed.sav";
 pub const COMPONENT8_PATH: &str = "resources/test/component8.sav";
