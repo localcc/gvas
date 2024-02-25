@@ -279,13 +279,14 @@ fn array_uint8() {
                 vec![
                     Property::ByteProperty(ByteProperty::new_byte(None, 0)),
                     Property::ByteProperty(ByteProperty::new_byte(None, 1)),
+                    Property::ByteProperty(ByteProperty::new_byte(None, 0xab)),
                 ],
             )
             .expect("ArrayProperty::new"),
         ),
         r#"{
   "type": "ArrayProperty",
-  "bytes": "AAE="
+  "bytes": "0001ab"
 }"#,
     )
 }
