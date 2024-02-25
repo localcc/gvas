@@ -38,5 +38,20 @@ pub enum DeserializedGameVersion {
     Palworld(PalworldCompressionType),
 }
 
+impl Default for DeserializedGameVersion {
+    #[inline]
+    fn default() -> Self {
+        DeserializedGameVersion::Default
+    }
+}
+
+impl DeserializedGameVersion {
+    #[cfg(feature = "serde")]
+    #[inline]
+    pub(crate) fn is_default(&self) -> bool {
+        matches!(self, DeserializedGameVersion::Default)
+    }
+}
+
 /// Palworld save magic
 pub(crate) const PLZ_MAGIC: &[u8; 3] = b"PlZ";

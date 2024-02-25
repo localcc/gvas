@@ -219,8 +219,10 @@ macro_rules! impl_read_header {
             assert_eq!(
                 end - start,
                 length as u64,
-                "read_body did not read the expected length {:#x}",
+                "read_body read {:#x}, expected {:#x}\n{:#?}",
+                end - start,
                 length,
+                result,
             );
 
             Ok(result)
