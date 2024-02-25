@@ -46,6 +46,7 @@ impl Default for DeserializedGameVersion {
 }
 
 impl DeserializedGameVersion {
+    #[cfg(feature = "serde")]
     #[inline]
     pub(crate) fn is_default(&self) -> bool {
         matches!(self, DeserializedGameVersion::Default)
