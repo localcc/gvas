@@ -54,12 +54,24 @@ impl Guid {
 
 #[inline]
 const fn transmute_4u32_16u8(value: [u32; 4]) -> [u8; 16] {
-    unsafe { std::mem::transmute(value) }
+    let value_le = [
+        value[0].to_le(),
+        value[1].to_le(),
+        value[2].to_le(),
+        value[3].to_le(),
+    ];
+    unsafe { std::mem::transmute(value_le) }
 }
 
 #[inline]
 const fn transmute_16u8_4u32(src: [u8; 16]) -> [u32; 4] {
-    unsafe { std::mem::transmute(src) }
+    let value: [u32; 4] = unsafe { std::mem::transmute(src) };
+    [
+        u32::from_le(value[0]),
+        u32::from_le(value[1]),
+        u32::from_le(value[2]),
+        u32::from_le(value[3]),
+    ]
 }
 
 impl From<[u32; 4]> for Guid {
