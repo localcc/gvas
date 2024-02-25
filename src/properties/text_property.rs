@@ -63,10 +63,17 @@ impl_write!(TextProperty, options);
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FText {
     /// Text flags
+    #[cfg_attr(feature = "serde", serde(default, skip_serializing_if = "is_zero"))]
     pub flags: u32,
     /// Text history
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub history: FTextHistory,
+}
+
+#[cfg(feature = "serde")]
+#[inline]
+fn is_zero(num: &u32) -> bool {
+    *num == 0
 }
 
 impl FText {
@@ -74,8 +81,11 @@ impl FText {
     pub fn new_none(flags: u32, culture_invariant_string: Option<Option<String>>) -> Self {
         FText {
             flags,
-            history: FTextHistory::None {
-                culture_invariant_string,
+            history: match culture_invariant_string {
+                Some(culture_invariant_string) => FTextHistory::None {
+                    culture_invariant_string,
+                },
+                None => FTextHistory::Empty {},
             },
         }
     }
@@ -162,10 +172,12 @@ pub enum TextHistoryType {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(tag = "history"))]
 pub enum FTextHistory {
+    /// Empty
+    Empty {},
     /// None
     None {
         /// Culture invariant string
-        culture_invariant_string: Option<Option<String>>,
+        culture_invariant_string: Option<String>,
     },
     /// Base text history
     Base {
@@ -287,21 +299,20 @@ impl FTextHistory {
 
         Ok(match history_type {
             TextHistoryType::None => {
-                let culture_invariant_string = if options.supports_version(
+                if options.supports_version(
                     FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
                 ) {
                     let has_culture_invariant_string = cursor.read_b32()?;
                     if has_culture_invariant_string {
-                        Some(cursor.read_fstring()?)
+                        let culture_invariant_string = cursor.read_fstring()?;
+                        FTextHistory::None {
+                            culture_invariant_string,
+                        }
                     } else {
-                        None
+                        FTextHistory::Empty {}
                     }
                 } else {
-                    None
-                };
-
-                FTextHistory::None {
-                    culture_invariant_string,
+                    FTextHistory::Empty {}
                 }
             }
             TextHistoryType::Base => {
@@ -489,6 +500,15 @@ impl FTextHistory {
         options: &mut PropertyOptions,
     ) -> Result<(), Error> {
         match self {
+            FTextHistory::Empty {} => {
+                cursor.write_enum(TextHistoryType::None)?;
+
+                if options.supports_version(
+                    FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
+                ) {
+                    cursor.write_b32(false)?;
+                }
+            }
             FTextHistory::None {
                 culture_invariant_string,
             } => {
@@ -497,11 +517,8 @@ impl FTextHistory {
                 if options.supports_version(
                     FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
                 ) {
-                    cursor.write_b32(culture_invariant_string.is_some())?;
-
-                    if let Some(culture_invariant_string) = culture_invariant_string {
-                        cursor.write_fstring(culture_invariant_string.as_deref())?;
-                    }
+                    cursor.write_b32(true)?;
+                    cursor.write_fstring(culture_invariant_string.as_deref())?;
                 }
             }
             FTextHistory::Base {
@@ -660,6 +677,9 @@ impl FTextHistory {
 impl Hash for FTextHistory {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
+            FTextHistory::Empty {} => {
+                state.write_u8(0);
+            }
             FTextHistory::None {
                 culture_invariant_string,
             } => {

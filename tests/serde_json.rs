@@ -1469,24 +1469,26 @@ fn struct_vectorf() {
 }
 
 #[test]
-fn text_none_none() {
+fn text_empty() {
     serde_json(
         &Property::TextProperty(TextProperty::new(FText::new_none(0, None))),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
-  "history": "None"
+  "history": "Empty"
 }"#,
     );
 }
 
-#[ignore] // This test fails
 #[test]
 fn text_none_some_none() {
-    // serde_json(
-    //     &Property::TextProperty(TextProperty::new(FText::new_none(1, Some(None)))),
-    //     "{\n  \"type\": \"TextProperty\",\n  \"flags\": 1,\n  \"history\": \"None\"\n}",
-    // );
+    serde_json(
+        &Property::TextProperty(TextProperty::new(FText::new_none(1, Some(None)))),
+        r#"{
+  "type": "TextProperty",
+  "flags": 1,
+  "history": "None"
+}"#,
+    );
 }
 
 #[test]
@@ -1511,7 +1513,6 @@ fn text_base_none() {
         &Property::TextProperty(TextProperty::new(FText::new_base(0, None, None, None))),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "Base"
 }"#,
     );
@@ -1554,7 +1555,6 @@ fn text_namedformat() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "NamedFormat",
   "source_format": {
     "flags": 1,
@@ -1586,7 +1586,6 @@ fn text_orderedformat() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "OrderedFormat",
   "source_format": {
     "flags": 1,
@@ -1621,7 +1620,6 @@ fn text_argumentformat() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "ArgumentFormat",
   "source_format": {
     "flags": 1,
@@ -1665,7 +1663,6 @@ fn text_asnumber() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "AsNumber",
   "source_value": {
     "Text": {
@@ -1713,7 +1710,6 @@ fn text_ascurrency() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "AsNumber",
   "source_value": {
     "Text": {
@@ -1748,7 +1744,6 @@ fn text_asdate() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "AsDate",
   "date_time": {
     "ticks": 1
@@ -1773,7 +1768,6 @@ fn text_astime() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "AsTime",
   "source_date_time": {
     "ticks": 1
@@ -1800,7 +1794,6 @@ fn text_asdatetime() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "AsDateTime",
   "source_date_time": {
     "ticks": 1
@@ -1830,7 +1823,6 @@ fn text_transform() {
         })),
         r#"{
   "type": "TextProperty",
-  "flags": 0,
   "history": "Transform",
   "source_text": {
     "flags": 1,
