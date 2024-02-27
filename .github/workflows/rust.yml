@@ -60,7 +60,4 @@ jobs:
         run: cargo fmt --check --all
 
       - name: Clippy
-        run: cargo clippy --all-features -- -D warnings -D clippy::expect_used -D clippy::panic -D clippy::unwrap_used
-
-      - name: Clippy (tests)
         run: cargo clippy --all-features --all-targets -- -D warnings

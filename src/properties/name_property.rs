@@ -20,7 +20,6 @@ pub struct NameProperty {
     pub value: Option<String>,
 }
 
-#[allow(clippy::trivially_copy_pass_by_ref)]
 #[cfg(feature = "serde")]
 fn is_zero(num: &u32) -> bool {
     *num == 0
