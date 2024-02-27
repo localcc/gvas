@@ -1,3 +1,4 @@
+#![warn(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 #![warn(missing_docs)]
 
 //! Gvas
