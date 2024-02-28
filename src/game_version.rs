@@ -16,7 +16,7 @@ pub enum GameVersion {
 /// Palworld compression type
 #[derive(Debug, Copy, Clone, PartialEq, Eq, TryFromPrimitive, IntoPrimitive)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[repr(u8)]
+#[repr(i8)]
 pub enum PalworldCompressionType {
     /// None
     None = 0x30,

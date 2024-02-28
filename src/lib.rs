@@ -430,8 +430,7 @@ impl GvasFile {
                     )))?
                 }
 
-                let compression_type = PalworldCompressionType::try_from(cursor.read_u8()?)
-                    .map_err(DeserializeError::from)?;
+                let compression_type = cursor.read_enum()?;
 
                 deserialized_game_version = DeserializedGameVersion::Palworld(compression_type);
 
@@ -562,7 +561,7 @@ impl GvasFile {
                 cursor.write_u32::<LittleEndian>(decompressed.len() as u32)?;
                 cursor.write_u32::<LittleEndian>(compressed.len() as u32)?;
                 cursor.write_all(PLZ_MAGIC)?;
-                cursor.write_u8(compression_type as u8)?;
+                cursor.write_enum(compression_type)?;
                 cursor.write_all(&compressed)?;
             }
         }

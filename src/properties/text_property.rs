@@ -15,7 +15,7 @@ use crate::properties::int_property::UInt64Property;
 use crate::properties::struct_types::DateTime;
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
-    error::{DeserializeError, Error},
+    error::Error,
 };
 
 use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
@@ -283,8 +283,7 @@ impl FTextHistory {
         cursor: &mut R,
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
-        let history_type =
-            TextHistoryType::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
+        let history_type = cursor.read_enum()?;
 
         Ok(match history_type {
             TextHistoryType::None => {
@@ -423,8 +422,7 @@ impl FTextHistory {
                 let date_time = DateTime {
                     ticks: UInt64Property::read(cursor, false)?.value,
                 };
-                let date_style =
-                    DateTimeStyle::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
+                let date_style = cursor.read_enum()?;
                 let target_culture = cursor.read_string()?;
 
                 FTextHistory::AsDate {
@@ -437,8 +435,7 @@ impl FTextHistory {
                 let source_date_time = DateTime {
                     ticks: UInt64Property::read(cursor, false)?.value,
                 };
-                let time_style =
-                    DateTimeStyle::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
+                let time_style = cursor.read_enum()?;
                 let time_zone = cursor.read_string()?;
                 let target_culture = cursor.read_string()?;
 
@@ -453,10 +450,8 @@ impl FTextHistory {
                 let source_date_time = DateTime {
                     ticks: UInt64Property::read(cursor, false)?.value,
                 };
-                let date_style =
-                    DateTimeStyle::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
-                let time_style =
-                    DateTimeStyle::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
+                let date_style = cursor.read_enum()?;
+                let time_style = cursor.read_enum()?;
                 let time_zone = cursor.read_string()?;
                 let target_culture = cursor.read_string()?;
 
@@ -470,8 +465,7 @@ impl FTextHistory {
             }
             TextHistoryType::Transform => {
                 let source_text = Box::new(FText::read(cursor, options)?);
-                let transform_type =
-                    TransformType::try_from(cursor.read_u8()?).map_err(DeserializeError::from)?;
+                let transform_type = cursor.read_enum()?;
 
                 FTextHistory::Transform {
                     source_text,
@@ -498,7 +492,7 @@ impl FTextHistory {
             FTextHistory::None {
                 culture_invariant_string,
             } => {
-                cursor.write_i8(TextHistoryType::None as i8)?;
+                cursor.write_enum(TextHistoryType::None)?;
 
                 if options.supports_version(
                     FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
@@ -515,7 +509,7 @@ impl FTextHistory {
                 key,
                 source_string,
             } => {
-                cursor.write_i8(TextHistoryType::Base as i8)?;
+                cursor.write_enum(TextHistoryType::Base)?;
 
                 cursor.write_fstring(namespace.as_deref())?;
                 cursor.write_fstring(key.as_deref())?;
@@ -525,7 +519,7 @@ impl FTextHistory {
                 source_format,
                 arguments,
             } => {
-                cursor.write_i8(TextHistoryType::NamedFormat as i8)?;
+                cursor.write_enum(TextHistoryType::NamedFormat)?;
 
                 source_format.write(cursor, options)?;
 
@@ -539,7 +533,7 @@ impl FTextHistory {
                 source_format,
                 arguments,
             } => {
-                cursor.write_i8(TextHistoryType::OrderedFormat as i8)?;
+                cursor.write_enum(TextHistoryType::OrderedFormat)?;
 
                 source_format.write(cursor, options)?;
 
@@ -552,7 +546,7 @@ impl FTextHistory {
                 source_format,
                 arguments,
             } => {
-                cursor.write_i8(TextHistoryType::ArgumentFormat as i8)?;
+                cursor.write_enum(TextHistoryType::ArgumentFormat)?;
 
                 source_format.write(cursor, options)?;
 
@@ -566,7 +560,7 @@ impl FTextHistory {
                 format_options,
                 target_culture,
             } => {
-                cursor.write_i8(TextHistoryType::AsNumber as i8)?;
+                cursor.write_enum(TextHistoryType::AsNumber)?;
 
                 source_value.write(cursor, options)?;
 
@@ -582,7 +576,7 @@ impl FTextHistory {
                 format_options,
                 target_culture,
             } => {
-                cursor.write_i8(TextHistoryType::AsPercent as i8)?;
+                cursor.write_enum(TextHistoryType::AsPercent)?;
 
                 source_value.write(cursor, options)?;
 
@@ -615,10 +609,10 @@ impl FTextHistory {
                 date_style,
                 target_culture,
             } => {
-                cursor.write_i8(TextHistoryType::AsDate as i8)?;
+                cursor.write_enum(TextHistoryType::AsDate)?;
 
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
-                cursor.write_i8(*date_style as i8)?;
+                cursor.write_enum(*date_style)?;
 
                 cursor.write_string(target_culture.as_ref())?;
             }
@@ -628,10 +622,9 @@ impl FTextHistory {
                 time_zone,
                 target_culture,
             } => {
-                cursor.write_i8(TextHistoryType::AsTime as i8)?;
-
+                cursor.write_enum(TextHistoryType::AsTime)?;
                 cursor.write_u64::<LittleEndian>(source_date_time.ticks)?;
-                cursor.write_i8(*time_style as i8)?;
+                cursor.write_enum(*time_style)?;
                 cursor.write_string(time_zone.as_str())?;
                 cursor.write_string(target_culture.as_str())?;
             }
@@ -642,11 +635,10 @@ impl FTextHistory {
                 time_zone,
                 target_culture,
             } => {
-                cursor.write_i8(TextHistoryType::AsDateTime as i8)?;
-
+                cursor.write_enum(TextHistoryType::AsDateTime)?;
                 cursor.write_u64::<LittleEndian>(source_date_time.ticks)?;
-                cursor.write_i8(*date_style as i8)?;
-                cursor.write_i8(*time_style as i8)?;
+                cursor.write_enum(*date_style)?;
+                cursor.write_enum(*time_style)?;
                 cursor.write_string(time_zone.as_str())?;
                 cursor.write_string(target_culture.as_str())?;
             }
@@ -654,10 +646,9 @@ impl FTextHistory {
                 source_text,
                 transform_type,
             } => {
-                cursor.write_i8(TextHistoryType::Transform as i8)?;
-
+                cursor.write_enum(TextHistoryType::Transform)?;
                 source_text.write(cursor, options)?;
-                cursor.write_u8(*transform_type as u8)?;
+                cursor.write_enum(*transform_type)?;
             }
             FTextHistory::StringTableEntry { .. } => {}
         };
@@ -871,8 +862,7 @@ impl FormatArgumentValue {
         cursor: &mut R,
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
-        let format_argument_type =
-            FormatArgumentType::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
+        let format_argument_type = cursor.read_enum()?;
 
         Ok(match format_argument_type {
             FormatArgumentType::Int => {
@@ -901,23 +891,23 @@ impl FormatArgumentValue {
     ) -> Result<(), Error> {
         match self {
             FormatArgumentValue::Int(value) => {
-                cursor.write_i8(FormatArgumentType::Int as i8)?;
+                cursor.write_enum(FormatArgumentType::Int)?;
                 cursor.write_i32::<LittleEndian>(*value)?;
             }
             FormatArgumentValue::UInt(value) => {
-                cursor.write_i8(FormatArgumentType::UInt as i8)?;
+                cursor.write_enum(FormatArgumentType::UInt)?;
                 cursor.write_u32::<LittleEndian>(*value)?;
             }
             FormatArgumentValue::Float(value) => {
-                cursor.write_i8(FormatArgumentType::Float as i8)?;
+                cursor.write_enum(FormatArgumentType::Float)?;
                 cursor.write_f32::<LittleEndian>(value.0)?;
             }
             FormatArgumentValue::Double(value) => {
-                cursor.write_i8(FormatArgumentType::Double as i8)?;
+                cursor.write_enum(FormatArgumentType::Double)?;
                 cursor.write_f64::<LittleEndian>(value.0)?;
             }
             FormatArgumentValue::Text(value) => {
-                cursor.write_i8(FormatArgumentType::Text as i8)?;
+                cursor.write_enum(FormatArgumentType::Text)?;
                 value.write(cursor, options)?;
             }
         };
@@ -974,8 +964,7 @@ impl NumberFormattingOptions {
     pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let always_include_sign = cursor.read_b32()?;
         let use_grouping = cursor.read_b32()?;
-        let rounding_mode =
-            RoundingMode::try_from(cursor.read_i8()?).map_err(DeserializeError::from)?;
+        let rounding_mode = cursor.read_enum()?;
         let minimum_integral_digits = cursor.read_i32::<LittleEndian>()?;
         let maximum_integral_digits = cursor.read_i32::<LittleEndian>()?;
         let minimum_fractional_digits = cursor.read_i32::<LittleEndian>()?;
@@ -996,7 +985,7 @@ impl NumberFormattingOptions {
     pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
         cursor.write_b32(self.always_include_sign)?;
         cursor.write_b32(self.use_grouping)?;
-        cursor.write_i8(self.rounding_mode as i8)?;
+        cursor.write_enum(self.rounding_mode)?;
         cursor.write_i32::<LittleEndian>(self.minimum_integral_digits)?;
         cursor.write_i32::<LittleEndian>(self.maximum_integral_digits)?;
         cursor.write_i32::<LittleEndian>(self.minimum_fractional_digits)?;
@@ -1027,7 +1016,7 @@ pub enum DateTimeStyle {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, IntoPrimitive, TryFromPrimitive)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(tag = "transform"))]
-#[repr(u8)]
+#[repr(i8)]
 pub enum TransformType {
     /// To lowercase
     ToLower = 0,
