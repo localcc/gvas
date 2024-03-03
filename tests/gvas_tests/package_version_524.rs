@@ -1,5 +1,4 @@
-mod common;
-use common::PACKAGE_VERSION_524_PATH;
+use crate::common::PACKAGE_VERSION_524_PATH;
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use std::{

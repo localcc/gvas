@@ -1,5 +1,4 @@
-mod common;
-use common::REGRESSION_01_PATH;
+use crate::common::REGRESSION_01_PATH;
 use gvas::{
     game_version::GameVersion,
     properties::{

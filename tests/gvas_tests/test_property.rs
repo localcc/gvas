@@ -1,5 +1,3 @@
-mod test_file;
-
 use std::{collections::HashMap, io::Cursor};
 
 use gvas::{
