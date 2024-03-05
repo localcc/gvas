@@ -32,7 +32,3 @@ serde_json = { version = "1.0.96", features = ["float_roundtrip", "preserve_orde
 [[test]]
 name = "serde"
 required-features = ["serde"]
-
-[[test]]
-name = "serde_json"
-required-features = ["serde"]

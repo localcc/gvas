@@ -1,5 +1,6 @@
 mod common;
 use common::*;
+mod gvas_tests;
 use gvas::{game_version::GameVersion, GvasFile};
 use std::{collections::HashMap, fs, io::Cursor, path::Path};
 

@@ -1,6 +1,4 @@
-mod common;
-
-use common::{palworld, PALWORLD_ZLIB_PATH, PALWORLD_ZLIB_TWICE_PATH};
+use crate::common::{palworld, PALWORLD_ZLIB_PATH, PALWORLD_ZLIB_TWICE_PATH};
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use std::fs::File;
