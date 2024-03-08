@@ -542,7 +542,7 @@ impl FTextHistory {
 
                 cursor.write_i32::<LittleEndian>(arguments.len() as i32)?;
                 for (key, value) in arguments {
-                    cursor.write_string(key.as_ref())?;
+                    cursor.write_string(key)?;
                     value.write(cursor, options)?;
                 }
             }
@@ -631,7 +631,7 @@ impl FTextHistory {
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
                 cursor.write_enum(*date_style)?;
 
-                cursor.write_string(target_culture.as_ref())?;
+                cursor.write_string(target_culture)?;
             }
             FTextHistory::AsTime {
                 source_date_time,
@@ -642,8 +642,8 @@ impl FTextHistory {
                 cursor.write_enum(TextHistoryType::AsTime)?;
                 cursor.write_u64::<LittleEndian>(source_date_time.ticks)?;
                 cursor.write_enum(*time_style)?;
-                cursor.write_string(time_zone.as_str())?;
-                cursor.write_string(target_culture.as_str())?;
+                cursor.write_string(time_zone)?;
+                cursor.write_string(target_culture)?;
             }
             FTextHistory::AsDateTime {
                 source_date_time,
@@ -854,7 +854,7 @@ impl FormatArgumentData {
         cursor: &mut W,
         options: &mut PropertyOptions,
     ) -> Result<(), Error> {
-        cursor.write_string(self.name.as_ref())?;
+        cursor.write_string(&self.name)?;
         self.value.write(cursor, options)
     }
 }
