@@ -25,7 +25,7 @@ pub trait ReadExt {
 /// Extensions for `Write`.
 pub trait WriteExt {
     /// Writes a GVAS string.
-    fn write_string(&mut self, v: &str) -> Result<usize, Error>;
+    fn write_string<T: AsRef<str>>(&mut self, v: T) -> Result<usize, Error>;
     /// Writes a GUID.
     fn write_guid(&mut self, v: &Guid) -> Result<(), Error>;
     /// Writes a 32bit boolean value.
@@ -86,8 +86,8 @@ impl<R: Read + Seek> ReadExt for R {
 
 impl<W: Write> WriteExt for W {
     #[inline]
-    fn write_string(&mut self, v: &str) -> Result<usize, Error> {
-        Ok(self.write_fstring(Some(v))?)
+    fn write_string<T: AsRef<str>>(&mut self, v: T) -> Result<usize, Error> {
+        Ok(self.write_fstring(Some(v.as_ref()))?)
     }
 
     #[inline]
