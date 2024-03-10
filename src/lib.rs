@@ -78,7 +78,7 @@ pub(crate) mod scoped_stack_entry;
 /// Various types.
 pub mod types;
 
-use std::io::Cursor;
+use std::io::{Cursor, SeekFrom};
 use std::{
     collections::HashMap,
     fmt::Debug,
@@ -544,27 +544,34 @@ impl GvasFile {
             DeserializedGameVersion::Default => cursor.write_all(&writing_cursor.into_inner())?,
             DeserializedGameVersion::Palworld(compression_type) => {
                 let decompressed = writing_cursor.into_inner();
-                let mut compressor = Cursor::new(Vec::new());
+
+                cursor.write_u32::<LittleEndian>(decompressed.len() as u32)?;
+                let compressed_length_pos = cursor.stream_position()?;
+                cursor.write_u32::<LittleEndian>(0)?; // Compressed length placeholder, will be updated later
+                cursor.write_all(PLZ_MAGIC)?;
+                cursor.write_enum(compression_type)?;
+
+                // Compress and write data directly to the output cursor
                 match compression_type {
-                    PalworldCompressionType::None => compressor.write_all(&decompressed)?,
+                    PalworldCompressionType::None => cursor.write_all(&decompressed)?,
                     PalworldCompressionType::Zlib => {
-                        let mut encoder = ZlibEncoder::new(&mut compressor, Compression::new(6));
+                        let mut encoder = ZlibEncoder::new(cursor.by_ref(), Compression::new(6));
                         encoder.write_all(&decompressed)?;
+                        encoder.finish()?;
                     }
                     PalworldCompressionType::ZlibTwice => {
-                        let encoder = ZlibEncoder::new(&mut compressor, Compression::default());
+                        let encoder = ZlibEncoder::new(cursor.by_ref(), Compression::default());
                         let mut encoder = ZlibEncoder::new(encoder, Compression::default());
                         encoder.write_all(&decompressed)?;
+                        encoder.finish()?;
                     }
                 }
 
-                let compressed = compressor.into_inner();
-
-                cursor.write_u32::<LittleEndian>(decompressed.len() as u32)?;
-                cursor.write_u32::<LittleEndian>(compressed.len() as u32)?;
-                cursor.write_all(PLZ_MAGIC)?;
-                cursor.write_enum(compression_type)?;
-                cursor.write_all(&compressed)?;
+                // Update compressed length
+                let end_pos = cursor.stream_position()?;
+                cursor.seek(SeekFrom::Start(compressed_length_pos))?;
+                cursor.write_u32::<LittleEndian>((end_pos - (compressed_length_pos + 4)) as u32)?;
+                cursor.seek(SeekFrom::Start(end_pos))?;
             }
         }
         Ok(())
