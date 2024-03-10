@@ -46,6 +46,7 @@ impl FEngineVersion {
     }
 
     /// Read FEngineVersion from a binary file
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let major = cursor.read_u16::<LittleEndian>()?;
         let minor = cursor.read_u16::<LittleEndian>()?;
@@ -62,13 +63,15 @@ impl FEngineVersion {
     }
 
     /// Write FEngineVersion to a binary file
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    #[inline]
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
         cursor.write_u16::<LittleEndian>(self.major)?;
         cursor.write_u16::<LittleEndian>(self.minor)?;
         cursor.write_u16::<LittleEndian>(self.patch)?;
         cursor.write_u32::<LittleEndian>(self.change_list)?;
-        cursor.write_string(&self.branch)?;
-        Ok(())
+        let mut len = 10;
+        len += cursor.write_string(&self.branch)?;
+        Ok(len)
     }
 
     /// Get [`EngineVersion`]

@@ -25,8 +25,6 @@ fn is_zero(num: &u32) -> bool {
     *num == 0
 }
 
-impl_write!(NameProperty, array_index);
-
 impl From<&str> for NameProperty {
     #[inline]
     fn from(value: &str) -> Self {
@@ -58,10 +56,18 @@ impl NameProperty {
         let value = cursor.read_fstring()?;
         Ok(NameProperty { array_index, value })
     }
+}
+
+impl PropertyTrait for NameProperty {
+    impl_write!(NameProperty, array_index);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_fstring(self.value.as_deref())?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _options: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = cursor.write_fstring(self.value.as_deref())?;
+        Ok(len)
     }
 }

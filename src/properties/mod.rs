@@ -333,127 +333,63 @@ pub(crate) use impl_read_header;
 ///
 /// This macro must be used in conjunction with a suitable `write_body` function.
 macro_rules! impl_write {
-    ($property:ident, options, array_index $(, $header_property:tt)*) => {
-        impl PropertyTrait for $property {
-            #[inline]
-            fn write<W: Write>(
-                &self,
-                writer: &mut W,
-                include_header: bool,
-                options: &mut PropertyOptions,
-            ) -> Result<(), Error> {
-                if !include_header {
-                    return self.write_body(writer, options);
-                }
-
-                let buf = &mut Cursor::new(Vec::new());
-                self.write_body(buf, options)?;
-                let buf = buf.get_ref();
-
-                writer.write_string(stringify!($property))?;
-                writer.write_u32::<LittleEndian>(buf.len() as u32)?;
-                writer.write_u32::<LittleEndian>(self.array_index)?;
-                $(
-                    impl_write_header_part!(self, writer, $header_property);
-                )*
-                writer.write_u8(0)?;
-                writer.write_all(buf)?;
-
-                Ok(())
-            }
-        }
-    };
-
-    ($property:ident, options $(, $header_property:tt)*) => {
-        impl PropertyTrait for $property {
-            #[inline]
-            fn write<W: Write>(
-                &self,
-                writer: &mut W,
-                include_header: bool,
-                options: &mut PropertyOptions,
-            ) -> Result<(), Error> {
-                if !include_header {
-                    return self.write_body(writer, options);
-                }
-
-                let buf = &mut Cursor::new(Vec::new());
-                self.write_body(buf, options)?;
-                let buf = buf.get_ref();
-
-                writer.write_string(stringify!($property))?;
-                writer.write_u32::<LittleEndian>(buf.len() as u32)?;
-                writer.write_u32::<LittleEndian>(0)?;
-                $(
-                    impl_write_header_part!(self, writer, $header_property);
-                )*
-                writer.write_u8(0)?;
-                writer.write_all(buf)?;
-
-                Ok(())
-            }
-        }
-    };
-
     ($property:ident, array_index $(, $header_property:tt)*) => {
-        impl PropertyTrait for $property {
-            #[inline]
-            fn write<W: Write>(
-                &self,
-                writer: &mut W,
-                include_header: bool,
-                _options: &mut PropertyOptions,
-            ) -> Result<(), Error> {
-                if !include_header {
-                    return self.write_body(writer);
-                }
-
-                let buf = &mut Cursor::new(Vec::new());
-                self.write_body(buf)?;
-                let buf = buf.get_ref();
-
-                writer.write_string(stringify!($property))?;
-                writer.write_u32::<LittleEndian>(buf.len() as u32)?;
-                writer.write_u32::<LittleEndian>(self.array_index)?;
-                $(
-                    impl_write_header_part!(self, writer, $header_property);
-                )*
-                writer.write_u8(0)?;
-                writer.write_all(buf)?;
-
-                Ok(())
+        #[inline]
+        fn write<W: Write>(
+            &self,
+            writer: &mut W,
+            include_header: bool,
+            options: &mut PropertyOptions,
+        ) -> Result<usize, Error> {
+            if !include_header {
+                return self.write_body(writer, options);
             }
+
+            let mut len = 9;
+            let buf = &mut Cursor::new(Vec::new());
+            len += self.write_body(buf, options)?;
+            let buf = buf.get_ref();
+
+            writer.write_string(stringify!($property))?;
+            writer.write_u32::<LittleEndian>(buf.len() as u32)?;
+            writer.write_u32::<LittleEndian>(self.array_index)?;
+            $(
+                len += impl_write_header_part!(self, writer, $header_property);
+            )*
+            writer.write_u8(0)?;
+            writer.write_all(buf)?;
+
+            Ok(len)
         }
     };
 
     ($property:ident $(, $header_property:tt)*) => {
-        impl PropertyTrait for $property {
-            #[inline]
-            fn write<W: Write>(
-                &self,
-                writer: &mut W,
-                include_header: bool,
-                _options: &mut PropertyOptions,
-            ) -> Result<(), Error> {
-                if !include_header {
-                    return self.write_body(writer);
-                }
-
-                let buf = &mut Cursor::new(Vec::new());
-                self.write_body(buf)?;
-                let buf = buf.get_ref();
-
-                writer.write_string(stringify!($property))?;
-                writer.write_u32::<LittleEndian>(buf.len() as u32)?;
-                writer.write_u32::<LittleEndian>(0)?;
-                $(
-                    impl_write_header_part!(self, writer, $header_property);
-                )*
-                writer.write_u8(0)?;
-                writer.write_all(buf)?;
-
-                Ok(())
+        #[inline]
+        fn write<W: Write>(
+            &self,
+            writer: &mut W,
+            include_header: bool,
+            options: &mut PropertyOptions,
+        ) -> Result<usize, Error> {
+            if !include_header {
+                return self.write_body(writer, options);
             }
+
+            let mut len = 9;
+            let buf = &mut Cursor::new(Vec::new());
+            len += self.write_body(buf, options)?;
+            let buf = buf.get_ref();
+
+            len += writer.write_string(stringify!($property))?;
+            writer.write_u32::<LittleEndian>(buf.len() as u32)?;
+            writer.write_u32::<LittleEndian>(0)?;
+            $(
+                len += impl_write_header_part!(self, writer, $header_property);
+            )*
+            writer.write_u8(0)?;
+            writer.write_all(buf)?;
+
+            Ok(len)
         }
     };
 }
@@ -463,15 +399,20 @@ macro_rules! impl_write {
 /// This macro is used inside the `impl_write!` macro to write individual parts of a property header.
 macro_rules! impl_write_header_part {
     ($self:ident, $writer:ident, (write_fstring, $member:ident)) => {
-        $writer.write_fstring($self.$member.as_deref())?;
+        $writer.write_fstring($self.$member.as_deref())?
     };
 
+    ($self:ident, $writer:ident, (write_guid, $member:ident)) => {{
+        $writer.write_guid(&$self.$member)?;
+        16
+    }};
+
     ($self:ident, $writer:ident, ($write_fn:ident, $member:ident)) => {
-        $writer.$write_fn(&$self.$member)?;
+        $writer.$write_fn(&$self.$member)?
     };
 
     ($self:ident, $writer:ident, ($write_fn:ident, fn, $member:ident)) => {
-        $writer.$write_fn(&$self.$member()?)?;
+        $writer.$write_fn(&$self.$member()?)?
     };
 }
 
@@ -556,7 +497,14 @@ pub trait PropertyTrait: Debug + Clone + PartialEq + Eq + Hash {
         cursor: &mut W,
         include_header: bool,
         options: &mut PropertyOptions,
-    ) -> Result<(), Error>;
+    ) -> Result<usize, Error>;
+
+    /// Serialize body.
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        options: &mut PropertyOptions,
+    ) -> Result<usize, Error>;
 }
 
 /// GVAS property types.

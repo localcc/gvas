@@ -21,8 +21,6 @@ pub struct EnumProperty {
     pub value: String,
 }
 
-impl_write!(EnumProperty, (write_fstring, enum_type));
-
 impl EnumProperty {
     /// Creates a new `EnumProperty` instance.
     #[inline]
@@ -50,11 +48,19 @@ impl EnumProperty {
 
         Ok(EnumProperty { enum_type, value })
     }
+}
+
+impl PropertyTrait for EnumProperty {
+    impl_write!(EnumProperty, (write_fstring, enum_type));
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_string(&self.value)?;
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = cursor.write_string(&self.value)?;
 
-        Ok(())
+        Ok(len)
     }
 }

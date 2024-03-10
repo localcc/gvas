@@ -24,8 +24,6 @@ impl From<&str> for ObjectProperty {
     }
 }
 
-impl_write!(ObjectProperty);
-
 impl ObjectProperty {
     /// Creates a new `ObjectProperty` instance
     #[inline]
@@ -41,10 +39,17 @@ impl ObjectProperty {
         let value = cursor.read_string()?;
         Ok(ObjectProperty { value })
     }
+}
+
+impl PropertyTrait for ObjectProperty {
+    impl_write!(ObjectProperty);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_string(&self.value)?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        cursor.write_string(&self.value)
     }
 }

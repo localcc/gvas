@@ -1,4 +1,5 @@
 use std::hash::{Hash, Hasher};
+use std::usize;
 use std::{
     fmt::Debug,
     io::{Cursor, Read, Seek, Write},
@@ -46,17 +47,21 @@ impl TextProperty {
 
     impl_read!(options);
     impl_read_header!(options);
+}
+
+impl PropertyTrait for TextProperty {
+    impl_write!(TextProperty);
 
     #[inline]
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,
         options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        self.value.write(cursor, options)
+    ) -> Result<usize, Error> {
+        let len = self.value.write(cursor, options)?;
+        Ok(len)
     }
 }
-impl_write!(TextProperty, options);
 
 /// FText
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -108,10 +113,8 @@ impl FText {
     }
 
     /// Read [`FText`] from a cursor
-    pub fn read<R: Read + Seek>(
-        cursor: &mut R,
-        options: &mut PropertyOptions,
-    ) -> Result<Self, Error> {
+    #[inline]
+    pub fn read<R: Read + Seek>(cursor: &mut R, options: &PropertyOptions) -> Result<Self, Error> {
         let flags = cursor.read_u32::<LittleEndian>()?;
         let history = FTextHistory::read(cursor, options)?;
 
@@ -119,13 +122,16 @@ impl FText {
     }
 
     /// Write [`FText`] to a cursor
+    #[inline]
     pub fn write<W: Write>(
         &self,
         cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+        options: &PropertyOptions,
+    ) -> Result<usize, Error> {
+        let mut len = 4;
         cursor.write_u32::<LittleEndian>(self.flags)?;
-        self.history.write(cursor, options)
+        len += self.history.write(cursor, options)?;
+        Ok(len)
     }
 }
 
@@ -291,10 +297,8 @@ pub enum FTextHistory {
 
 impl FTextHistory {
     /// Read [`FTextHistory`] from a cursor
-    pub fn read<R: Read + Seek>(
-        cursor: &mut R,
-        options: &mut PropertyOptions,
-    ) -> Result<Self, Error> {
+    #[inline]
+    pub fn read<R: Read + Seek>(cursor: &mut R, options: &PropertyOptions) -> Result<Self, Error> {
         let history_type = cursor.read_enum()?;
 
         Ok(match history_type {
@@ -494,145 +498,164 @@ impl FTextHistory {
     }
 
     /// Write [`FTextHistory`] to a cursor
+    #[inline]
     pub fn write<W: Write>(
         &self,
         cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+        options: &PropertyOptions,
+    ) -> Result<usize, Error> {
         match self {
             FTextHistory::Empty {} => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::None)?;
-
                 if options.supports_version(
                     FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
                 ) {
+                    len += 4;
                     cursor.write_b32(false)?;
                 }
+                Ok(len)
             }
+
             FTextHistory::None {
                 culture_invariant_string,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::None)?;
-
                 if options.supports_version(
                     FEditorObjectVersion::CultureInvariantTextSerializationKeyStability,
                 ) {
+                    len += 4;
                     cursor.write_b32(true)?;
-                    cursor.write_fstring(culture_invariant_string.as_deref())?;
+                    len += cursor.write_fstring(culture_invariant_string.as_deref())?;
                 }
+                Ok(len)
             }
+
             FTextHistory::Base {
                 namespace,
                 key,
                 source_string,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::Base)?;
-
-                cursor.write_fstring(namespace.as_deref())?;
-                cursor.write_fstring(key.as_deref())?;
-                cursor.write_fstring(source_string.as_deref())?;
+                len += cursor.write_fstring(namespace.as_deref())?;
+                len += cursor.write_fstring(key.as_deref())?;
+                len += cursor.write_fstring(source_string.as_deref())?;
+                Ok(len)
             }
+
             FTextHistory::NamedFormat {
                 source_format,
                 arguments,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::NamedFormat)?;
-
-                source_format.write(cursor, options)?;
-
+                len += source_format.write(cursor, options)?;
+                len += 4;
                 cursor.write_i32::<LittleEndian>(arguments.len() as i32)?;
                 for (key, value) in arguments {
-                    cursor.write_string(key)?;
-                    value.write(cursor, options)?;
+                    len += cursor.write_string(key)?;
+                    len += value.write(cursor, options)?;
                 }
+                Ok(len)
             }
+
             FTextHistory::OrderedFormat {
                 source_format,
                 arguments,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::OrderedFormat)?;
-
-                source_format.write(cursor, options)?;
-
+                len += source_format.write(cursor, options)?;
+                len += 4;
                 cursor.write_i32::<LittleEndian>(arguments.len() as i32)?;
                 for argument in arguments {
-                    argument.write(cursor, options)?;
+                    len += argument.write(cursor, options)?;
                 }
+                Ok(len)
             }
+
             FTextHistory::ArgumentFormat {
                 source_format,
                 arguments,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::ArgumentFormat)?;
-
-                source_format.write(cursor, options)?;
-
+                len += source_format.write(cursor, options)?;
+                len += 4;
                 cursor.write_i32::<LittleEndian>(arguments.len() as i32)?;
                 for argument in arguments {
-                    argument.write(cursor, options)?;
+                    len += argument.write(cursor, options)?;
                 }
+                Ok(len)
             }
+
             FTextHistory::AsNumber {
                 source_value,
                 format_options,
                 target_culture,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::AsNumber)?;
-
-                source_value.write(cursor, options)?;
-
+                len += source_value.write(cursor, options)?;
+                len += 4;
                 cursor.write_b32(format_options.is_some())?;
                 if let Some(format_options) = format_options {
-                    format_options.write(cursor)?;
+                    len += format_options.write(cursor)?;
                 };
-
-                cursor.write_fstring(target_culture.as_deref())?;
+                len += cursor.write_fstring(target_culture.as_deref())?;
+                Ok(len)
             }
+
             FTextHistory::AsPercent {
                 source_value,
                 format_options,
                 target_culture,
             } => {
+                let mut len = 1;
                 cursor.write_enum(TextHistoryType::AsPercent)?;
-
-                source_value.write(cursor, options)?;
-
+                len += source_value.write(cursor, options)?;
+                len += 4;
                 cursor.write_b32(format_options.is_some())?;
                 if let Some(format_options) = format_options {
-                    format_options.write(cursor)?;
+                    len += format_options.write(cursor)?;
                 }
-
-                cursor.write_fstring(target_culture.as_deref())?;
+                len += cursor.write_fstring(target_culture.as_deref())?;
+                Ok(len)
             }
+
             FTextHistory::AsCurrency {
                 currency_code,
                 source_value,
                 format_options,
                 target_culture,
             } => {
-                cursor.write_fstring(currency_code.as_deref())?;
-
-                source_value.write(cursor, options)?;
-
+                let mut len = 0;
+                len += cursor.write_fstring(currency_code.as_deref())?;
+                len += source_value.write(cursor, options)?;
+                len += 4;
                 cursor.write_b32(format_options.is_some())?;
                 if let Some(format_options) = format_options {
-                    format_options.write(cursor)?;
+                    len += format_options.write(cursor)?;
                 }
-
-                cursor.write_fstring(target_culture.as_deref())?;
+                len += cursor.write_fstring(target_culture.as_deref())?;
+                Ok(len)
             }
+
             FTextHistory::AsDate {
                 date_time,
                 date_style,
                 target_culture,
             } => {
                 cursor.write_enum(TextHistoryType::AsDate)?;
-
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
                 cursor.write_enum(*date_style)?;
-
-                cursor.write_string(target_culture)?;
+                let mut len = 10;
+                len += cursor.write_string(target_culture)?;
+                Ok(len)
             }
+
             FTextHistory::AsTime {
                 source_date_time,
                 time_style,
@@ -642,9 +665,12 @@ impl FTextHistory {
                 cursor.write_enum(TextHistoryType::AsTime)?;
                 cursor.write_u64::<LittleEndian>(source_date_time.ticks)?;
                 cursor.write_enum(*time_style)?;
-                cursor.write_string(time_zone)?;
-                cursor.write_string(target_culture)?;
+                let mut len = 10;
+                len += cursor.write_string(time_zone)?;
+                len += cursor.write_string(target_culture)?;
+                Ok(len)
             }
+
             FTextHistory::AsDateTime {
                 source_date_time,
                 date_style,
@@ -656,21 +682,30 @@ impl FTextHistory {
                 cursor.write_u64::<LittleEndian>(source_date_time.ticks)?;
                 cursor.write_enum(*date_style)?;
                 cursor.write_enum(*time_style)?;
-                cursor.write_string(time_zone.as_str())?;
-                cursor.write_string(target_culture.as_str())?;
+                let mut len = 11;
+                len += cursor.write_string(time_zone.as_str())?;
+                len += cursor.write_string(target_culture.as_str())?;
+                Ok(len)
             }
+
             FTextHistory::Transform {
                 source_text,
                 transform_type,
             } => {
                 cursor.write_enum(TextHistoryType::Transform)?;
-                source_text.write(cursor, options)?;
+                let mut len = 2;
+                len += source_text.write(cursor, options)?;
                 cursor.write_enum(*transform_type)?;
+                Ok(len)
             }
-            FTextHistory::StringTableEntry { .. } => {}
-        };
 
-        Ok(())
+            FTextHistory::StringTableEntry { table_id, key } => {
+                let mut len = 0;
+                len += table_id.write(cursor, options)?;
+                len += cursor.write_string(key)?;
+                Ok(len)
+            }
+        }
     }
 }
 
@@ -838,10 +873,8 @@ pub struct FormatArgumentData {
 
 impl FormatArgumentData {
     /// Read [`FormatArgumentData`] from a cursor
-    pub fn read<R: Read + Seek>(
-        cursor: &mut R,
-        options: &mut PropertyOptions,
-    ) -> Result<Self, Error> {
+    #[inline]
+    pub fn read<R: Read + Seek>(cursor: &mut R, options: &PropertyOptions) -> Result<Self, Error> {
         let name = cursor.read_string()?;
         let value = FormatArgumentValue::read(cursor, options)?;
 
@@ -849,13 +882,16 @@ impl FormatArgumentData {
     }
 
     /// Write [`FormatArgumentData`] to a cursor
+    #[inline]
     pub fn write<W: Write>(
         &self,
         cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
-        cursor.write_string(&self.name)?;
-        self.value.write(cursor, options)
+        options: &PropertyOptions,
+    ) -> Result<usize, Error> {
+        let mut len = 0;
+        len += cursor.write_string(&self.name)?;
+        len += self.value.write(cursor, options)?;
+        Ok(len)
     }
 }
 
@@ -880,7 +916,7 @@ impl FormatArgumentValue {
     #[inline]
     pub(crate) fn read<R: Read + Seek>(
         cursor: &mut R,
-        options: &mut PropertyOptions,
+        options: &PropertyOptions,
     ) -> Result<Self, Error> {
         let format_argument_type = cursor.read_enum()?;
 
@@ -904,35 +940,40 @@ impl FormatArgumentValue {
     }
 
     /// Write [`FormatArgumentValue`] to a cursor
+    #[inline]
     pub fn write<W: Write>(
         &self,
         cursor: &mut W,
-        options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+        options: &PropertyOptions,
+    ) -> Result<usize, Error> {
         match self {
             FormatArgumentValue::Int(value) => {
                 cursor.write_enum(FormatArgumentType::Int)?;
                 cursor.write_i32::<LittleEndian>(*value)?;
+                Ok(5)
             }
             FormatArgumentValue::UInt(value) => {
                 cursor.write_enum(FormatArgumentType::UInt)?;
                 cursor.write_u32::<LittleEndian>(*value)?;
+                Ok(5)
             }
             FormatArgumentValue::Float(value) => {
                 cursor.write_enum(FormatArgumentType::Float)?;
                 cursor.write_f32::<LittleEndian>(value.0)?;
+                Ok(5)
             }
             FormatArgumentValue::Double(value) => {
                 cursor.write_enum(FormatArgumentType::Double)?;
                 cursor.write_f64::<LittleEndian>(value.0)?;
+                Ok(9)
             }
             FormatArgumentValue::Text(value) => {
+                let mut len = 1;
                 cursor.write_enum(FormatArgumentType::Text)?;
-                value.write(cursor, options)?;
+                len += value.write(cursor, options)?;
+                Ok(len)
             }
-        };
-
-        Ok(())
+        }
     }
 }
 
@@ -981,6 +1022,7 @@ pub struct NumberFormattingOptions {
 
 impl NumberFormattingOptions {
     /// Read [`NumberFormattingOptions`] from a cursor
+    #[inline]
     pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let always_include_sign = cursor.read_b32()?;
         let use_grouping = cursor.read_b32()?;
@@ -1002,7 +1044,8 @@ impl NumberFormattingOptions {
     }
 
     /// Write [`NumberFormattingOptions`] to a cursor
-    pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    #[inline]
+    pub fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
         cursor.write_b32(self.always_include_sign)?;
         cursor.write_b32(self.use_grouping)?;
         cursor.write_enum(self.rounding_mode)?;
@@ -1011,7 +1054,7 @@ impl NumberFormattingOptions {
         cursor.write_i32::<LittleEndian>(self.minimum_fractional_digits)?;
         cursor.write_i32::<LittleEndian>(self.maximum_fractional_digits)?;
 
-        Ok(())
+        Ok(25)
     }
 }
 

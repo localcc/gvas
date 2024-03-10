@@ -100,8 +100,6 @@ macro_rules! validate {
     }};
 }
 
-impl_write!(ArrayProperty, options, (write_string, fn, get_property_type));
-
 impl ArrayProperty {
     /// Creates a new `ArrayProperty` instance.
     #[inline]
@@ -357,68 +355,86 @@ impl ArrayProperty {
 
         ArrayProperty::new(property_type, array_struct_info, properties)
     }
+}
+
+impl PropertyTrait for ArrayProperty {
+    impl_write!(ArrayProperty, (write_string, fn, get_property_type));
 
     #[inline]
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,
         options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         match self {
             ArrayProperty::Bools { bools } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(bools.len() as u32)?;
                 for b in bools {
                     let property = Property::from(BoolProperty::new(*b));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Bytes { bytes } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(bytes.len() as u32)?;
                 for b in bytes {
                     let property = Property::from(ByteProperty::new_byte(None, *b));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Enums { enums } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(enums.len() as u32)?;
                 for e in enums {
                     let property = Property::from(EnumProperty::new(None, e.to_owned()));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Floats { floats } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(floats.len() as u32)?;
                 for f in floats {
                     let property = Property::from(FloatProperty::new(f.0));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Ints { ints } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(ints.len() as u32)?;
                 for i in ints {
                     let property = Property::from(IntProperty::new(i.to_owned()));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Names { names } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(names.len() as u32)?;
                 for n in names {
                     let property = Property::from(NameProperty::from(n.to_owned()));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Strings { strings } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(strings.len() as u32)?;
                 for s in strings {
                     let property = Property::from(StrProperty::new(s.to_owned()));
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             ArrayProperty::Structs {
@@ -427,34 +443,36 @@ impl ArrayProperty {
                 guid,
                 structs,
             } => {
+                let mut len = 29;
                 cursor.write_u32::<LittleEndian>(structs.len() as u32)?;
-                cursor.write_string(field_name)?;
-                cursor.write_string("StructProperty")?;
+                len += cursor.write_string(field_name)?;
+                len += cursor.write_string("StructProperty")?;
 
                 let buf = &mut Cursor::new(Vec::new());
                 for property in structs {
-                    property.write(buf, false, options)?;
+                    len += property.write(buf, false, options)?;
                 }
                 let buf = buf.get_ref();
 
                 cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-                cursor.write_string(type_name)?;
+                len += cursor.write_string(type_name)?;
                 cursor.write_guid(guid)?;
                 cursor.write_u8(0)?;
                 cursor.write_all(buf)?;
+                Ok(len)
             }
 
             ArrayProperty::Properties {
                 property_type: _,
                 properties,
             } => {
+                let mut len = 4;
                 cursor.write_u32::<LittleEndian>(properties.len() as u32)?;
                 for property in properties {
-                    property.write(cursor, false, options)?;
+                    len += property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
         }
-
-        Ok(())
     }
 }

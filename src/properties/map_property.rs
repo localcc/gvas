@@ -97,13 +97,6 @@ pub enum MapProperty {
     },
 }
 
-impl_write!(
-    MapProperty,
-    options,
-    (write_string, fn, get_key_type),
-    (write_string, fn, get_value_type)
-);
-
 impl MapProperty {
     /// Creates a new `MapProperty` instance.
     #[inline]
@@ -482,29 +475,46 @@ impl MapProperty {
             map,
         ))
     }
+}
 
+impl PropertyTrait for MapProperty {
+    impl_write!(
+        MapProperty,
+        (write_string, fn, get_key_type),
+        (write_string, fn, get_value_type)
+    );
+
+    #[inline]
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,
         options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         match self {
             MapProperty::EnumBool { enum_bools } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(enum_bools.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in enum_bools {
-                    EnumProperty::new(None, key.clone()).write(cursor, false, options)?;
-                    BoolProperty::new(*value).write(cursor, false, options)?;
+                    let k_property = EnumProperty::new(None, key.clone());
+                    let v_property = BoolProperty::new(*value);
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::EnumInt { enum_ints } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(enum_ints.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in enum_ints {
-                    EnumProperty::new(None, key.clone()).write(cursor, false, options)?;
-                    IntProperty::new(*value).write(cursor, false, options)?;
+                    let k_property = EnumProperty::new(None, key.clone());
+                    let v_property = IntProperty::new(*value);
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::EnumProperty {
@@ -513,28 +523,39 @@ impl MapProperty {
             } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(enum_props.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in enum_props {
-                    EnumProperty::new(None, key.clone()).write(cursor, false, options)?;
-                    value.write(cursor, false, options)?;
+                    let property = EnumProperty::new(None, key.clone());
+                    len += property.write(cursor, false, options)?;
+                    len += value.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::NameBool { name_bools } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(name_bools.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in name_bools {
-                    NameProperty::from(key.clone()).write(cursor, false, options)?;
-                    BoolProperty::new(*value).write(cursor, false, options)?;
+                    let k_property = NameProperty::from(key.clone());
+                    let v_property = BoolProperty::new(*value);
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::NameInt { name_ints } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(name_ints.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in name_ints {
-                    NameProperty::from(key.clone()).write(cursor, false, options)?;
-                    IntProperty::new(*value).write(cursor, false, options)?;
+                    let k_property = NameProperty::from(key.clone());
+                    let v_property = IntProperty::new(*value);
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::NameProperty {
@@ -543,10 +564,13 @@ impl MapProperty {
             } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(name_props.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in name_props {
-                    NameProperty::from(key.clone()).write(cursor, false, options)?;
-                    value.write(cursor, false, options)?;
+                    let property = NameProperty::from(key.clone());
+                    len += property.write(cursor, false, options)?;
+                    len += value.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::Properties {
@@ -557,28 +581,38 @@ impl MapProperty {
             } => {
                 cursor.write_u32::<LittleEndian>(*allocation_flags)?;
                 cursor.write_u32::<LittleEndian>(value.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in value {
-                    key.write(cursor, false, options)?;
-                    value.write(cursor, false, options)?;
+                    len += key.write(cursor, false, options)?;
+                    len += value.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::StrBool { str_bools } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_bools.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in str_bools {
-                    StrProperty::from(key.clone()).write(cursor, false, options)?;
-                    BoolProperty::new(*value).write(cursor, false, options)?;
+                    let k_property = StrProperty::from(key.clone());
+                    let v_property = BoolProperty::new(*value);
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::StrInt { str_ints } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_ints.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in str_ints {
-                    StrProperty::from(key.clone()).write(cursor, false, options)?;
-                    IntProperty::new(*value).write(cursor, false, options)?;
+                    let k_property = StrProperty::from(key.clone());
+                    let v_property = IntProperty::new(*value);
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::StrProperty {
@@ -587,23 +621,28 @@ impl MapProperty {
             } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_props.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in str_props {
-                    StrProperty::from(key.clone()).write(cursor, false, options)?;
-                    value.write(cursor, false, options)?;
+                    let property = StrProperty::from(key.clone());
+                    len += property.write(cursor, false, options)?;
+                    len += value.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
 
             MapProperty::StrStr { str_strs } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_strs.len() as u32)?;
+                let mut len = 8;
                 for (key, value) in str_strs {
-                    StrProperty::from(key.clone()).write(cursor, false, options)?;
-                    StrProperty::new(value.clone()).write(cursor, false, options)?;
+                    let k_property = StrProperty::from(key.clone());
+                    let v_property = StrProperty::new(value.clone());
+                    len += k_property.write(cursor, false, options)?;
+                    len += v_property.write(cursor, false, options)?;
                 }
+                Ok(len)
             }
-        };
-
-        Ok(())
+        }
     }
 }
 

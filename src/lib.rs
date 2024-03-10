@@ -198,7 +198,7 @@ impl GvasHeader {
             )))?
         }
 
-        let custom_versions_len = cursor.read_u32::<LittleEndian>()? as usize;
+        let custom_versions_len = cursor.read_u32::<LittleEndian>()?;
         let mut custom_versions = IndexMap::new();
         for _ in 0..custom_versions_len {
             let FCustomVersion { key, version } = FCustomVersion::read(cursor)?;
@@ -244,7 +244,7 @@ impl GvasHeader {
     /// println!("{:#?}", writer.get_ref());
     /// # Ok::<(), Error>(())
     /// ```
-    pub fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    pub fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
         cursor.write_u32::<LittleEndian>(FILE_TYPE_GVAS)?;
         match self {
             GvasHeader::Version2 {
@@ -254,18 +254,19 @@ impl GvasHeader {
                 custom_versions,
                 save_game_class_name,
             } => {
+                let mut len = 20;
                 cursor.write_u32::<LittleEndian>(2)?;
                 cursor.write_u32::<LittleEndian>(*package_file_version)?;
-                engine_version.write(cursor)?;
+                len += engine_version.write(cursor)?;
                 cursor.write_u32::<LittleEndian>(*custom_version_format)?;
                 cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
-
                 for (&key, &version) in custom_versions {
-                    FCustomVersion::new(key, version).write(cursor)?;
+                    len += FCustomVersion::new(key, version).write(cursor)?;
                 }
-
-                cursor.write_string(save_game_class_name)?;
+                len += cursor.write_string(save_game_class_name)?;
+                Ok(len)
             }
+
             GvasHeader::Version3 {
                 package_file_version,
                 unknown,
@@ -274,21 +275,20 @@ impl GvasHeader {
                 custom_versions,
                 save_game_class_name,
             } => {
+                let mut len = 24;
                 cursor.write_u32::<LittleEndian>(3)?;
                 cursor.write_u32::<LittleEndian>(*package_file_version)?;
                 cursor.write_u32::<LittleEndian>(*unknown)?;
-                engine_version.write(cursor)?;
+                len += engine_version.write(cursor)?;
                 cursor.write_u32::<LittleEndian>(*custom_version_format)?;
                 cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
-
                 for (&key, &version) in custom_versions {
-                    FCustomVersion::new(key, version).write(cursor)?
+                    len += FCustomVersion::new(key, version).write(cursor)?
                 }
-
-                cursor.write_string(save_game_class_name)?;
+                len += cursor.write_string(save_game_class_name)?;
+                Ok(len)
             }
         }
-        Ok(())
     }
 
     /// Get custom versions from this header
