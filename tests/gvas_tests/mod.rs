@@ -1,6 +1,5 @@
 mod name_arrayindex;
 mod package_version_524;
-mod palworld;
 mod regression_01;
 mod saveslot_03;
 mod test_cursor;

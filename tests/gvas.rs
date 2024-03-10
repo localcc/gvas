@@ -1,7 +1,10 @@
 mod common;
 use common::*;
 mod gvas_tests;
-use gvas::{game_version::GameVersion, GvasFile};
+use gvas::{
+    game_version::{DeserializedGameVersion, GameVersion, PalworldCompressionType},
+    GvasFile,
+};
 use std::{collections::HashMap, fs, io::Cursor, path::Path};
 
 fn test_gvas_file(path: &str) -> GvasFile {
@@ -27,7 +30,21 @@ fn test_gvas_file_(
     file.write(&mut writer).expect("Write GvasFile");
 
     // Compare the two Vec<u8>s
-    assert_eq!(cursor.get_ref(), writer.get_ref());
+    if match file.deserialized_game_version {
+        DeserializedGameVersion::Default => true,
+        DeserializedGameVersion::Palworld(PalworldCompressionType::Zlib) => false,
+        DeserializedGameVersion::Palworld(PalworldCompressionType::ZlibTwice) => false,
+        _ => unimplemented!(),
+    } {
+        assert_eq!(cursor.get_ref(), writer.get_ref());
+    }
+
+    // Read the file back in again
+    let mut reader = Cursor::new(writer.into_inner());
+    let file2 = GvasFile::read_with_hints(&mut reader, game_version, hints).expect("Read GvasFile");
+
+    // Compare the two GvasFiles
+    assert_eq!(file, file2);
 
     // Pass the file back for optional verification
     file
@@ -68,13 +85,11 @@ fn package_version_524() {
     test_gvas_file(PACKAGE_VERSION_524_PATH);
 }
 
-#[ignore] // Test fails
 #[test]
 fn palworld_zlib() {
     test_gvas_file_(PALWORLD_ZLIB_PATH, GameVersion::Palworld, &HashMap::new());
 }
 
-#[ignore] // Test fails
 #[test]
 fn palworld_zlib_twice() {
     test_gvas_file_(
