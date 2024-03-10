@@ -18,7 +18,9 @@ use super::{
     impl_write, impl_write_header_part,
     int_property::{DoubleProperty, FloatProperty, IntProperty, UInt32Property, UInt64Property},
     make_matcher,
-    struct_types::{DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, VectorD, VectorF},
+    struct_types::{
+        DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, Vector2D, Vector2F, VectorD, VectorF,
+    },
     Property, PropertyOptions, PropertyTrait,
 };
 
@@ -48,6 +50,10 @@ pub struct StructProperty {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum StructPropertyValue {
+    /// A `Vector2F` value.
+    Vector2F(Vector2F),
+    /// A `Vector2D` value.
+    Vector2D(Vector2D),
     /// A `VectorF` value.
     VectorF(VectorF),
     /// A `VectorD` value.
@@ -145,6 +151,16 @@ impl StructProperty {
                     FloatProperty::read(cursor, false)?.value.0,
                 )),
             },
+            "Vector2D" => match options.large_world_coordinates {
+                true => StructPropertyValue::Vector2D(Vector2D::new(
+                    DoubleProperty::read(cursor, false)?.value.0,
+                    DoubleProperty::read(cursor, false)?.value.0,
+                )),
+                false => StructPropertyValue::Vector2F(Vector2F::new(
+                    FloatProperty::read(cursor, false)?.value.0,
+                    FloatProperty::read(cursor, false)?.value.0,
+                )),
+            },
             "Rotator" => match options.large_world_coordinates {
                 true => StructPropertyValue::RotatorD(RotatorD::new(
                     DoubleProperty::read(cursor, false)?.value.0,
@@ -226,6 +242,7 @@ impl StructProperty {
     #[inline]
     fn get_property_name(&self) -> Result<&str, Error> {
         let property_name = match &self.value {
+            StructPropertyValue::Vector2F(_) | StructPropertyValue::Vector2D(_) => "Vector2D",
             StructPropertyValue::VectorF(_) | StructPropertyValue::VectorD(_) => "Vector",
             StructPropertyValue::RotatorF(_) | StructPropertyValue::RotatorD(_) => "Rotator",
             StructPropertyValue::QuatF(_) | StructPropertyValue::QuatD(_) => "Quat",
@@ -254,6 +271,22 @@ impl PropertyTrait for StructProperty {
         options: &mut PropertyOptions,
     ) -> Result<usize, Error> {
         match &self.value {
+            StructPropertyValue::Vector2F(vector) => {
+                validate!(
+                    !options.large_world_coordinates,
+                    "Vector2F not supported when LWC is enabled, use Vector2D",
+                );
+                cursor.write_f32::<LittleEndian>(vector.x.0)?;
+                cursor.write_f32::<LittleEndian>(vector.y.0)?;
+            }
+            StructPropertyValue::Vector2D(vector) => {
+                validate!(
+                    options.large_world_coordinates,
+                    "Vector2D not supported when LWC is disabled, use Vector2F",
+                );
+                cursor.write_f64::<LittleEndian>(vector.x.0)?;
+                cursor.write_f64::<LittleEndian>(vector.y.0)?;
+            }
             StructPropertyValue::VectorF(vector) => {
                 validate!(
                     !options.large_world_coordinates,

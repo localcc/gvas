@@ -101,3 +101,8 @@ fn serde_slot3() {
 fn serde_transform() {
     test_file(TRANSFORM_PATH);
 }
+
+#[test]
+fn serde_vector2d() {
+    test_file(VECTOR2D_PATH);
+}

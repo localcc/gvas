@@ -128,3 +128,8 @@ fn text_property_noarray() {
 fn transform() {
     test_gvas_file(TRANSFORM_PATH);
 }
+
+#[test]
+fn vector2d() {
+    assert_eq!(test_gvas_file(VECTOR2D_PATH), vector2d::expected());
+}
