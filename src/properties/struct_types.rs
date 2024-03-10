@@ -86,6 +86,20 @@ macro_rules! make_struct {
 }
 
 make_struct!(
+    Vector2F,
+    "A struct that stores a 2D vector.",
+    (x, f32, "X coordinate."),
+    (y, f32, "Y coordinate."),
+);
+
+make_struct!(
+    Vector2D,
+    "A struct that stores a 2D vector.",
+    (x, f64, "X coordinate."),
+    (y, f64, "Y coordinate."),
+);
+
+make_struct!(
     VectorF,
     "A struct that stores a vector.",
     (x, f32, "X coordinate."),
