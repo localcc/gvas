@@ -46,16 +46,17 @@ impl FieldPath {
     }
 
     #[inline]
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
+        let mut len = 4;
         cursor.write_u32::<LittleEndian>(self.path.len() as u32)?;
 
         for path_part in &self.path {
-            cursor.write_string(path_part)?;
+            len += cursor.write_string(path_part)?;
         }
 
-        cursor.write_string(&self.resolved_owner)?;
+        len += cursor.write_string(&self.resolved_owner)?;
 
-        Ok(())
+        Ok(len)
     }
 }
 
@@ -67,8 +68,6 @@ pub struct FieldPathProperty {
     pub value: FieldPath,
 }
 
-impl_write!(FieldPathProperty);
-
 impl FieldPathProperty {
     /// Creates a new `FieldPathProperty` instance
     #[inline]
@@ -79,15 +78,24 @@ impl FieldPathProperty {
     impl_read!();
     impl_read_header!();
 
+    #[inline]
     fn read_body<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let value = FieldPath::read(cursor)?;
 
         Ok(FieldPathProperty { value })
     }
+}
+
+impl PropertyTrait for FieldPathProperty {
+    impl_write!(FieldPathProperty);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        self.value.write(cursor)?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = self.value.write(cursor)?;
+        Ok(len)
     }
 }

@@ -30,8 +30,6 @@ impl From<String> for StrProperty {
     }
 }
 
-impl_write!(StrProperty);
-
 impl StrProperty {
     /// Creates a new `StrProperty` instance.
     #[inline]
@@ -47,10 +45,18 @@ impl StrProperty {
         let value = cursor.read_fstring()?;
         Ok(StrProperty { value })
     }
+}
+
+impl PropertyTrait for StrProperty {
+    impl_write!(StrProperty);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_fstring(self.value.as_deref())?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = cursor.write_fstring(self.value.as_deref())?;
+        Ok(len)
     }
 }

@@ -23,8 +23,6 @@ pub struct SetProperty {
     pub properties: Vec<Property>,
 }
 
-impl_write!(SetProperty, options, (write_string, property_type));
-
 impl SetProperty {
     /// Creates a new `SetProperty` instance.
     #[inline]
@@ -84,19 +82,24 @@ impl SetProperty {
             properties,
         })
     }
+}
+
+impl PropertyTrait for SetProperty {
+    impl_write!(SetProperty, (write_string, property_type));
 
     #[inline]
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,
         options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         cursor.write_u32::<LittleEndian>(self.allocation_flags)?;
         cursor.write_u32::<LittleEndian>(self.properties.len() as u32)?;
+        let mut len = 8;
         for property in &self.properties {
-            property.write(cursor, false, options)?;
+            len += property.write(cursor, false, options)?;
         }
 
-        Ok(())
+        Ok(len)
     }
 }

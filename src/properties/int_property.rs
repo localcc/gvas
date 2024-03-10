@@ -40,8 +40,6 @@ macro_rules! impl_int_property {
             pub value: wrap_type!($ty),
         }
 
-        impl_write!($name);
-
         impl $name {
             #[doc = concat!("Creates a new `", stringify!($name), "` instance.")]
             #[inline]
@@ -70,14 +68,20 @@ macro_rules! impl_int_property {
             }
         }
 
-        impl $name {
+        impl PropertyTrait for $name {
+            impl_write!($name);
+
             #[inline]
-            fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+            fn write_body<W: Write>(
+                &self,
+                cursor: &mut W,
+                _: &mut PropertyOptions,
+            ) -> Result<usize, Error> {
                 let value = self.value;
                 let value = unwrap_value!($ty, value);
                 cursor.$write_method::<LittleEndian>(value)?;
 
-                Ok(())
+                Ok($size)
             }
         }
     };
@@ -90,8 +94,6 @@ pub struct Int8Property {
     /// Integer value.
     pub value: i8,
 }
-
-impl_write!(Int8Property);
 
 impl Int8Property {
     /// Creates a new `Int8Property` instance.
@@ -114,11 +116,19 @@ impl Int8Property {
             value: cursor.read_i8()?,
         })
     }
+}
+
+impl PropertyTrait for Int8Property {
+    impl_write!(Int8Property);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
         cursor.write_i8(self.value)?;
-        Ok(())
+        Ok(1)
     }
 }
 
@@ -208,20 +218,6 @@ impl ByteProperty {
 
         Ok(ByteProperty { name, value })
     }
-
-    #[inline]
-    pub(crate) fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        match &self.value {
-            BytePropertyValue::Byte(value) => {
-                cursor.write_u8(*value)?;
-            }
-            BytePropertyValue::Namespaced(name) => {
-                cursor.write_string(name)?;
-            }
-        };
-
-        Ok(())
-    }
 }
 
 impl PropertyTrait for ByteProperty {
@@ -230,24 +226,40 @@ impl PropertyTrait for ByteProperty {
         &self,
         cursor: &mut W,
         include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+        options: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
         if !include_header {
-            return self.write_body(cursor);
+            return self.write_body(cursor, options);
         }
 
-        cursor.write_string("ByteProperty")?;
+        let mut len = 9;
+        len += cursor.write_string("ByteProperty")?;
 
         let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
+        len += self.write_body(buf, options)?;
         let buf = buf.get_ref();
 
         cursor.write_u64::<LittleEndian>(buf.len() as u64)?;
-        cursor.write_fstring(self.name.as_deref())?;
+        len += cursor.write_fstring(self.name.as_deref())?;
         cursor.write_u8(0)?;
         cursor.write_all(buf)?;
 
-        Ok(())
+        Ok(len)
+    }
+
+    #[inline]
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        match &self.value {
+            BytePropertyValue::Byte(value) => {
+                cursor.write_u8(*value)?;
+                Ok(1)
+            }
+            BytePropertyValue::Namespaced(name) => cursor.write_string(name),
+        }
     }
 }
 
@@ -296,16 +308,24 @@ impl PropertyTrait for BoolProperty {
         cursor: &mut W,
         include_header: bool,
         _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
+        let mut len = 0;
         if include_header {
-            cursor.write_string("BoolProperty")?;
+            len += cursor.write_string("BoolProperty")?;
+            len += 8;
             cursor.write_u64::<LittleEndian>(0)?;
         }
+        len += 1;
         cursor.write_bool(self.value)?;
         if include_header {
+            len += 1;
             cursor.write_u8(0)?;
         }
-        Ok(())
+        Ok(len)
+    }
+
+    fn write_body<W: Write>(&self, _: &mut W, _: &mut PropertyOptions) -> Result<usize, Error> {
+        unimplemented!()
     }
 }
 

@@ -40,10 +40,11 @@ impl Delegate {
     }
 
     #[inline]
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        cursor.write_string(&self.object)?;
-        cursor.write_string(&self.function_name)?;
-        Ok(())
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
+        let mut len = 0;
+        len += cursor.write_string(&self.object)?;
+        len += cursor.write_string(&self.function_name)?;
+        Ok(len)
     }
 }
 
@@ -54,8 +55,6 @@ pub struct DelegateProperty {
     /// Delegate
     pub value: Delegate,
 }
-
-impl_write!(DelegateProperty);
 
 impl DelegateProperty {
     /// Creates a new `DelegateProperty` instance
@@ -72,11 +71,19 @@ impl DelegateProperty {
         let value = Delegate::read(cursor)?;
         Ok(DelegateProperty { value })
     }
+}
+
+impl PropertyTrait for DelegateProperty {
+    impl_write!(DelegateProperty);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        self.value.write(cursor)?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = self.value.write(cursor)?;
+        Ok(len)
     }
 }
 
@@ -107,14 +114,15 @@ impl MulticastScriptDelegate {
     }
 
     #[inline]
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
         cursor.write_u32::<LittleEndian>(self.delegates.len() as u32)?;
 
+        let mut len = 4;
         for delegate in &self.delegates {
-            delegate.write(cursor)?;
+            len += delegate.write(cursor)?;
         }
 
-        Ok(())
+        Ok(len)
     }
 }
 
@@ -125,8 +133,6 @@ pub struct MulticastInlineDelegateProperty {
     /// Delegate
     pub value: MulticastScriptDelegate,
 }
-
-impl_write!(MulticastInlineDelegateProperty);
 
 impl MulticastInlineDelegateProperty {
     /// Creates a new `MulticastInlineDelegateProperty` instance
@@ -143,11 +149,19 @@ impl MulticastInlineDelegateProperty {
         let value = MulticastScriptDelegate::read(cursor)?;
         Ok(MulticastInlineDelegateProperty { value })
     }
+}
+
+impl PropertyTrait for MulticastInlineDelegateProperty {
+    impl_write!(MulticastInlineDelegateProperty);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        self.value.write(cursor)?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = self.value.write(cursor)?;
+        Ok(len)
     }
 }
 
@@ -158,8 +172,6 @@ pub struct MulticastSparseDelegateProperty {
     /// Delegate
     pub value: MulticastScriptDelegate,
 }
-
-impl_write!(MulticastSparseDelegateProperty);
 
 impl MulticastSparseDelegateProperty {
     /// Creates a new `MulticastSparseDelegateProperty` instance
@@ -176,10 +188,18 @@ impl MulticastSparseDelegateProperty {
         let value = MulticastScriptDelegate::read(cursor)?;
         Ok(MulticastSparseDelegateProperty { value })
     }
+}
+
+impl PropertyTrait for MulticastSparseDelegateProperty {
+    impl_write!(MulticastSparseDelegateProperty);
 
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
-        self.value.write(cursor)?;
-        Ok(())
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        let len = self.value.write(cursor)?;
+        Ok(len)
     }
 }

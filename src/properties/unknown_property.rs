@@ -62,31 +62,33 @@ impl PropertyTrait for UnknownProperty {
         &self,
         cursor: &mut W,
         include_header: bool,
-        _options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+        options: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
         if !include_header {
-            return self.write_body(cursor);
+            return self.write_body(cursor, options);
         }
 
         let buf = &mut Cursor::new(Vec::new());
-        self.write_body(buf)?;
+        let body_len = self.write_body(buf, options)?;
         let buf = buf.get_ref();
 
-        cursor.write_string(&self.property_name)?;
+        let name_len = cursor.write_string(&self.property_name)?;
         cursor.write_u32::<LittleEndian>(buf.len() as u32)?;
         cursor.write_u32::<LittleEndian>(0)?;
         cursor.write_u8(0)?;
         cursor.write_all(buf)?;
 
-        Ok(())
+        Ok(9 + name_len + body_len)
     }
-}
 
-impl UnknownProperty {
     #[inline]
-    fn write_body<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        _: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
         cursor.write_all(&self.raw)?;
 
-        Ok(())
+        Ok(self.raw.len())
     }
 }

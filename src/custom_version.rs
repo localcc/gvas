@@ -26,6 +26,7 @@ impl FCustomVersion {
     }
 
     /// Read FCustomVersion from a binary file
+    #[inline]
     pub(crate) fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let key = cursor.read_guid()?;
         let version = cursor.read_u32::<LittleEndian>()?;
@@ -34,10 +35,11 @@ impl FCustomVersion {
     }
 
     /// Write FCustomVersion to a binary file
-    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<(), Error> {
+    #[inline]
+    pub(crate) fn write<W: Write>(&self, cursor: &mut W) -> Result<usize, Error> {
         cursor.write_guid(&self.key)?;
         cursor.write_u32::<LittleEndian>(self.version)?;
-        Ok(())
+        Ok(20)
     }
 }
 

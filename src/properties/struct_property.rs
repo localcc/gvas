@@ -74,13 +74,6 @@ pub enum StructPropertyValue {
     CustomStruct(String, Vec<(String, Property)>),
 }
 
-impl_write!(
-    StructProperty,
-    options,
-    (write_string, fn, get_property_name),
-    (write_guid, guid)
-);
-
 impl StructProperty {
     /// Creates a new `StructProperty` instance.
     #[inline]
@@ -245,13 +238,21 @@ impl StructProperty {
         };
         Ok(property_name)
     }
+}
+
+impl PropertyTrait for StructProperty {
+    impl_write!(
+        StructProperty,
+        (write_string, fn, get_property_name),
+        (write_guid, guid)
+    );
 
     #[inline]
     fn write_body<W: Write>(
         &self,
         cursor: &mut W,
         options: &mut PropertyOptions,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         match &self.value {
             StructPropertyValue::VectorF(vector) => {
                 validate!(
@@ -261,6 +262,7 @@ impl StructProperty {
                 cursor.write_f32::<LittleEndian>(vector.x.0)?;
                 cursor.write_f32::<LittleEndian>(vector.y.0)?;
                 cursor.write_f32::<LittleEndian>(vector.z.0)?;
+                Ok(12)
             }
             StructPropertyValue::VectorD(vector) => {
                 validate!(
@@ -270,6 +272,7 @@ impl StructProperty {
                 cursor.write_f64::<LittleEndian>(vector.x.0)?;
                 cursor.write_f64::<LittleEndian>(vector.y.0)?;
                 cursor.write_f64::<LittleEndian>(vector.z.0)?;
+                Ok(24)
             }
             StructPropertyValue::RotatorF(rotator) => {
                 validate!(
@@ -279,6 +282,7 @@ impl StructProperty {
                 cursor.write_f32::<LittleEndian>(rotator.pitch.0)?;
                 cursor.write_f32::<LittleEndian>(rotator.yaw.0)?;
                 cursor.write_f32::<LittleEndian>(rotator.roll.0)?;
+                Ok(12)
             }
             StructPropertyValue::RotatorD(rotator) => {
                 validate!(
@@ -288,6 +292,7 @@ impl StructProperty {
                 cursor.write_f64::<LittleEndian>(rotator.pitch.0)?;
                 cursor.write_f64::<LittleEndian>(rotator.yaw.0)?;
                 cursor.write_f64::<LittleEndian>(rotator.roll.0)?;
+                Ok(24)
             }
             StructPropertyValue::QuatF(quat) => {
                 validate!(
@@ -298,6 +303,7 @@ impl StructProperty {
                 cursor.write_f32::<LittleEndian>(quat.y.0)?;
                 cursor.write_f32::<LittleEndian>(quat.z.0)?;
                 cursor.write_f32::<LittleEndian>(quat.w.0)?;
+                Ok(16)
             }
             StructPropertyValue::QuatD(quat) => {
                 validate!(
@@ -308,36 +314,42 @@ impl StructProperty {
                 cursor.write_f64::<LittleEndian>(quat.y.0)?;
                 cursor.write_f64::<LittleEndian>(quat.z.0)?;
                 cursor.write_f64::<LittleEndian>(quat.w.0)?;
+                Ok(32)
             }
             StructPropertyValue::DateTime(date_time) => {
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
+                Ok(8)
             }
             StructPropertyValue::Timespan(date_time) => {
                 cursor.write_u64::<LittleEndian>(date_time.ticks)?;
+                Ok(8)
             }
             StructPropertyValue::LinearColor(linear_color) => {
                 cursor.write_f32::<LittleEndian>(linear_color.r.0)?;
                 cursor.write_f32::<LittleEndian>(linear_color.g.0)?;
                 cursor.write_f32::<LittleEndian>(linear_color.b.0)?;
                 cursor.write_f32::<LittleEndian>(linear_color.a.0)?;
+                Ok(16)
             }
             StructPropertyValue::IntPoint(int_point) => {
                 cursor.write_i32::<LittleEndian>(int_point.x)?;
                 cursor.write_i32::<LittleEndian>(int_point.y)?;
+                Ok(8)
             }
             StructPropertyValue::Guid(guid) => {
                 cursor.write_guid(guid)?;
+                Ok(16)
             }
             StructPropertyValue::CustomStruct(_, properties) => {
+                let mut len = 0;
                 for (key, value) in properties {
-                    cursor.write_string(key)?;
-                    value.write(cursor, true, options)?;
+                    len += cursor.write_string(key)?;
+                    len += value.write(cursor, true, options)?;
                 }
-                cursor.write_string("None")?;
+                len += cursor.write_string("None")?;
+                Ok(len)
             }
-        };
-
-        Ok(())
+        }
     }
 }
 
