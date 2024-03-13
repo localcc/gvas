@@ -19,7 +19,14 @@ pub struct StrProperty {
 impl From<&str> for StrProperty {
     #[inline]
     fn from(value: &str) -> Self {
-        StrProperty::new(Some(value.into()))
+        Self::from(value.to_string())
+    }
+}
+
+impl From<String> for StrProperty {
+    #[inline]
+    fn from(value: String) -> Self {
+        Self::new(Some(value))
     }
 }
 

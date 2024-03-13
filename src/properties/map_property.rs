@@ -47,19 +47,19 @@ pub enum MapProperty {
     /// Map<NameProperty, BoolProperty>
     NameBool {
         /// Map entries.
-        name_bools: IndexMap<Option<String>, bool>,
+        name_bools: IndexMap<String, bool>,
     },
     /// Map<NameProperty, IntProperty>
     NameInt {
         /// Map entries.
-        name_ints: IndexMap<Option<String>, i32>,
+        name_ints: IndexMap<String, i32>,
     },
     /// Map<NameProperty, Property>
     NameProperty {
         /// Value type.
         value_type: String,
         /// Map entries.
-        name_props: IndexMap<Option<String>, Property>,
+        name_props: IndexMap<String, Property>,
     },
     /// Map<Property, Property>
     Properties {
@@ -76,24 +76,24 @@ pub enum MapProperty {
     /// Map<StrProperty, BoolProperty>
     StrBool {
         /// Map entries.
-        str_bools: IndexMap<Option<String>, bool>,
+        str_bools: IndexMap<String, bool>,
     },
     /// Map<StrProperty, IntProperty>
     StrInt {
         /// Map entries.
-        str_ints: IndexMap<Option<String>, i32>,
+        str_ints: IndexMap<String, i32>,
     },
     /// Map<StrProperty, Property>
     StrProperty {
         /// Value type.
         value_type: String,
         /// Map entries.
-        str_props: IndexMap<Option<String>, Property>,
+        str_props: IndexMap<String, Property>,
     },
     /// Map<StrProperty, StrProperty>
     StrStr {
         /// Map entries.
-        str_strs: IndexMap<Option<String>, Option<String>>,
+        str_strs: IndexMap<String, Option<String>>,
     },
 }
 
@@ -199,7 +199,7 @@ impl MapProperty {
                     (
                         Property::NameProperty(NameProperty {
                             array_index: 0,
-                            value: key,
+                            value: Some(key),
                         }),
                         Property::BoolProperty(BoolProperty { value }),
                     ) => Ok((key.clone(), *value)),
@@ -222,7 +222,7 @@ impl MapProperty {
                     (
                         Property::NameProperty(NameProperty {
                             array_index: 0,
-                            value: key,
+                            value: Some(key),
                         }),
                         Property::IntProperty(IntProperty { value }),
                     ) => Ok((key.clone(), *value)),
@@ -246,7 +246,7 @@ impl MapProperty {
                         (
                             Property::NameProperty(NameProperty {
                                 array_index: 0,
-                                value: key,
+                                value: Some(key),
                             }),
                             value,
                         ) => Ok((key.clone(), value.clone())),
@@ -271,7 +271,7 @@ impl MapProperty {
                 .iter()
                 .map(|e| match e {
                     (
-                        Property::StrProperty(StrProperty { value: key }),
+                        Property::StrProperty(StrProperty { value: Some(key) }),
                         Property::BoolProperty(BoolProperty { value }),
                     ) => Ok((key.clone(), *value)),
                     _ => Err(()),
@@ -291,7 +291,7 @@ impl MapProperty {
                 .iter()
                 .map(|e| match e {
                     (
-                        Property::StrProperty(StrProperty { value: key }),
+                        Property::StrProperty(StrProperty { value: Some(key) }),
                         Property::IntProperty(IntProperty { value }),
                     ) => Ok((key.clone(), *value)),
                     _ => Err(()),
@@ -311,7 +311,7 @@ impl MapProperty {
                 .iter()
                 .map(|e| match e {
                     (
-                        Property::StrProperty(StrProperty { value: key }),
+                        Property::StrProperty(StrProperty { value: Some(key) }),
                         Property::StrProperty(StrProperty { value }),
                     ) => Ok((key.clone(), value.clone())),
                     _ => Err(()),
@@ -331,7 +331,7 @@ impl MapProperty {
                 match value
                     .iter()
                     .map(|e| match e {
-                        (Property::StrProperty(StrProperty { value: key }), value) => {
+                        (Property::StrProperty(StrProperty { value: Some(key) }), value) => {
                             Ok((key.clone(), value.clone()))
                         }
                         _ => Err(()),
@@ -567,7 +567,7 @@ impl MapProperty {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_bools.len() as u32)?;
                 for (key, value) in str_bools {
-                    StrProperty::new(key.clone()).write(cursor, false, options)?;
+                    StrProperty::from(key.clone()).write(cursor, false, options)?;
                     BoolProperty::new(*value).write(cursor, false, options)?;
                 }
             }
@@ -576,7 +576,7 @@ impl MapProperty {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_ints.len() as u32)?;
                 for (key, value) in str_ints {
-                    StrProperty::new(key.clone()).write(cursor, false, options)?;
+                    StrProperty::from(key.clone()).write(cursor, false, options)?;
                     IntProperty::new(*value).write(cursor, false, options)?;
                 }
             }
@@ -588,7 +588,7 @@ impl MapProperty {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_props.len() as u32)?;
                 for (key, value) in str_props {
-                    StrProperty::new(key.clone()).write(cursor, false, options)?;
+                    StrProperty::from(key.clone()).write(cursor, false, options)?;
                     value.write(cursor, false, options)?;
                 }
             }
@@ -597,7 +597,7 @@ impl MapProperty {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_strs.len() as u32)?;
                 for (key, value) in str_strs {
-                    StrProperty::new(key.clone()).write(cursor, false, options)?;
+                    StrProperty::from(key.clone()).write(cursor, false, options)?;
                     StrProperty::new(value.clone()).write(cursor, false, options)?;
                 }
             }
