@@ -34,6 +34,13 @@ impl From<&str> for NameProperty {
     }
 }
 
+impl From<String> for NameProperty {
+    #[inline]
+    fn from(value: String) -> Self {
+        Self::from(Some(value))
+    }
+}
+
 impl From<Option<String>> for NameProperty {
     #[inline]
     fn from(value: Option<String>) -> Self {
