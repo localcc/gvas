@@ -17,7 +17,9 @@ use gvas::{
         set_property::SetProperty,
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
-        struct_types::{DateTime, VectorF},
+        struct_types::{
+            DateTime, IntPoint, LinearColor, QuatD, QuatF, RotatorD, RotatorF, VectorD, VectorF,
+        },
         text_property::{
             DateTimeStyle, FText, FTextHistory, FormatArgumentData, FormatArgumentValue,
             NumberFormattingOptions, RoundingMode, TextProperty, TransformType,
@@ -1424,6 +1426,202 @@ fn struct_vectorf() {
       "y": 1.0,
       "z": 2.0
     }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_vectord() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid([0u8; 16]),
+            StructPropertyValue::VectorD(VectorD::new(0f64, 1f64, 2f64)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "VectorD": {
+      "x": 0.0,
+      "y": 1.0,
+      "z": 2.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_rotatorf() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid([0u8; 16]),
+            StructPropertyValue::RotatorF(RotatorF::new(0f32, 1f32, 2f32)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "RotatorF": {
+      "pitch": 0.0,
+      "yaw": 1.0,
+      "roll": 2.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_rotatord() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid([0u8; 16]),
+            StructPropertyValue::RotatorD(RotatorD::new(0f64, 1f64, 2f64)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "RotatorD": {
+      "pitch": 0.0,
+      "yaw": 1.0,
+      "roll": 2.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_quatf() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid([0u8; 16]),
+            StructPropertyValue::QuatF(QuatF::new(0f32, 1f32, 2f32, 3f32)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "QuatF": {
+      "x": 0.0,
+      "y": 1.0,
+      "z": 2.0,
+      "w": 3.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_quatd() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid([0u8; 16]),
+            StructPropertyValue::QuatD(QuatD::new(0f64, 1f64, 2f64, 3f64)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "QuatD": {
+      "x": 0.0,
+      "y": 1.0,
+      "z": 2.0,
+      "w": 3.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_datetime() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid([0u8; 16]),
+            StructPropertyValue::QuatD(QuatD::new(0f64, 1f64, 2f64, 3f64)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "QuatD": {
+      "x": 0.0,
+      "y": 1.0,
+      "z": 2.0,
+      "w": 3.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_linearcolor() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid::default(),
+            StructPropertyValue::LinearColor(LinearColor::new(0.0, 1.0, 2.0, 3.0)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "LinearColor": {
+      "r": 0.0,
+      "g": 1.0,
+      "b": 2.0,
+      "a": 3.0
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_intpoint() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid::default(),
+            StructPropertyValue::IntPoint(IntPoint::new(0, 1)),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "IntPoint": {
+      "x": 0,
+      "y": 1
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_custom() {
+    serde_json(
+        &Property::StructProperty(StructProperty::new(
+            Guid::default(),
+            StructPropertyValue::CustomStruct(
+                String::from("custom name"),
+                vec![(
+                    String::from("key"),
+                    Property::from(StrProperty::from("value")),
+                )],
+            ),
+        )),
+        r#"{
+  "type": "StructProperty",
+  "value": {
+    "CustomStruct": [
+      "custom name",
+      [
+        [
+          "key",
+          {
+            "type": "StrProperty",
+            "value": "value"
+          }
+        ]
+      ]
+    ]
   }
 }"#,
     )
