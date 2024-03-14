@@ -278,6 +278,7 @@ impl PropertyTrait for StructProperty {
                 );
                 cursor.write_f32::<LittleEndian>(vector.x.0)?;
                 cursor.write_f32::<LittleEndian>(vector.y.0)?;
+                Ok(8)
             }
             StructPropertyValue::Vector2D(vector) => {
                 validate!(
@@ -286,6 +287,7 @@ impl PropertyTrait for StructProperty {
                 );
                 cursor.write_f64::<LittleEndian>(vector.x.0)?;
                 cursor.write_f64::<LittleEndian>(vector.y.0)?;
+                Ok(16)
             }
             StructPropertyValue::VectorF(vector) => {
                 validate!(
