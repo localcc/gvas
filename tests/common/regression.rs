@@ -62,9 +62,7 @@ pub const REGRESSION_01_JSON: &str = r#"{
   "properties": {
     "Thing": {
       "type": "StructProperty",
-      "value": {
-        "Guid": "D49982B3-DF3D-D549-B4AE-57C71D5838E4"
-      }
+      "Guid": "D49982B3-DF3D-D549-B4AE-57C71D5838E4"
     }
   }
 }"#;
