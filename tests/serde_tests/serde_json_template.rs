@@ -641,17 +641,13 @@ fn array_struct() {
   "structs": [
     {
       "guid": "22222222-2222-2222-2222-222222222222",
-      "value": {
-        "DateTime": {
-          "ticks": 0
-        }
+      "DateTime": {
+        "ticks": 0
       }
     },
     {
-      "value": {
-        "DateTime": {
-          "ticks": 1
-        }
+      "DateTime": {
+        "ticks": 1
       }
     }
   ]
@@ -1139,12 +1135,10 @@ fn map_struct_float() {
     [
       {
         "type": "StructProperty",
-        "value": {
-          "VectorF": {
-            "x": 0.0,
-            "y": 1.0,
-            "z": 2.0
-          }
+        "VectorF": {
+          "x": 0.0,
+          "y": 1.0,
+          "z": 2.0
         }
       },
       {
@@ -1156,10 +1150,8 @@ fn map_struct_float() {
       {
         "type": "StructProperty",
         "guid": "11111111-1111-1111-1111-111111111111",
-        "value": {
-          "Timespan": {
-            "ticks": 0
-          }
+        "Timespan": {
+          "ticks": 0
         }
       },
       {
@@ -1171,10 +1163,8 @@ fn map_struct_float() {
       {
         "type": "StructProperty",
         "guid": "22222222-2222-2222-2222-222222222222",
-        "value": {
-          "DateTime": {
-            "ticks": 0
-          }
+        "DateTime": {
+          "ticks": 0
         }
       },
       {
@@ -1420,12 +1410,10 @@ fn struct_vectorf() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "VectorF": {
-      "x": 0.0,
-      "y": 1.0,
-      "z": 2.0
-    }
+  "VectorF": {
+    "x": 0.0,
+    "y": 1.0,
+    "z": 2.0
   }
 }"#,
     )
@@ -1440,12 +1428,10 @@ fn struct_vectord() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "VectorD": {
-      "x": 0.0,
-      "y": 1.0,
-      "z": 2.0
-    }
+  "VectorD": {
+    "x": 0.0,
+    "y": 1.0,
+    "z": 2.0
   }
 }"#,
     )
@@ -1460,12 +1446,10 @@ fn struct_rotatorf() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "RotatorF": {
-      "pitch": 0.0,
-      "yaw": 1.0,
-      "roll": 2.0
-    }
+  "RotatorF": {
+    "pitch": 0.0,
+    "yaw": 1.0,
+    "roll": 2.0
   }
 }"#,
     )
@@ -1480,12 +1464,10 @@ fn struct_rotatord() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "RotatorD": {
-      "pitch": 0.0,
-      "yaw": 1.0,
-      "roll": 2.0
-    }
+  "RotatorD": {
+    "pitch": 0.0,
+    "yaw": 1.0,
+    "roll": 2.0
   }
 }"#,
     )
@@ -1500,13 +1482,11 @@ fn struct_quatf() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "QuatF": {
-      "x": 0.0,
-      "y": 1.0,
-      "z": 2.0,
-      "w": 3.0
-    }
+  "QuatF": {
+    "x": 0.0,
+    "y": 1.0,
+    "z": 2.0,
+    "w": 3.0
   }
 }"#,
     )
@@ -1521,13 +1501,11 @@ fn struct_quatd() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "QuatD": {
-      "x": 0.0,
-      "y": 1.0,
-      "z": 2.0,
-      "w": 3.0
-    }
+  "QuatD": {
+    "x": 0.0,
+    "y": 1.0,
+    "z": 2.0,
+    "w": 3.0
   }
 }"#,
     )
@@ -1542,13 +1520,11 @@ fn struct_datetime() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "QuatD": {
-      "x": 0.0,
-      "y": 1.0,
-      "z": 2.0,
-      "w": 3.0
-    }
+  "QuatD": {
+    "x": 0.0,
+    "y": 1.0,
+    "z": 2.0,
+    "w": 3.0
   }
 }"#,
     )
@@ -1563,13 +1539,11 @@ fn struct_linearcolor() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "LinearColor": {
-      "r": 0.0,
-      "g": 1.0,
-      "b": 2.0,
-      "a": 3.0
-    }
+  "LinearColor": {
+    "r": 0.0,
+    "g": 1.0,
+    "b": 2.0,
+    "a": 3.0
   }
 }"#,
     )
@@ -1584,11 +1558,9 @@ fn struct_intpoint() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "IntPoint": {
-      "x": 0,
-      "y": 1
-    }
+  "IntPoint": {
+    "x": 0,
+    "y": 1
   }
 }"#,
     )
@@ -1609,20 +1581,18 @@ fn struct_custom() {
         )),
         r#"{
   "type": "StructProperty",
-  "value": {
-    "CustomStruct": [
-      "custom name",
+  "CustomStruct": [
+    "custom name",
+    [
       [
-        [
-          "key",
-          {
-            "type": "StrProperty",
-            "value": "value"
-          }
-        ]
+        "key",
+        {
+          "type": "StrProperty",
+          "value": "value"
+        }
       ]
     ]
-  }
+  ]
 }"#,
     )
 }

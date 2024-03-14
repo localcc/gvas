@@ -1214,112 +1214,106 @@ pub const VECTOR2D_JSON: &str = r#"{
     },
     "AudioSettings": {
       "type": "StructProperty",
-      "value": {
-        "CustomStruct": [
-          "GameAudioSettings",
+      "CustomStruct": [
+        "GameAudioSettings",
+        [
           [
-            [
-              "MasterLevel",
-              {
-                "type": "FloatProperty",
-                "value": 0.20348908
-              }
-            ],
-            [
-              "MusicLevel",
-              {
-                "type": "FloatProperty",
-                "value": 0.1511635
-              }
-            ],
-            [
-              "SFXLevel",
-              {
-                "type": "FloatProperty",
-                "value": 0.5436054
-              }
-            ]
+            "MasterLevel",
+            {
+              "type": "FloatProperty",
+              "value": 0.20348908
+            }
+          ],
+          [
+            "MusicLevel",
+            {
+              "type": "FloatProperty",
+              "value": 0.1511635
+            }
+          ],
+          [
+            "SFXLevel",
+            {
+              "type": "FloatProperty",
+              "value": 0.5436054
+            }
           ]
         ]
-      }
+      ]
     },
     "GameSettings": {
       "type": "StructProperty",
-      "value": {
-        "CustomStruct": [
-          "GameSettings",
+      "CustomStruct": [
+        "GameSettings",
+        [
           [
-            [
-              "CurrentSaveSlot",
-              {
-                "type": "StrProperty",
-                "value": "SAVE2"
+            "CurrentSaveSlot",
+            {
+              "type": "StrProperty",
+              "value": "SAVE2"
+            }
+          ],
+          [
+            "LoadTutorial",
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          [
+            "DisplayNewOrders",
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          [
+            "EscapeExitsTool",
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          [
+            "UseDarkMode",
+            {
+              "type": "BoolProperty",
+              "value": true
+            }
+          ],
+          [
+            "AnimateDayCycle",
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          [
+            "EnableTractorCollision",
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          [
+            "ShowInventory",
+            {
+              "type": "BoolProperty",
+              "value": true
+            }
+          ],
+          [
+            "CameraAngle",
+            {
+              "type": "StructProperty",
+              "Vector2D": {
+                "x": 30.574748247861862,
+                "y": 60.42525175213814
               }
-            ],
-            [
-              "LoadTutorial",
-              {
-                "type": "BoolProperty",
-                "value": false
-              }
-            ],
-            [
-              "DisplayNewOrders",
-              {
-                "type": "BoolProperty",
-                "value": false
-              }
-            ],
-            [
-              "EscapeExitsTool",
-              {
-                "type": "BoolProperty",
-                "value": false
-              }
-            ],
-            [
-              "UseDarkMode",
-              {
-                "type": "BoolProperty",
-                "value": true
-              }
-            ],
-            [
-              "AnimateDayCycle",
-              {
-                "type": "BoolProperty",
-                "value": false
-              }
-            ],
-            [
-              "EnableTractorCollision",
-              {
-                "type": "BoolProperty",
-                "value": false
-              }
-            ],
-            [
-              "ShowInventory",
-              {
-                "type": "BoolProperty",
-                "value": true
-              }
-            ],
-            [
-              "CameraAngle",
-              {
-                "type": "StructProperty",
-                "value": {
-                  "Vector2D": {
-                    "x": 30.574748247861862,
-                    "y": 60.42525175213814
-                  }
-                }
-              }
-            ]
+            }
           ]
         ]
-      }
+      ]
     },
     "HighScore": {
       "type": "IntProperty",
