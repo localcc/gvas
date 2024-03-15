@@ -33,6 +33,7 @@ use gvas::{
 use indexmap::{indexmap, IndexMap};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     fmt::Debug,
     fs::File,
     io::{Cursor, Read},
@@ -56,6 +57,10 @@ where
 }
 
 fn file<P: AsRef<Path>>(path: P, json: &str) {
+    file_with_hints(path, &HashMap::new(), json)
+}
+
+fn file_with_hints<P: AsRef<Path>>(path: P, hints: &HashMap<String, String>, json: &str) {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
     let mut file = File::open(path).expect("Failed to open test asset");
 
@@ -66,8 +71,8 @@ fn file<P: AsRef<Path>>(path: P, json: &str) {
 
     // Convert the Vec<u8> to a GvasFile
     let mut cursor = Cursor::new(data);
-    let file =
-        GvasFile::read(&mut cursor, GameVersion::Default).expect("Failed to parse gvas file");
+    let file = GvasFile::read_with_hints(&mut cursor, GameVersion::Default, hints)
+        .expect("Failed to parse gvas file");
 
     // Compare the GvasFile to its expected JSON representation
     serde_json(&file, json);
@@ -76,6 +81,15 @@ fn file<P: AsRef<Path>>(path: P, json: &str) {
 #[test]
 fn file_regression_01() {
     file(REGRESSION_01_PATH, regression::REGRESSION_01_JSON);
+}
+
+#[test]
+fn file_saveslot_03() {
+    file_with_hints(
+        SAVESLOT_03_PATH,
+        &saveslot3::hints(),
+        saveslot3::SAVESLOT_03_JSON,
+    )
 }
 
 #[test]
