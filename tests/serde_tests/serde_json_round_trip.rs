@@ -61,23 +61,7 @@ fn serde_regression_01() {
 
 #[test]
 fn serde_saveslot_03() {
-    test_file_with_hints(
-        "resources/test/SaveSlot_03.sav",
-        &HashMap::from([
-            (
-                "MinersManualKnownObjects.SetProperty.StructProperty".to_string(),
-                "Struct".to_string(),
-            ),
-            (
-                "GameplayDatabase.MapProperty.Value.StructProperty".to_string(),
-                "Struct".to_string(),
-            ),
-            (
-                "PlayerAttributes.MapProperty.Key.StructProperty".to_string(),
-                "Struct".to_string(),
-            ),
-        ]),
-    );
+    test_file_with_hints(SAVESLOT_03_PATH, &saveslot3::hints());
 }
 
 #[test]

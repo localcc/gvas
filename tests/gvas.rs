@@ -105,6 +105,14 @@ fn regression_01() {
 }
 
 #[test]
+fn saveslot03() {
+    assert_eq!(
+        test_gvas_file_(SAVESLOT_03_PATH, GameVersion::Default, &saveslot3::hints()),
+        saveslot3::expected()
+    );
+}
+
+#[test]
 fn slot1() {
     assert_eq!(test_gvas_file(SLOT1_PATH), slot1::expected());
 }
