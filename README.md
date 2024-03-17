@@ -44,6 +44,10 @@ The [tests directory](https://github.com/localcc/gvas/tree/main/tests) contains
 several tests that demonstrate how to use the crate to read and write gvas
 files.
 
+## Status
+
+[![Coverage Status](https://coveralls.io/repos/github/localcc/gvas/badge.svg?branch=main)](https://coveralls.io/github/localcc/gvas?branch=main)
+
 ## Contributing
 
 Please see the [CONTRIBUTING](CONTRIBUTING.md) document for guidelines on how
