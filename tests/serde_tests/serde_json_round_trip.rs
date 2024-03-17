@@ -55,29 +55,18 @@ fn serde_package_version_524() {
 }
 
 #[test]
+fn serde_profile_0() {
+    test_file_with_hints(PROFILE_0_PATH, &profile0::hints());
+}
+
+#[test]
 fn serde_regression_01() {
     test_file(REGRESSION_01_PATH);
 }
 
 #[test]
 fn serde_saveslot_03() {
-    test_file_with_hints(
-        "resources/test/SaveSlot_03.sav",
-        &HashMap::from([
-            (
-                "MinersManualKnownObjects.SetProperty.StructProperty".to_string(),
-                "Struct".to_string(),
-            ),
-            (
-                "GameplayDatabase.MapProperty.Value.StructProperty".to_string(),
-                "Struct".to_string(),
-            ),
-            (
-                "PlayerAttributes.MapProperty.Key.StructProperty".to_string(),
-                "Struct".to_string(),
-            ),
-        ]),
-    );
+    test_file_with_hints(SAVESLOT_03_PATH, &saveslot3::hints());
 }
 
 #[test]

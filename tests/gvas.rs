@@ -100,8 +100,21 @@ fn palworld_zlib_twice() {
 }
 
 #[test]
+fn profile_0() {
+    test_gvas_file_(PROFILE_0_PATH, GameVersion::Default, &profile0::hints());
+}
+
+#[test]
 fn regression_01() {
     test_gvas_file(REGRESSION_01_PATH);
+}
+
+#[test]
+fn saveslot03() {
+    assert_eq!(
+        test_gvas_file_(SAVESLOT_03_PATH, GameVersion::Default, &saveslot3::hints()),
+        saveslot3::expected()
+    );
 }
 
 #[test]
