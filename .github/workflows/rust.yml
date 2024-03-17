@@ -61,3 +61,27 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --all-features --all-targets -- -D warnings
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Security Audit
+        uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Coverage
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --all-features --timeout 300 --out Lcov --output-dir coverage
+
+      - name: Upload coverage report to Coveralls
+        uses: coverallsapp/github-action@v2
