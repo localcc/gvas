@@ -538,10 +538,8 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
   "properties": {
     "LastSaveTime": {
       "type": "StructProperty",
-      "value": {
-        "DateTime": {
-          "ticks": 638160761644140000
-        }
+      "DateTime": {
+        "ticks": 638160761644140000
       }
     },
     "PlayerClass": {
@@ -558,118 +556,108 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
       "name_props": {
         "unlock.welcomescreen.seen": {
           "type": "StructProperty",
-          "value": {
-            "CustomStruct": [
-              "Struct",
+          "CustomStruct": [
+            "Struct",
+            [
               [
-                [
-                  "AsFloat",
-                  {
-                    "type": "FloatProperty",
-                    "value": 0.0
-                  }
-                ],
-                [
-                  "AsString",
-                  {
-                    "type": "StrProperty"
-                  }
-                ]
+                "AsFloat",
+                {
+                  "type": "FloatProperty",
+                  "value": 0.0
+                }
+              ],
+              [
+                "AsString",
+                {
+                  "type": "StrProperty"
+                }
               ]
             ]
-          }
+          ]
         },
         "game.tutorial.finished": {
           "type": "StructProperty",
-          "value": {
-            "CustomStruct": [
-              "Struct",
+          "CustomStruct": [
+            "Struct",
+            [
               [
-                [
-                  "AsFloat",
-                  {
-                    "type": "FloatProperty",
-                    "value": 1.0
-                  }
-                ],
-                [
-                  "AsString",
-                  {
-                    "type": "StrProperty"
-                  }
-                ]
+                "AsFloat",
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              [
+                "AsString",
+                {
+                  "type": "StrProperty"
+                }
               ]
             ]
-          }
+          ]
         },
         "game.tutorial.skipped": {
           "type": "StructProperty",
-          "value": {
-            "CustomStruct": [
-              "Struct",
+          "CustomStruct": [
+            "Struct",
+            [
               [
-                [
-                  "AsFloat",
-                  {
-                    "type": "FloatProperty",
-                    "value": 1.0
-                  }
-                ],
-                [
-                  "AsString",
-                  {
-                    "type": "StrProperty"
-                  }
-                ]
+                "AsFloat",
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              [
+                "AsString",
+                {
+                  "type": "StrProperty"
+                }
               ]
             ]
-          }
+          ]
         },
         "dialogs.messages.seen.Rumiko.0.50": {
           "type": "StructProperty",
-          "value": {
-            "CustomStruct": [
-              "Struct",
+          "CustomStruct": [
+            "Struct",
+            [
               [
-                [
-                  "AsFloat",
-                  {
-                    "type": "FloatProperty",
-                    "value": 1.0
-                  }
-                ],
-                [
-                  "AsString",
-                  {
-                    "type": "StrProperty"
-                  }
-                ]
+                "AsFloat",
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              [
+                "AsString",
+                {
+                  "type": "StrProperty"
+                }
               ]
             ]
-          }
+          ]
         },
         "codex.Rumiko": {
           "type": "StructProperty",
-          "value": {
-            "CustomStruct": [
-              "Struct",
+          "CustomStruct": [
+            "Struct",
+            [
               [
-                [
-                  "AsFloat",
-                  {
-                    "type": "FloatProperty",
-                    "value": 1.0
-                  }
-                ],
-                [
-                  "AsString",
-                  {
-                    "type": "StrProperty"
-                  }
-                ]
+                "AsFloat",
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              [
+                "AsString",
+                {
+                  "type": "StrProperty"
+                }
               ]
             ]
-          }
+          ]
         }
       }
     },
@@ -682,39 +670,37 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
         [
           {
             "type": "StructProperty",
-            "value": {
-              "CustomStruct": [
-                "Struct",
+            "CustomStruct": [
+              "Struct",
+              [
                 [
-                  [
-                    "AttributeName",
-                    {
-                      "type": "StrProperty",
-                      "value": "Currency_Blueprints"
+                  "AttributeName",
+                  {
+                    "type": "StrProperty",
+                    "value": "Currency_Blueprints"
+                  }
+                ],
+                [
+                  "Attribute",
+                  {
+                    "type": "FieldPathProperty",
+                    "value": {
+                      "path": [
+                        "Currency_Blueprints"
+                      ],
+                      "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
                     }
-                  ],
-                  [
-                    "Attribute",
-                    {
-                      "type": "FieldPathProperty",
-                      "value": {
-                        "path": [
-                          "Currency_Blueprints"
-                        ],
-                        "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
-                      }
-                    }
-                  ],
-                  [
-                    "AttributeOwner",
-                    {
-                      "type": "ObjectProperty",
-                      "value": "None"
-                    }
-                  ]
+                  }
+                ],
+                [
+                  "AttributeOwner",
+                  {
+                    "type": "ObjectProperty",
+                    "value": "None"
+                  }
                 ]
               ]
-            }
+            ]
           },
           {
             "type": "FloatProperty",
@@ -724,39 +710,37 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
         [
           {
             "type": "StructProperty",
-            "value": {
-              "CustomStruct": [
-                "Struct",
+            "CustomStruct": [
+              "Struct",
+              [
                 [
-                  [
-                    "AttributeName",
-                    {
-                      "type": "StrProperty",
-                      "value": "Currency_Electrum"
+                  "AttributeName",
+                  {
+                    "type": "StrProperty",
+                    "value": "Currency_Electrum"
+                  }
+                ],
+                [
+                  "Attribute",
+                  {
+                    "type": "FieldPathProperty",
+                    "value": {
+                      "path": [
+                        "Currency_Electrum"
+                      ],
+                      "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
                     }
-                  ],
-                  [
-                    "Attribute",
-                    {
-                      "type": "FieldPathProperty",
-                      "value": {
-                        "path": [
-                          "Currency_Electrum"
-                        ],
-                        "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
-                      }
-                    }
-                  ],
-                  [
-                    "AttributeOwner",
-                    {
-                      "type": "ObjectProperty",
-                      "value": "None"
-                    }
-                  ]
+                  }
+                ],
+                [
+                  "AttributeOwner",
+                  {
+                    "type": "ObjectProperty",
+                    "value": "None"
+                  }
                 ]
               ]
-            }
+            ]
           },
           {
             "type": "FloatProperty",
