@@ -1,13 +1,13 @@
 [package]
 name = "gvas"
 description = "Crate for parsing UE4 gvas save files."
-authors = ["localcc <work@localcc.cc>"]
+authors = ["localcc <work@localcc.cc>", "Scott Anderson"]
 keywords = ["ue4", "unrealengine", "ue5", "gvas", "uasset"]
 homepage = "https://github.com/localcc/gvas"
 repository = "https://github.com/localcc/gvas"
 readme = "README.md"
 license = "MIT"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2021"
 
 [dependencies]
