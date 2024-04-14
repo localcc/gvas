@@ -719,9 +719,9 @@ pub(crate) fn expected() -> GvasFile {
                 String::from("AudioSettings"),
                 Property::StructProperty(StructProperty {
                     guid: Guid::default(),
-                    value: StructPropertyValue::CustomStruct(
-                        String::from("GameAudioSettings"),
-                        vec![
+                    value: StructPropertyValue::CustomStruct {
+                        type_name: String::from("GameAudioSettings"),
+                        properties: IndexMap::from([
                             (
                                 String::from("MasterLevel"),
                                 Property::FloatProperty(FloatProperty {
@@ -740,17 +740,17 @@ pub(crate) fn expected() -> GvasFile {
                                     value: OrderedFloat::from(0.5436054),
                                 }),
                             ),
-                        ],
-                    ),
+                        ]),
+                    },
                 }),
             ),
             (
                 String::from("GameSettings"),
                 Property::StructProperty(StructProperty {
                     guid: Guid::default(),
-                    value: StructPropertyValue::CustomStruct(
-                        String::from("GameSettings"),
-                        vec![
+                    value: StructPropertyValue::CustomStruct {
+                        type_name: String::from("GameSettings"),
+                        properties: IndexMap::from([
                             (
                                 String::from("CurrentSaveSlot"),
                                 Property::StrProperty(StrProperty::from("SAVE2")),
@@ -793,8 +793,8 @@ pub(crate) fn expected() -> GvasFile {
                                     }),
                                 }),
                             ),
-                        ],
-                    ),
+                        ]),
+                    },
                 }),
             ),
             (
@@ -1214,106 +1214,70 @@ pub const VECTOR2D_JSON: &str = r#"{
     },
     "AudioSettings": {
       "type": "StructProperty",
-      "CustomStruct": [
-        "GameAudioSettings",
-        [
-          [
-            "MasterLevel",
-            {
-              "type": "FloatProperty",
-              "value": 0.20348908
-            }
-          ],
-          [
-            "MusicLevel",
-            {
-              "type": "FloatProperty",
-              "value": 0.1511635
-            }
-          ],
-          [
-            "SFXLevel",
-            {
-              "type": "FloatProperty",
-              "value": 0.5436054
-            }
-          ]
-        ]
-      ]
+      "CustomStruct": {
+        "type_name": "GameAudioSettings",
+        "properties": {
+          "MasterLevel": {
+            "type": "FloatProperty",
+            "value": 0.20348908
+          },
+          "MusicLevel": {
+            "type": "FloatProperty",
+            "value": 0.1511635
+          },
+          "SFXLevel": {
+            "type": "FloatProperty",
+            "value": 0.5436054
+          }
+        }
+      }
     },
     "GameSettings": {
       "type": "StructProperty",
-      "CustomStruct": [
-        "GameSettings",
-        [
-          [
-            "CurrentSaveSlot",
-            {
-              "type": "StrProperty",
-              "value": "SAVE2"
+      "CustomStruct": {
+        "type_name": "GameSettings",
+        "properties": {
+          "CurrentSaveSlot": {
+            "type": "StrProperty",
+            "value": "SAVE2"
+          },
+          "LoadTutorial": {
+            "type": "BoolProperty",
+            "value": false
+          },
+          "DisplayNewOrders": {
+            "type": "BoolProperty",
+            "value": false
+          },
+          "EscapeExitsTool": {
+            "type": "BoolProperty",
+            "value": false
+          },
+          "UseDarkMode": {
+            "type": "BoolProperty",
+            "value": true
+          },
+          "AnimateDayCycle": {
+            "type": "BoolProperty",
+            "value": false
+          },
+          "EnableTractorCollision": {
+            "type": "BoolProperty",
+            "value": false
+          },
+          "ShowInventory": {
+            "type": "BoolProperty",
+            "value": true
+          },
+          "CameraAngle": {
+            "type": "StructProperty",
+            "Vector2D": {
+              "x": 30.574748247861862,
+              "y": 60.42525175213814
             }
-          ],
-          [
-            "LoadTutorial",
-            {
-              "type": "BoolProperty",
-              "value": false
-            }
-          ],
-          [
-            "DisplayNewOrders",
-            {
-              "type": "BoolProperty",
-              "value": false
-            }
-          ],
-          [
-            "EscapeExitsTool",
-            {
-              "type": "BoolProperty",
-              "value": false
-            }
-          ],
-          [
-            "UseDarkMode",
-            {
-              "type": "BoolProperty",
-              "value": true
-            }
-          ],
-          [
-            "AnimateDayCycle",
-            {
-              "type": "BoolProperty",
-              "value": false
-            }
-          ],
-          [
-            "EnableTractorCollision",
-            {
-              "type": "BoolProperty",
-              "value": false
-            }
-          ],
-          [
-            "ShowInventory",
-            {
-              "type": "BoolProperty",
-              "value": true
-            }
-          ],
-          [
-            "CameraAngle",
-            {
-              "type": "StructProperty",
-              "Vector2D": {
-                "x": 30.574748247861862,
-                "y": 60.42525175213814
-              }
-            }
-          ]
-        ]
-      ]
+          }
+        }
+      }
     },
     "HighScore": {
       "type": "IntProperty",

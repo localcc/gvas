@@ -653,16 +653,104 @@ impl Hash for MapProperty {
                 key_type,
                 value_type,
                 allocation_flags,
-                value: _,
+                value,
             } => {
                 key_type.hash(state);
                 value_type.hash(state);
                 allocation_flags.hash(state);
+                for (key, value) in value {
+                    key.hash(state);
+                    value.hash(state);
+                }
             }
-            _ => {
+            MapProperty::EnumBool { enum_bools } => {
                 self.key_type().hash(state);
                 self.value_type().hash(state);
-                0u32.hash(state);
+                for (key, value) in enum_bools {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::EnumInt { enum_ints } => {
+                self.key_type().hash(state);
+                self.value_type().hash(state);
+                for (key, value) in enum_ints {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::EnumProperty {
+                value_type,
+                enum_props,
+            } => {
+                self.key_type().hash(state);
+                value_type.hash(state);
+                for (key, value) in enum_props {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::NameBool { name_bools } => {
+                self.key_type().hash(state);
+                self.value_type().hash(state);
+                for (key, value) in name_bools {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::NameInt { name_ints } => {
+                self.key_type().hash(state);
+                self.value_type().hash(state);
+                for (key, value) in name_ints {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::NameProperty {
+                value_type,
+                name_props,
+            } => {
+                self.key_type().hash(state);
+                value_type.hash(state);
+                for (key, value) in name_props {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::StrBool { str_bools } => {
+                self.key_type().hash(state);
+                self.value_type().hash(state);
+                for (key, value) in str_bools {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::StrInt { str_ints } => {
+                self.key_type().hash(state);
+                self.value_type().hash(state);
+                for (key, value) in str_ints {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::StrProperty {
+                value_type,
+                str_props,
+            } => {
+                self.key_type().hash(state);
+                value_type.hash(state);
+                for (key, value) in str_props {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+            MapProperty::StrStr { str_strs } => {
+                self.key_type().hash(state);
+                self.value_type().hash(state);
+                for (key, value) in str_strs {
+                    key.hash(state);
+                    value.hash(state);
+                }
             }
         }
     }
