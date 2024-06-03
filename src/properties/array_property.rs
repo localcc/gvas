@@ -93,7 +93,7 @@ macro_rules! validate {
     ($cursor:expr, $cond:expr, $($arg:tt)+) => {{
         if !$cond {
             Err(DeserializeError::InvalidProperty(
-                format!($($arg)+),
+                format!($($arg)+).into_boxed_str(),
                 $cursor.stream_position()?,
             ))?
         }
@@ -237,7 +237,7 @@ impl ArrayProperty {
                     guid,
                     structs,
                 }),
-                Err(p) => Err(SerializeError::invalid_value(&format!(
+                Err(p) => Err(SerializeError::invalid_value(format!(
                     "Array property_type {} doesn't match property inside array: {:#?}",
                     property_type, p
                 )))?,

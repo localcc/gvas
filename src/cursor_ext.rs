@@ -71,14 +71,8 @@ impl<R: Read + Seek> ReadExt for R {
     {
         let value = self.read_i8()?;
         let result = T::try_from(value).map_err(|_| {
-            DeserializeError::InvalidEnumValue(
-                format!(
-                    "No discriminant in enum `{}` matches the value `{}`",
-                    std::any::type_name::<T>(),
-                    value,
-                )
-                .into_boxed_str(),
-            )
+            let name = std::any::type_name::<T>();
+            DeserializeError::invalid_enum_value(name, value, self)
         })?;
         Ok(result)
     }
