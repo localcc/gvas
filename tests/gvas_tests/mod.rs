@@ -1,3 +1,4 @@
+mod errors;
 mod name_arrayindex;
 mod package_version_524;
 mod regression_01;

@@ -150,88 +150,75 @@ macro_rules! impl_read {
 /// ```
 macro_rules! impl_read_header {
     (options, length $(, $var:ident)*) => {
+        /// Read GVAS property data from a reader.
         #[inline]
-        fn read_header<R: Read + Seek>(
+        pub fn read_header<R: Read + Seek>(
             reader: &mut R,
             options: &mut PropertyOptions,
         ) -> Result<Self, Error> {
             let length = reader.read_u32::<LittleEndian>()?;
             let array_index = reader.read_u32::<LittleEndian>()?;
-            assert_eq!(
-                array_index,
-                0,
-                "Expected array_index value zero @ {:#x}",
-                reader.stream_position()? - 4,
-            );
+            if array_index != 0 {
+                let position = reader.stream_position()? - 4;
+                Err($crate::error::DeserializeError::InvalidArrayIndex(array_index, position))?
+            }
             $(
                 let $var = reader.read_string()?;
             )*
-            let separator = reader.read_u8()?;
-            assert_eq!(
-                separator,
-                0,
-                "Expected separator value zero @ {:#x}",
-                reader.stream_position()? - 1,
-            );
+            let terminator = reader.read_u8()?;
+            if terminator != 0 {
+                let position = reader.stream_position()? - 1;
+                Err($crate::error::DeserializeError::InvalidTerminator(terminator, position))?
+            }
 
             let start = reader.stream_position()?;
             let result = Self::read_body(reader, options, length $(, $var)*)?;
             let end = reader.stream_position()?;
-            assert_eq!(
-                end - start,
-                length as u64,
-                "read_body did not read the expected length {:#x}",
-                length,
-            );
+            if end - start != length as u64 {
+                Err($crate::error::DeserializeError::InvalidValueSize(length as u64, end - start, start))?
+            }
 
             Ok(result)
         }
     };
 
     (options $(, $var:ident)*) => {
+        /// Read GVAS property data from a reader.
         #[inline]
-        fn read_header<R: Read + Seek>(
+        pub fn read_header<R: Read + Seek>(
             reader: &mut R,
             options: &mut PropertyOptions,
         ) -> Result<Self, Error> {
             let length = reader.read_u32::<LittleEndian>()?;
             let array_index = reader.read_u32::<LittleEndian>()?;
-            assert_eq!(
-                array_index,
-                0,
-                "Expected array_index value zero @ {:#x}",
-                reader.stream_position()? - 4,
-            );
+            if array_index != 0 {
+                let position = reader.stream_position()? - 4;
+                Err($crate::error::DeserializeError::InvalidArrayIndex(array_index, position))?
+            }
             $(
                 let $var = reader.read_string()?;
             )*
-            let separator = reader.read_u8()?;
-            assert_eq!(
-                separator,
-                0,
-                "Expected separator value zero @ {:#x}",
-                reader.stream_position()? - 1,
-            );
+            let terminator = reader.read_u8()?;
+            if terminator != 0 {
+                let position = reader.stream_position()? - 1;
+                Err($crate::error::DeserializeError::InvalidTerminator(terminator, position))?
+            }
 
             let start = reader.stream_position()?;
             let result = Self::read_body(reader, options $(, $var)*)?;
             let end = reader.stream_position()?;
-            assert_eq!(
-                end - start,
-                length as u64,
-                "read_body read {:#x}, expected {:#x}\n{:#?}",
-                end - start,
-                length,
-                result,
-            );
+            if end - start != length as u64 {
+                Err($crate::error::DeserializeError::InvalidValueSize(length as u64, end - start, start))?
+            }
 
             Ok(result)
         }
     };
 
     (array_index $(, $var:ident)*) => {
+        /// Read GVAS property data from a reader.
         #[inline]
-        fn read_header<R: Read + Seek>(
+        pub fn read_header<R: Read + Seek>(
             reader: &mut R,
         ) -> Result<Self, Error> {
             let length = reader.read_u32::<LittleEndian>()?;
@@ -239,56 +226,50 @@ macro_rules! impl_read_header {
             $(
                 let $var = reader.read_string()?;
             )*
-            let separator = reader.read_u8()?;
-            assert_eq!(
-                separator,
-                0,
-                "Expected separator value zero @ {:#x}",
-                reader.stream_position()? - 1,
-            );
+            let terminator = reader.read_u8()?;
+            if terminator != 0 {
+                let position = reader.stream_position()? - 1;
+                Err($crate::error::DeserializeError::InvalidTerminator(terminator, position))?
+            }
 
             let start = reader.stream_position()?;
             let result = Self::read_body(reader, array_index $(, Some($var))*)?;
             let end = reader.stream_position()?;
-            assert_eq!(
-                end - start,
-                length as u64,
-                "read_body did not read the expected length {:#x}",
-                length,
-            );
+            if end - start != length as u64 {
+                Err($crate::error::DeserializeError::InvalidValueSize(length as u64, end - start, start))?
+            }
 
             Ok(result)
         }
     };
 
     ($($var:ident $(,)? )*) => {
+        /// Read GVAS property data from a reader.
         #[inline]
-        fn read_header<R: Read + Seek>(
+        pub fn read_header<R: Read + Seek>(
             reader: &mut R,
         ) -> Result<Self, Error> {
             let length = reader.read_u32::<LittleEndian>()?;
             let array_index = reader.read_u32::<LittleEndian>()?;
-            assert_eq!(array_index, 0, "Expected array_index value zero @ {:#x}", reader.stream_position()? - 4);
+            if array_index != 0 {
+                let position = reader.stream_position()? - 4;
+                Err($crate::error::DeserializeError::InvalidArrayIndex(array_index, position))?
+            }
             $(
                 let $var = reader.read_string()?;
             )*
-            let separator = reader.read_u8()?;
-            assert_eq!(
-                separator,
-                0,
-                "Expected separator value zero @ {:#x}",
-                reader.stream_position()? - 1,
-            );
+            let terminator = reader.read_u8()?;
+            if terminator != 0 {
+                let position = reader.stream_position()? - 1;
+                Err($crate::error::DeserializeError::InvalidTerminator(terminator, position))?
+            }
 
             let start = reader.stream_position()?;
             let result = Self::read_body(reader $(, Some($var))*)?;
             let end = reader.stream_position()?;
-            assert_eq!(
-                end - start,
-                length as u64,
-                "read_body did not read the expected length {:#x}",
-                length,
-            );
+            if end - start != length as u64 {
+                Err($crate::error::DeserializeError::InvalidValueSize(length as u64, end - start, start))?
+            }
 
             Ok(result)
         }

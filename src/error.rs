@@ -1,4 +1,3 @@
-use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use std::io;
 
 use thiserror::Error;
@@ -9,50 +8,68 @@ use unreal_helpers::error::FStringError;
 pub enum DeserializeError {
     /// If the GVAS header is not valid
     #[error("Invalid header: {0}")]
-    InvalidHeader(String),
+    InvalidHeader(Box<str>),
     /// If a value has a size that was unexpected, e.g. UInt32Property has 8 bytes size
-    #[error("Invalid value size, expected {0} got {1} at position {2}")]
+    #[error("Invalid value size, expected {0} got {1} at position {2:#x}")]
     InvalidValueSize(u64, u64, u64),
     /// If a string has invalid size
-    #[error("Invalid string size, got {0} at position {1}")]
+    #[error("Invalid string size {0} at position {1:#x}")]
     InvalidString(u32, u64),
     /// If a boolean has invalid value
-    #[error("Invalid boolean value, got {0} at position {1}")]
+    #[error("Invalid boolean value {0} at position {1:#x}")]
     InvalidBoolean(u32, u64),
     /// If a hint is missing.
-    #[error("Missing hint for struct {0} at path {1}, cursor position: {2}")]
-    MissingHint(String, String, u64),
+    #[error("Missing hint for struct {0} at path {1} at position {2:#x}")]
+    MissingHint(Box<str>, Box<str>, u64),
     /// If an argument is missing
-    #[error("Missing argument: {0} at position {1}")]
-    MissingArgument(String, u64),
-    /// If an EnumProperty has an invalid enum type
-    #[error("Invalid enum type {0} at position {1}")]
-    InvalidEnumType(String, u64),
+    #[error("Missing argument: {0} at position {1:#x}")]
+    MissingArgument(Box<str>, u64),
     /// If a Property creation fails
-    #[error("Invalid property {0} at position {1}")]
-    InvalidProperty(String, u64),
+    #[error("Invalid property {0} at position {1:#x}")]
+    InvalidProperty(Box<str>, u64),
     /// Invalid enum value
-    #[error("{0}")]
-    InvalidEnumValue(Box<str>),
-}
-
-impl<T: TryFromPrimitive> From<TryFromPrimitiveError<T>> for DeserializeError {
-    fn from(value: TryFromPrimitiveError<T>) -> Self {
-        DeserializeError::InvalidEnumValue(value.to_string().into_boxed_str())
-    }
+    #[error("No discriminant in enum `{0}` matches the value `{1}` at position {2:#x}")]
+    InvalidEnumValue(Box<str>, i8, u64),
+    /// Invalid array index header
+    #[error("Unexpected array_index value {0} at position {1:#x}")]
+    InvalidArrayIndex(u32, u64),
+    /// Invalid terminator
+    #[error("Unexpected terminator value {0} at position {1:#x}")]
+    InvalidTerminator(u8, u64),
 }
 
 impl DeserializeError {
     /// A helper for creating `MissingArgument` errors
-    pub fn missing_argument<S: io::Seek>(argument_name: &str, stream: &mut S) -> Self {
+    #[inline]
+    pub fn missing_argument<A, S>(argument_name: A, stream: &mut S) -> Self
+    where
+        A: Into<Box<str>>,
+        S: io::Seek,
+    {
         let position = stream.stream_position().unwrap_or_default();
-        Self::MissingArgument(argument_name.to_string(), position)
+        Self::MissingArgument(argument_name.into(), position)
     }
 
     /// A helper for creating `InvalidProperty` errors
-    pub fn invalid_property<S: io::Seek>(reason: &str, stream: &mut S) -> Self {
+    #[inline]
+    pub fn invalid_property<R, S>(reason: R, stream: &mut S) -> Self
+    where
+        R: Into<Box<str>>,
+        S: io::Seek,
+    {
         let position = stream.stream_position().unwrap_or_default();
-        Self::InvalidProperty(reason.to_string(), position)
+        Self::InvalidProperty(reason.into(), position)
+    }
+
+    /// A helper for creating `InvalidEnumValue` errors
+    #[inline]
+    pub fn invalid_enum_value<N, S>(name: N, value: i8, stream: &mut S) -> Self
+    where
+        N: Into<Box<str>>,
+        S: io::Seek,
+    {
+        let position = stream.stream_position().unwrap_or_default();
+        Self::InvalidEnumValue(name.into(), value, position)
     }
 }
 
@@ -61,21 +78,28 @@ impl DeserializeError {
 pub enum SerializeError {
     /// A value was invalid
     #[error("Invalid value {0}")]
-    InvalidValue(String),
+    InvalidValue(Box<str>),
     /// Struct is missing a field, e.g. struct with type_name `Vector` doesn't have an `X` property
     #[error("Struct {0} missing field {1}")]
-    StructMissingField(String, String),
+    StructMissingField(Box<str>, Box<str>),
 }
 
 impl SerializeError {
     /// A helper for creating `InvalidValue` errors
-    pub fn invalid_value(msg: &str) -> Self {
-        Self::InvalidValue(msg.to_string())
+    pub fn invalid_value<M>(msg: M) -> Self
+    where
+        M: Into<Box<str>>,
+    {
+        Self::InvalidValue(msg.into())
     }
 
     /// A helper for creating `StructMissingField` errors
-    pub fn struct_missing_field(type_name: &str, missing_field: &str) -> Self {
-        Self::StructMissingField(type_name.to_string(), missing_field.to_string())
+    pub fn struct_missing_field<T, M>(type_name: T, missing_field: M) -> Self
+    where
+        T: Into<Box<str>>,
+        M: Into<Box<str>>,
+    {
+        Self::StructMissingField(type_name.into(), missing_field.into())
     }
 }
 
