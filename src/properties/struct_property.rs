@@ -5,6 +5,7 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use indexmap::IndexMap;
 
 use crate::properties::struct_types::LinearColor;
 use crate::{
@@ -48,7 +49,7 @@ pub struct StructProperty {
 }
 
 /// The possible values of a `StructProperty`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum StructPropertyValue {
     /// A `Vector2F` value.
@@ -78,7 +79,42 @@ pub enum StructPropertyValue {
     /// An `IntPoint` value.
     IntPoint(IntPoint),
     /// A custom struct value.
-    CustomStruct(String, Vec<(String, Property)>),
+    CustomStruct {
+        /// Type name.
+        type_name: String,
+        /// Properties.
+        properties: IndexMap<String, Property>,
+    },
+}
+
+impl Hash for StructPropertyValue {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            StructPropertyValue::Vector2F(v) => v.hash(state),
+            StructPropertyValue::Vector2D(v) => v.hash(state),
+            StructPropertyValue::VectorF(v) => v.hash(state),
+            StructPropertyValue::VectorD(v) => v.hash(state),
+            StructPropertyValue::RotatorF(v) => v.hash(state),
+            StructPropertyValue::RotatorD(v) => v.hash(state),
+            StructPropertyValue::QuatF(v) => v.hash(state),
+            StructPropertyValue::QuatD(v) => v.hash(state),
+            StructPropertyValue::DateTime(v) => v.hash(state),
+            StructPropertyValue::Timespan(v) => v.hash(state),
+            StructPropertyValue::Guid(v) => v.hash(state),
+            StructPropertyValue::LinearColor(v) => v.hash(state),
+            StructPropertyValue::IntPoint(v) => v.hash(state),
+            StructPropertyValue::CustomStruct {
+                type_name,
+                properties,
+            } => {
+                type_name.hash(state);
+                for (key, value) in properties {
+                    key.hash(state);
+                    value.hash(state);
+                }
+            }
+        }
+    }
 }
 
 impl StructProperty {
@@ -211,7 +247,7 @@ impl StructProperty {
                 UInt32Property::read(cursor, false)?.value,
             ])),
             _ => {
-                let mut properties = Vec::new();
+                let mut properties = IndexMap::new();
                 loop {
                     let key_name = cursor.read_string()?;
                     if key_name == "None" {
@@ -222,9 +258,12 @@ impl StructProperty {
                         ScopedStackEntry::new(options.properties_stack, key_name.clone());
 
                     let property = Property::new(cursor, &value_type, true, options, None)?;
-                    properties.push((key_name, property));
+                    properties.insert(key_name, property);
                 }
-                StructPropertyValue::CustomStruct(type_name, properties)
+                StructPropertyValue::CustomStruct {
+                    type_name,
+                    properties,
+                }
             }
         };
 
@@ -252,7 +291,7 @@ impl StructProperty {
             StructPropertyValue::Guid(_) => "Guid",
             StructPropertyValue::LinearColor(_) => "LinearColor",
             StructPropertyValue::IntPoint(_) => "IntPoint",
-            StructPropertyValue::CustomStruct(type_name, _) => type_name,
+            StructPropertyValue::CustomStruct { type_name, .. } => type_name,
         };
         Ok(property_name)
     }
@@ -376,7 +415,7 @@ impl PropertyTrait for StructProperty {
                 cursor.write_guid(guid)?;
                 Ok(16)
             }
-            StructPropertyValue::CustomStruct(_, properties) => {
+            StructPropertyValue::CustomStruct { properties, .. } => {
                 let mut len = 0;
                 for (key, value) in properties {
                     len += cursor.write_string(key)?;
@@ -465,18 +504,26 @@ impl StructPropertyValue {
 
     /// Retrieves the enum value as a `CustomStruct`.
     #[inline]
-    pub fn get_custom_struct(&self) -> Option<(&String, &Vec<(String, Property)>)> {
+    pub fn get_custom_struct(&self) -> Option<(&String, &IndexMap<String, Property>)> {
         match self {
-            Self::CustomStruct(type_name, properties) => Some((type_name, properties)),
+            Self::CustomStruct {
+                type_name,
+                properties,
+            } => Some((type_name, properties)),
             _ => None,
         }
     }
 
     /// Retrieves the mutable enum value as a `CustomStruct`.
     #[inline]
-    pub fn get_custom_struct_mut(&mut self) -> Option<(&mut String, &mut Vec<(String, Property)>)> {
+    pub fn get_custom_struct_mut(
+        &mut self,
+    ) -> Option<(&mut String, &mut IndexMap<String, Property>)> {
         match self {
-            Self::CustomStruct(type_name, properties) => Some((type_name, properties)),
+            Self::CustomStruct {
+                type_name,
+                properties,
+            } => Some((type_name, properties)),
             _ => None,
         }
     }

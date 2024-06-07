@@ -1590,28 +1590,25 @@ fn struct_custom() {
     serde_json(
         &Property::StructProperty(StructProperty::new(
             Guid::default(),
-            StructPropertyValue::CustomStruct(
-                String::from("custom name"),
-                vec![(
+            StructPropertyValue::CustomStruct {
+                type_name: String::from("custom name"),
+                properties: IndexMap::from([(
                     String::from("key"),
                     Property::from(StrProperty::from("value")),
-                )],
-            ),
+                )]),
+            },
         )),
         r#"{
   "type": "StructProperty",
-  "CustomStruct": [
-    "custom name",
-    [
-      [
-        "key",
-        {
-          "type": "StrProperty",
-          "value": "value"
-        }
-      ]
-    ]
-  ]
+  "CustomStruct": {
+    "type_name": "custom name",
+    "properties": {
+      "key": {
+        "type": "StrProperty",
+        "value": "value"
+      }
+    }
+  }
 }"#,
     )
 }

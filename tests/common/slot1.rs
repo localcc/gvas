@@ -317,13 +317,13 @@ pub(crate) fn expected() -> GvasFile {
                 String::from("struct_property"),
                 Property::from(StructProperty {
                     guid: Guid::default(),
-                    value: StructPropertyValue::CustomStruct(
-                        String::from("CustomStruct"),
-                        vec![(
+                    value: StructPropertyValue::CustomStruct {
+                        type_name: String::from("CustomStruct"),
+                        properties: IndexMap::from([(
                             String::from("test_field"),
                             Property::from(UInt64Property::new(12345u64)),
-                        )],
-                    ),
+                        )]),
+                    },
                 }),
             ),
             (
@@ -344,23 +344,23 @@ pub(crate) fn expected() -> GvasFile {
                     structs: vec![
                         StructProperty {
                             guid: Guid::default(),
-                            value: StructPropertyValue::CustomStruct(
-                                String::from("CustomStruct"),
-                                vec![(
+                            value: StructPropertyValue::CustomStruct {
+                                type_name: String::from("CustomStruct"),
+                                properties: IndexMap::from([(
                                     String::from("test_field"),
                                     Property::from(UInt64Property::new(10u64)),
-                                )],
-                            ),
+                                )]),
+                            },
                         },
                         StructProperty {
                             guid: Guid::default(),
-                            value: StructPropertyValue::CustomStruct(
-                                String::from("CustomStruct"),
-                                vec![(
+                            value: StructPropertyValue::CustomStruct {
+                                type_name: String::from("CustomStruct"),
+                                properties: IndexMap::from([(
                                     String::from("test_field"),
                                     Property::from(UInt64Property::new(10u64)),
-                                )],
-                            ),
+                                )]),
+                            },
                         },
                     ],
                 }),
