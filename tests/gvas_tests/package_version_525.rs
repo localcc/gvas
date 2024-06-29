@@ -1,9 +1,9 @@
+use crate::common::PACKAGE_VERSION_525_PATH;
+use gvas::game_version::GameVersion;
+use gvas::GvasFile;
 use std::fs::File;
 use std::io::{Cursor, Read};
 use std::path::Path;
-use gvas::game_version::GameVersion;
-use gvas::GvasFile;
-use crate::common::PACKAGE_VERSION_525_PATH;
 
 #[test]
 fn package_version_525() {
