@@ -178,7 +178,7 @@ impl GvasHeader {
         }
 
         let package_file_version = cursor.read_u32::<LittleEndian>()?;
-        if !package_file_version.between(0x205, 0x20C) {
+        if !package_file_version.between(0x205, 0x20D) {
             Err(DeserializeError::InvalidHeader(
                 format!("Package file version {package_file_version} not supported")
                     .into_boxed_str(),

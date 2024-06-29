@@ -6,3 +6,4 @@ mod test_cursor;
 mod test_file;
 mod test_guid;
 mod test_property;
+mod package_version_525;
