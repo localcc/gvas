@@ -70,10 +70,14 @@ pub mod engine_version;
 pub mod error;
 /// Game version enumeration.
 pub mod game_version;
+/// Object version information.
+pub mod object_version;
 /// Extensions for `Ord`.
 mod ord_ext;
 /// Property types.
 pub mod properties;
+/// Savegame version information.
+pub mod savegame_version;
 pub(crate) mod scoped_stack_entry;
 /// Various types.
 pub mod types;
@@ -98,8 +102,10 @@ use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use indexmap::IndexMap;
+use object_version::EUnrealEngineObjectUE5Version;
 use ord_ext::OrdExt;
 use properties::{Property, PropertyOptions, PropertyTrait};
+use savegame_version::SaveGameVersion;
 use types::Guid;
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.
@@ -125,10 +131,10 @@ pub enum GvasHeader {
     },
     /// Version 3
     Version3 {
-        /// File format version.
+        /// File format version (UE4).
         package_file_version: u32,
-        /// Unknown.
-        unknown: u32,
+        /// File format version (UE5).
+        package_file_version_ue5: u32,
         /// Unreal Engine version.
         engine_version: FEngineVersion,
         /// Custom version format.
@@ -171,7 +177,10 @@ impl GvasHeader {
         }
 
         let save_game_file_version = cursor.read_u32::<LittleEndian>()?;
-        if !save_game_file_version.between(2, 3) {
+        if !save_game_file_version.between(
+            SaveGameVersion::AddedCustomVersions as u32,
+            SaveGameVersion::PackageFileSummaryVersionChange as u32,
+        ) {
             Err(DeserializeError::InvalidHeader(
                 format!("GVAS version {save_game_file_version} not supported").into_boxed_str(),
             ))?
@@ -186,9 +195,21 @@ impl GvasHeader {
         }
 
         // This field is only present in the v3 header
-        let unknown = match save_game_file_version {
-            3 => Some(cursor.read_u32::<LittleEndian>()?),
-            _ => None,
+        let package_file_version_ue5 = if save_game_file_version
+            >= SaveGameVersion::PackageFileSummaryVersionChange as u32
+        {
+            let version = cursor.read_u32::<LittleEndian>()?;
+            if !version.between(
+                EUnrealEngineObjectUE5Version::InitialVersion as u32,
+                EUnrealEngineObjectUE5Version::DataResources as u32,
+            ) {
+                Err(DeserializeError::InvalidHeader(
+                    format!("UE5 Package file version {version} is not supported").into_boxed_str(),
+                ))?
+            }
+            Some(version)
+        } else {
+            None
         };
 
         let engine_version = FEngineVersion::read(cursor)?;
@@ -209,7 +230,7 @@ impl GvasHeader {
 
         let save_game_class_name = cursor.read_string()?;
 
-        Ok(match unknown {
+        Ok(match package_file_version_ue5 {
             None => GvasHeader::Version2 {
                 package_file_version,
                 engine_version,
@@ -217,9 +238,9 @@ impl GvasHeader {
                 custom_versions,
                 save_game_class_name,
             },
-            Some(unknown) => GvasHeader::Version3 {
+            Some(package_file_version_ue5) => GvasHeader::Version3 {
                 package_file_version,
-                unknown,
+                package_file_version_ue5,
                 engine_version,
                 custom_version_format,
                 custom_versions,
@@ -271,7 +292,7 @@ impl GvasHeader {
 
             GvasHeader::Version3 {
                 package_file_version,
-                unknown,
+                package_file_version_ue5,
                 engine_version,
                 custom_version_format,
                 custom_versions,
@@ -280,7 +301,7 @@ impl GvasHeader {
                 let mut len = 24;
                 cursor.write_u32::<LittleEndian>(3)?;
                 cursor.write_u32::<LittleEndian>(*package_file_version)?;
-                cursor.write_u32::<LittleEndian>(*unknown)?;
+                cursor.write_u32::<LittleEndian>(*package_file_version_ue5)?;
                 len += engine_version.write(cursor)?;
                 cursor.write_u32::<LittleEndian>(*custom_version_format)?;
                 cursor.write_u32::<LittleEndian>(custom_versions.len() as u32)?;
@@ -329,21 +350,8 @@ trait GvasHeaderTrait {
 impl GvasHeaderTrait for GvasHeader {
     fn use_large_world_coordinates(&self) -> bool {
         match self {
-            GvasHeader::Version2 {
-                package_file_version: _,
-                engine_version: _,
-                custom_version_format: _,
-                custom_versions: _,
-                save_game_class_name: _,
-            } => false,
-            GvasHeader::Version3 {
-                package_file_version: _,
-                unknown: _,
-                engine_version: _,
-                custom_version_format: _,
-                custom_versions: _,
-                save_game_class_name: _,
-            } => true,
+            GvasHeader::Version2 { .. } => false,
+            GvasHeader::Version3 { .. } => true,
         }
     }
 }
