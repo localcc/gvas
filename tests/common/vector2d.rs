@@ -23,7 +23,7 @@ pub(crate) fn expected() -> GvasFile {
         deserialized_game_version: DeserializedGameVersion::Default,
         header: GvasHeader::Version3 {
             package_file_version: 522,
-            unknown: 1009,
+            package_file_version_ue5: 1009,
             engine_version: FEngineVersion {
                 major: 5,
                 minor: 3,
@@ -809,7 +809,7 @@ pub const VECTOR2D_JSON: &str = r#"{
   "header": {
     "type": "Version3",
     "package_file_version": 522,
-    "unknown": 1009,
+    "package_file_version_ue5": 1009,
     "engine_version": {
       "major": 5,
       "minor": 3,
