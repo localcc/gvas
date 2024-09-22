@@ -1,0 +1,32 @@
+# https://github.com/sagiegurari/cargo-make
+# To install run `cargo install cargo-make`
+
+# Default task when `makers` or `cargo make` is invoked with no arguments
+[tasks.default]
+clear = true
+dependencies = ["format", "lint", "test"]
+
+[tasks.fmt]
+alias = "format"
+
+[tasks.format]
+description = "Formats all bin and lib files of the current crate using rustfmt."
+command = "cargo"
+args = ["fmt", "--all"]
+
+[tasks.lint]
+description = "Run rustfmt and clippy lints."
+script = '''
+cargo fmt --check --all
+cargo clippy --all-targets --all-features -- -D warnings
+'''
+
+[tasks.test]
+clear = true
+description = "Run all tests."
+script = '''
+cargo build --all-targets --verbose --workspace
+cargo test --all-targets --verbose --workspace
+cargo build --all-targets --all-features --verbose --workspace
+cargo test --all-targets --all-features --verbose --workspace
+'''
