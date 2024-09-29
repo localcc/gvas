@@ -78,7 +78,7 @@ pub(crate) mod scoped_stack_entry;
 /// Various types.
 pub mod types;
 
-use std::io::Cursor;
+use std::io::{Cursor, SeekFrom};
 use std::{
     collections::HashMap,
     fmt::Debug,
@@ -165,23 +165,24 @@ impl GvasHeader {
     pub fn read<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
         let file_type_tag = cursor.read_u32::<LittleEndian>()?;
         if file_type_tag != FILE_TYPE_GVAS {
-            Err(DeserializeError::InvalidHeader(format!(
-                "File type {file_type_tag} not recognized",
-            )))?
+            Err(DeserializeError::InvalidHeader(
+                format!("File type {file_type_tag} not recognized").into_boxed_str(),
+            ))?
         }
 
         let save_game_file_version = cursor.read_u32::<LittleEndian>()?;
         if !save_game_file_version.between(2, 3) {
-            Err(DeserializeError::InvalidHeader(format!(
-                "GVAS version {save_game_file_version} not supported"
-            )))?
+            Err(DeserializeError::InvalidHeader(
+                format!("GVAS version {save_game_file_version} not supported").into_boxed_str(),
+            ))?
         }
 
         let package_file_version = cursor.read_u32::<LittleEndian>()?;
-        if !package_file_version.between(0x205, 0x20C) {
-            Err(DeserializeError::InvalidHeader(format!(
-                "Package file version {package_file_version} not supported"
-            )))?
+        if !package_file_version.between(0x205, 0x20D) {
+            Err(DeserializeError::InvalidHeader(
+                format!("Package file version {package_file_version} not supported")
+                    .into_boxed_str(),
+            ))?
         }
 
         // This field is only present in the v3 header
@@ -193,9 +194,10 @@ impl GvasHeader {
         let engine_version = FEngineVersion::read(cursor)?;
         let custom_version_format = cursor.read_u32::<LittleEndian>()?;
         if custom_version_format != 3 {
-            Err(DeserializeError::InvalidHeader(format!(
-                "Custom version format {custom_version_format} not supported"
-            )))?
+            Err(DeserializeError::InvalidHeader(
+                format!("Custom version format {custom_version_format} not supported")
+                    .into_boxed_str(),
+            ))?
         }
 
         let custom_versions_len = cursor.read_u32::<LittleEndian>()?;
@@ -425,9 +427,9 @@ impl GvasFile {
                 let mut magic = [0u8; 3];
                 cursor.read_exact(&mut magic)?;
                 if &magic != PLZ_MAGIC {
-                    Err(DeserializeError::InvalidHeader(format!(
-                        "Invalid PlZ magic {magic:?}"
-                    )))?
+                    Err(DeserializeError::InvalidHeader(
+                        format!("Invalid PlZ magic {magic:?}").into_boxed_str(),
+                    ))?
                 }
 
                 let compression_type = cursor.read_enum()?;
@@ -542,27 +544,34 @@ impl GvasFile {
             DeserializedGameVersion::Default => cursor.write_all(&writing_cursor.into_inner())?,
             DeserializedGameVersion::Palworld(compression_type) => {
                 let decompressed = writing_cursor.into_inner();
-                let mut compressor = Cursor::new(Vec::new());
+
+                cursor.write_u32::<LittleEndian>(decompressed.len() as u32)?;
+                let compressed_length_pos = cursor.stream_position()?;
+                cursor.write_u32::<LittleEndian>(0)?; // Compressed length placeholder, will be updated later
+                cursor.write_all(PLZ_MAGIC)?;
+                cursor.write_enum(compression_type)?;
+
+                // Compress and write data directly to the output cursor
                 match compression_type {
-                    PalworldCompressionType::None => compressor.write_all(&decompressed)?,
+                    PalworldCompressionType::None => cursor.write_all(&decompressed)?,
                     PalworldCompressionType::Zlib => {
-                        let mut encoder = ZlibEncoder::new(&mut compressor, Compression::new(6));
+                        let mut encoder = ZlibEncoder::new(cursor.by_ref(), Compression::new(6));
                         encoder.write_all(&decompressed)?;
+                        encoder.finish()?;
                     }
                     PalworldCompressionType::ZlibTwice => {
-                        let encoder = ZlibEncoder::new(&mut compressor, Compression::default());
+                        let encoder = ZlibEncoder::new(cursor.by_ref(), Compression::default());
                         let mut encoder = ZlibEncoder::new(encoder, Compression::default());
                         encoder.write_all(&decompressed)?;
+                        encoder.finish()?;
                     }
                 }
 
-                let compressed = compressor.into_inner();
-
-                cursor.write_u32::<LittleEndian>(decompressed.len() as u32)?;
-                cursor.write_u32::<LittleEndian>(compressed.len() as u32)?;
-                cursor.write_all(PLZ_MAGIC)?;
-                cursor.write_enum(compression_type)?;
-                cursor.write_all(&compressed)?;
+                // Update compressed length
+                let end_pos = cursor.stream_position()?;
+                cursor.seek(SeekFrom::Start(compressed_length_pos))?;
+                cursor.write_u32::<LittleEndian>((end_pos - (compressed_length_pos + 4)) as u32)?;
+                cursor.seek(SeekFrom::Start(end_pos))?;
             }
         }
         Ok(())

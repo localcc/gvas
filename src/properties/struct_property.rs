@@ -29,7 +29,7 @@ macro_rules! validate {
     ($cond:expr, $($arg:tt)+) => {{
         if !$cond {
             Err(SerializeError::InvalidValue(
-                format!($($arg)+),
+                format!($($arg)+).into_boxed_str(),
             ))?
         }
     }};
@@ -136,8 +136,8 @@ impl StructProperty {
             let struct_path = options.properties_stack.join(".");
             let Some(hint) = options.hints.get(&struct_path) else {
                 Err(DeserializeError::MissingHint(
-                    "StructProperty".to_string(),
-                    struct_path,
+                    "StructProperty".into(),
+                    struct_path.into_boxed_str(),
                     cursor.stream_position()?,
                 ))?
             };

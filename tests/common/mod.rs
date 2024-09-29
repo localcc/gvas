@@ -17,6 +17,7 @@ pub const ENUM_ARRAY_PATH: &str = "resources/test/enum_array.sav";
 pub const FEATURES_01_PATH: &str = "resources/test/features_01.bin";
 pub const OPTIONS_PATH: &str = "resources/test/Options.sav";
 pub const PACKAGE_VERSION_524_PATH: &str = "resources/test/package_version_524.sav";
+pub const PACKAGE_VERSION_525_PATH: &str = "resources/test/package_version_525.sav";
 pub const PALWORLD_ZLIB_PATH: &str = "resources/test/palworld_zlib.sav";
 pub const PALWORLD_ZLIB_TWICE_PATH: &str = "resources/test/palworld_zlib_twice.sav";
 pub const PROFILE_0_PATH: &str = "resources/test/Profile_0.sav";

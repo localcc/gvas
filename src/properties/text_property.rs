@@ -1,5 +1,4 @@
 use std::hash::{Hash, Hasher};
-use std::usize;
 use std::{
     fmt::Debug,
     io::{Cursor, Read, Seek, Write},
