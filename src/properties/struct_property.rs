@@ -7,7 +7,7 @@ use std::{
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use indexmap::IndexMap;
 
-use crate::properties::struct_types::LinearColor;
+use crate::properties::{name_property::NameProperty, struct_types::LinearColor};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
@@ -83,7 +83,7 @@ pub enum StructPropertyValue {
         /// Type name.
         type_name: String,
         /// Properties.
-        properties: IndexMap<String, Property>,
+        properties: IndexMap<String, Vec<Property>>,
     },
 }
 
@@ -249,16 +249,16 @@ impl StructProperty {
             _ => {
                 let mut properties = IndexMap::new();
                 loop {
-                    let key_name = cursor.read_string()?;
-                    if key_name == "None" {
+                    let property_name = cursor.read_string()?;
+                    if property_name == "None" {
                         break;
                     }
-                    let value_type = cursor.read_string()?;
+                    let property_type = cursor.read_string()?;
                     let _property_stack_entry =
-                        ScopedStackEntry::new(options.properties_stack, key_name.clone());
+                        ScopedStackEntry::new(options.properties_stack, property_name.clone());
 
-                    let property = Property::new(cursor, &value_type, true, options, None)?;
-                    properties.insert(key_name, property);
+                    let property = Property::new(cursor, &property_type, true, options, None)?;
+                    insert_property(&mut properties, property_name, property);
                 }
                 StructPropertyValue::CustomStruct {
                     type_name,
@@ -295,6 +295,23 @@ impl StructProperty {
         };
         Ok(property_name)
     }
+}
+
+fn insert_property(map: &mut IndexMap<String, Vec<Property>>, key: String, property: Property) {
+    let entry = map.entry(key).or_default();
+    #[cfg(debug_assertions)]
+    {
+        let array_index = match property {
+            // TODO: Move array_index to the Property layer
+            Property::NameProperty(NameProperty { array_index, .. }) => array_index,
+            _ => 0,
+        };
+        let actual_array_index = entry.len() as u32;
+        // Ensure that the position in the array matches the array_index value,
+        // otherwise this conversion would cause data loss.
+        assert_eq!(actual_array_index, array_index);
+    }
+    entry.push(property);
 }
 
 impl PropertyTrait for StructProperty {
@@ -417,9 +434,11 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::CustomStruct { properties, .. } => {
                 let mut len = 0;
-                for (key, value) in properties {
-                    len += cursor.write_string(key)?;
-                    len += value.write(cursor, true, options)?;
+                for (key, values) in properties {
+                    for value in values {
+                        len += cursor.write_string(key)?;
+                        len += value.write(cursor, true, options)?;
+                    }
                 }
                 len += cursor.write_string("None")?;
                 Ok(len)
@@ -504,7 +523,7 @@ impl StructPropertyValue {
 
     /// Retrieves the enum value as a `CustomStruct`.
     #[inline]
-    pub fn get_custom_struct(&self) -> Option<(&String, &IndexMap<String, Property>)> {
+    pub fn get_custom_struct(&self) -> Option<(&String, &IndexMap<String, Vec<Property>>)> {
         match self {
             Self::CustomStruct {
                 type_name,
@@ -518,7 +537,7 @@ impl StructPropertyValue {
     #[inline]
     pub fn get_custom_struct_mut(
         &mut self,
-    ) -> Option<(&mut String, &mut IndexMap<String, Property>)> {
+    ) -> Option<(&mut String, &mut IndexMap<String, Vec<Property>>)> {
         match self {
             Self::CustomStruct {
                 type_name,

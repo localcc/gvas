@@ -302,11 +302,11 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(0f32)),
+                                            vec![Property::from(FloatProperty::new(0f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
                                     ]),
                                 },
@@ -321,11 +321,11 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
                                     ]),
                                 },
@@ -340,11 +340,11 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
                                     ]),
                                 },
@@ -359,11 +359,11 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
                                     ]),
                                 },
@@ -378,11 +378,11 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
                                     ]),
                                 },
@@ -406,20 +406,24 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AttributeName"),
-                                            Property::from(StrProperty::from(
+                                            vec![Property::from(StrProperty::from(
                                                 "Currency_Blueprints",
-                                            )),
+                                            ))],
                                         ),
                                         (
                                             String::from("Attribute"),
-                                            Property::from(FieldPathProperty::new(FieldPath::new(
-                                                Vec::from([String::from("Currency_Blueprints")]),
-                                                String::from("/Script/CD.CDPlayerAttributeSet"),
-                                            ))),
+                                            vec![Property::from(FieldPathProperty::new(
+                                                FieldPath::new(
+                                                    Vec::from([String::from(
+                                                        "Currency_Blueprints",
+                                                    )]),
+                                                    String::from("/Script/CD.CDPlayerAttributeSet"),
+                                                ),
+                                            ))],
                                         ),
                                         (
                                             String::from("AttributeOwner"),
-                                            Property::from(ObjectProperty::from("None")),
+                                            vec![Property::from(ObjectProperty::from("None"))],
                                         ),
                                     ]),
                                 },
@@ -434,18 +438,22 @@ pub(crate) fn expected() -> GvasFile {
                                     properties: IndexMap::from([
                                         (
                                             String::from("AttributeName"),
-                                            Property::from(StrProperty::from("Currency_Electrum")),
+                                            vec![Property::from(StrProperty::from(
+                                                "Currency_Electrum",
+                                            ))],
                                         ),
                                         (
                                             String::from("Attribute"),
-                                            Property::from(FieldPathProperty::new(FieldPath::new(
-                                                Vec::from([String::from("Currency_Electrum")]),
-                                                String::from("/Script/CD.CDPlayerAttributeSet"),
-                                            ))),
+                                            vec![Property::from(FieldPathProperty::new(
+                                                FieldPath::new(
+                                                    Vec::from([String::from("Currency_Electrum")]),
+                                                    String::from("/Script/CD.CDPlayerAttributeSet"),
+                                                ),
+                                            ))],
                                         ),
                                         (
                                             String::from("AttributeOwner"),
-                                            Property::from(ObjectProperty::from("None")),
+                                            vec![Property::from(ObjectProperty::from("None"))],
                                         ),
                                     ]),
                                 },
@@ -559,13 +567,17 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
           "CustomStruct": {
             "type_name": "Struct",
             "properties": {
-              "AsFloat": {
-                "type": "FloatProperty",
-                "value": 0.0
-              },
-              "AsString": {
-                "type": "StrProperty"
-              }
+              "AsFloat": [
+                {
+                  "type": "FloatProperty",
+                  "value": 0.0
+                }
+              ],
+              "AsString": [
+                {
+                  "type": "StrProperty"
+                }
+              ]
             }
           }
         },
@@ -574,13 +586,17 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
           "CustomStruct": {
             "type_name": "Struct",
             "properties": {
-              "AsFloat": {
-                "type": "FloatProperty",
-                "value": 1.0
-              },
-              "AsString": {
-                "type": "StrProperty"
-              }
+              "AsFloat": [
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              "AsString": [
+                {
+                  "type": "StrProperty"
+                }
+              ]
             }
           }
         },
@@ -589,13 +605,17 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
           "CustomStruct": {
             "type_name": "Struct",
             "properties": {
-              "AsFloat": {
-                "type": "FloatProperty",
-                "value": 1.0
-              },
-              "AsString": {
-                "type": "StrProperty"
-              }
+              "AsFloat": [
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              "AsString": [
+                {
+                  "type": "StrProperty"
+                }
+              ]
             }
           }
         },
@@ -604,13 +624,17 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
           "CustomStruct": {
             "type_name": "Struct",
             "properties": {
-              "AsFloat": {
-                "type": "FloatProperty",
-                "value": 1.0
-              },
-              "AsString": {
-                "type": "StrProperty"
-              }
+              "AsFloat": [
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              "AsString": [
+                {
+                  "type": "StrProperty"
+                }
+              ]
             }
           }
         },
@@ -619,13 +643,17 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
           "CustomStruct": {
             "type_name": "Struct",
             "properties": {
-              "AsFloat": {
-                "type": "FloatProperty",
-                "value": 1.0
-              },
-              "AsString": {
-                "type": "StrProperty"
-              }
+              "AsFloat": [
+                {
+                  "type": "FloatProperty",
+                  "value": 1.0
+                }
+              ],
+              "AsString": [
+                {
+                  "type": "StrProperty"
+                }
+              ]
             }
           }
         }
@@ -643,23 +671,29 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
             "CustomStruct": {
               "type_name": "Struct",
               "properties": {
-                "AttributeName": {
-                  "type": "StrProperty",
-                  "value": "Currency_Blueprints"
-                },
-                "Attribute": {
-                  "type": "FieldPathProperty",
-                  "value": {
-                    "path": [
-                      "Currency_Blueprints"
-                    ],
-                    "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
+                "AttributeName": [
+                  {
+                    "type": "StrProperty",
+                    "value": "Currency_Blueprints"
                   }
-                },
-                "AttributeOwner": {
-                  "type": "ObjectProperty",
-                  "value": "None"
-                }
+                ],
+                "Attribute": [
+                  {
+                    "type": "FieldPathProperty",
+                    "value": {
+                      "path": [
+                        "Currency_Blueprints"
+                      ],
+                      "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
+                    }
+                  }
+                ],
+                "AttributeOwner": [
+                  {
+                    "type": "ObjectProperty",
+                    "value": "None"
+                  }
+                ]
               }
             }
           },
@@ -674,23 +708,29 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
             "CustomStruct": {
               "type_name": "Struct",
               "properties": {
-                "AttributeName": {
-                  "type": "StrProperty",
-                  "value": "Currency_Electrum"
-                },
-                "Attribute": {
-                  "type": "FieldPathProperty",
-                  "value": {
-                    "path": [
-                      "Currency_Electrum"
-                    ],
-                    "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
+                "AttributeName": [
+                  {
+                    "type": "StrProperty",
+                    "value": "Currency_Electrum"
                   }
-                },
-                "AttributeOwner": {
-                  "type": "ObjectProperty",
-                  "value": "None"
-                }
+                ],
+                "Attribute": [
+                  {
+                    "type": "FieldPathProperty",
+                    "value": {
+                      "path": [
+                        "Currency_Electrum"
+                      ],
+                      "resolved_owner": "/Script/CD.CDPlayerAttributeSet"
+                    }
+                  }
+                ],
+                "AttributeOwner": [
+                  {
+                    "type": "ObjectProperty",
+                    "value": "None"
+                  }
+                ]
               }
             }
           },

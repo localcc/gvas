@@ -724,21 +724,21 @@ pub(crate) fn expected() -> GvasFile {
                         properties: IndexMap::from([
                             (
                                 String::from("MasterLevel"),
-                                Property::FloatProperty(FloatProperty {
+                                vec![Property::FloatProperty(FloatProperty {
                                     value: OrderedFloat::from(0.20348908),
-                                }),
+                                })],
                             ),
                             (
                                 String::from("MusicLevel"),
-                                Property::FloatProperty(FloatProperty {
+                                vec![Property::FloatProperty(FloatProperty {
                                     value: OrderedFloat::from(0.1511635),
-                                }),
+                                })],
                             ),
                             (
                                 String::from("SFXLevel"),
-                                Property::FloatProperty(FloatProperty {
+                                vec![Property::FloatProperty(FloatProperty {
                                     value: OrderedFloat::from(0.5436054),
-                                }),
+                                })],
                             ),
                         ]),
                     },
@@ -753,45 +753,45 @@ pub(crate) fn expected() -> GvasFile {
                         properties: IndexMap::from([
                             (
                                 String::from("CurrentSaveSlot"),
-                                Property::StrProperty(StrProperty::from("SAVE2")),
+                                vec![Property::StrProperty(StrProperty::from("SAVE2"))],
                             ),
                             (
                                 String::from("LoadTutorial"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("DisplayNewOrders"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("EscapeExitsTool"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("UseDarkMode"),
-                                Property::BoolProperty(BoolProperty::new(true)),
+                                vec![Property::BoolProperty(BoolProperty::new(true))],
                             ),
                             (
                                 String::from("AnimateDayCycle"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("EnableTractorCollision"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("ShowInventory"),
-                                Property::BoolProperty(BoolProperty::new(true)),
+                                vec![Property::BoolProperty(BoolProperty::new(true))],
                             ),
                             (
                                 String::from("CameraAngle"),
-                                Property::StructProperty(StructProperty {
+                                vec![Property::StructProperty(StructProperty {
                                     guid: Guid::default(),
                                     value: StructPropertyValue::Vector2D(Vector2D {
                                         x: OrderedFloat::from(30.574748247861862),
                                         y: OrderedFloat::from(60.42525175213814),
                                     }),
-                                }),
+                                })],
                             ),
                         ]),
                     },
@@ -1217,18 +1217,24 @@ pub const VECTOR2D_JSON: &str = r#"{
       "CustomStruct": {
         "type_name": "GameAudioSettings",
         "properties": {
-          "MasterLevel": {
-            "type": "FloatProperty",
-            "value": 0.20348908
-          },
-          "MusicLevel": {
-            "type": "FloatProperty",
-            "value": 0.1511635
-          },
-          "SFXLevel": {
-            "type": "FloatProperty",
-            "value": 0.5436054
-          }
+          "MasterLevel": [
+            {
+              "type": "FloatProperty",
+              "value": 0.20348908
+            }
+          ],
+          "MusicLevel": [
+            {
+              "type": "FloatProperty",
+              "value": 0.1511635
+            }
+          ],
+          "SFXLevel": [
+            {
+              "type": "FloatProperty",
+              "value": 0.5436054
+            }
+          ]
         }
       }
     },
@@ -1237,45 +1243,63 @@ pub const VECTOR2D_JSON: &str = r#"{
       "CustomStruct": {
         "type_name": "GameSettings",
         "properties": {
-          "CurrentSaveSlot": {
-            "type": "StrProperty",
-            "value": "SAVE2"
-          },
-          "LoadTutorial": {
-            "type": "BoolProperty",
-            "value": false
-          },
-          "DisplayNewOrders": {
-            "type": "BoolProperty",
-            "value": false
-          },
-          "EscapeExitsTool": {
-            "type": "BoolProperty",
-            "value": false
-          },
-          "UseDarkMode": {
-            "type": "BoolProperty",
-            "value": true
-          },
-          "AnimateDayCycle": {
-            "type": "BoolProperty",
-            "value": false
-          },
-          "EnableTractorCollision": {
-            "type": "BoolProperty",
-            "value": false
-          },
-          "ShowInventory": {
-            "type": "BoolProperty",
-            "value": true
-          },
-          "CameraAngle": {
-            "type": "StructProperty",
-            "Vector2D": {
-              "x": 30.574748247861862,
-              "y": 60.42525175213814
+          "CurrentSaveSlot": [
+            {
+              "type": "StrProperty",
+              "value": "SAVE2"
             }
-          }
+          ],
+          "LoadTutorial": [
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          "DisplayNewOrders": [
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          "EscapeExitsTool": [
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          "UseDarkMode": [
+            {
+              "type": "BoolProperty",
+              "value": true
+            }
+          ],
+          "AnimateDayCycle": [
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          "EnableTractorCollision": [
+            {
+              "type": "BoolProperty",
+              "value": false
+            }
+          ],
+          "ShowInventory": [
+            {
+              "type": "BoolProperty",
+              "value": true
+            }
+          ],
+          "CameraAngle": [
+            {
+              "type": "StructProperty",
+              "Vector2D": {
+                "x": 30.574748247861862,
+                "y": 60.42525175213814
+              }
+            }
+          ]
         }
       }
     },

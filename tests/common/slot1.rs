@@ -321,7 +321,7 @@ pub(crate) fn expected() -> GvasFile {
                         type_name: String::from("CustomStruct"),
                         properties: IndexMap::from([(
                             String::from("test_field"),
-                            Property::from(UInt64Property::new(12345u64)),
+                            vec![Property::from(UInt64Property::new(12345u64))],
                         )]),
                     },
                 }),
@@ -348,7 +348,7 @@ pub(crate) fn expected() -> GvasFile {
                                 type_name: String::from("CustomStruct"),
                                 properties: IndexMap::from([(
                                     String::from("test_field"),
-                                    Property::from(UInt64Property::new(10u64)),
+                                    vec![Property::from(UInt64Property::new(10u64))],
                                 )]),
                             },
                         },
@@ -358,7 +358,7 @@ pub(crate) fn expected() -> GvasFile {
                                 type_name: String::from("CustomStruct"),
                                 properties: IndexMap::from([(
                                     String::from("test_field"),
-                                    Property::from(UInt64Property::new(10u64)),
+                                    vec![Property::from(UInt64Property::new(10u64))],
                                 )]),
                             },
                         },
