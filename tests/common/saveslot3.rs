@@ -13,7 +13,7 @@ use gvas::{
         struct_types::DateTime,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
@@ -299,7 +299,7 @@ pub(crate) fn expected() -> GvasFile {
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
                                             vec![Property::from(FloatProperty::new(0f32))],
@@ -308,7 +308,7 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AsString"),
                                             vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             )),
                         ),
@@ -318,7 +318,7 @@ pub(crate) fn expected() -> GvasFile {
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
                                             vec![Property::from(FloatProperty::new(1f32))],
@@ -327,7 +327,7 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AsString"),
                                             vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             )),
                         ),
@@ -337,7 +337,7 @@ pub(crate) fn expected() -> GvasFile {
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
                                             vec![Property::from(FloatProperty::new(1f32))],
@@ -346,7 +346,7 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AsString"),
                                             vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             )),
                         ),
@@ -356,7 +356,7 @@ pub(crate) fn expected() -> GvasFile {
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
                                             vec![Property::from(FloatProperty::new(1f32))],
@@ -365,7 +365,7 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AsString"),
                                             vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             )),
                         ),
@@ -375,7 +375,7 @@ pub(crate) fn expected() -> GvasFile {
                                 Guid::from(0),
                                 StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
                                             vec![Property::from(FloatProperty::new(1f32))],
@@ -384,7 +384,7 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AsString"),
                                             vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             )),
                         ),
@@ -397,13 +397,13 @@ pub(crate) fn expected() -> GvasFile {
                     key_type: String::from("StructProperty"),
                     value_type: String::from("FloatProperty"),
                     allocation_flags: 0,
-                    value: IndexMap::from([
+                    value: HashableIndexMap(IndexMap::from([
                         (
                             Property::from(StructProperty {
                                 guid: Guid::from(0),
                                 value: StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AttributeName"),
                                             vec![Property::from(StrProperty::from(
@@ -425,7 +425,7 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AttributeOwner"),
                                             vec![Property::from(ObjectProperty::from("None"))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             }),
                             Property::from(FloatProperty::new(0f32)),
@@ -435,7 +435,7 @@ pub(crate) fn expected() -> GvasFile {
                                 guid: Guid::from(0),
                                 value: StructPropertyValue::CustomStruct {
                                     type_name: String::from("Struct"),
-                                    properties: IndexMap::from([
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AttributeName"),
                                             vec![Property::from(StrProperty::from(
@@ -455,12 +455,12 @@ pub(crate) fn expected() -> GvasFile {
                                             String::from("AttributeOwner"),
                                             vec![Property::from(ObjectProperty::from("None"))],
                                         ),
-                                    ]),
+                                    ])),
                                 },
                             }),
                             Property::from(FloatProperty::new(0f32)),
                         ),
-                    ]),
+                    ])),
                 }),
             ),
             (

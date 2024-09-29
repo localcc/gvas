@@ -7,11 +7,12 @@ use std::{
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use indexmap::IndexMap;
 
-use crate::properties::{name_property::NameProperty, struct_types::LinearColor};
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error, SerializeError},
+    properties::{name_property::NameProperty, struct_types::LinearColor},
     scoped_stack_entry::ScopedStackEntry,
+    types::map::HashableIndexMap,
     types::Guid,
 };
 
@@ -49,7 +50,7 @@ pub struct StructProperty {
 }
 
 /// The possible values of a `StructProperty`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum StructPropertyValue {
     /// A `Vector2F` value.
@@ -83,38 +84,8 @@ pub enum StructPropertyValue {
         /// Type name.
         type_name: String,
         /// Properties.
-        properties: IndexMap<String, Vec<Property>>,
+        properties: HashableIndexMap<String, Vec<Property>>,
     },
-}
-
-impl Hash for StructPropertyValue {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            StructPropertyValue::Vector2F(v) => v.hash(state),
-            StructPropertyValue::Vector2D(v) => v.hash(state),
-            StructPropertyValue::VectorF(v) => v.hash(state),
-            StructPropertyValue::VectorD(v) => v.hash(state),
-            StructPropertyValue::RotatorF(v) => v.hash(state),
-            StructPropertyValue::RotatorD(v) => v.hash(state),
-            StructPropertyValue::QuatF(v) => v.hash(state),
-            StructPropertyValue::QuatD(v) => v.hash(state),
-            StructPropertyValue::DateTime(v) => v.hash(state),
-            StructPropertyValue::Timespan(v) => v.hash(state),
-            StructPropertyValue::Guid(v) => v.hash(state),
-            StructPropertyValue::LinearColor(v) => v.hash(state),
-            StructPropertyValue::IntPoint(v) => v.hash(state),
-            StructPropertyValue::CustomStruct {
-                type_name,
-                properties,
-            } => {
-                type_name.hash(state);
-                for (key, value) in properties {
-                    key.hash(state);
-                    value.hash(state);
-                }
-            }
-        }
-    }
 }
 
 impl StructProperty {
@@ -260,6 +231,7 @@ impl StructProperty {
                     let property = Property::new(cursor, &property_type, true, options, None)?;
                     insert_property(&mut properties, property_name, property);
                 }
+                let properties = HashableIndexMap(properties);
                 StructPropertyValue::CustomStruct {
                     type_name,
                     properties,
@@ -432,7 +404,10 @@ impl PropertyTrait for StructProperty {
                 cursor.write_guid(guid)?;
                 Ok(16)
             }
-            StructPropertyValue::CustomStruct { properties, .. } => {
+            StructPropertyValue::CustomStruct {
+                properties: HashableIndexMap(properties),
+                ..
+            } => {
                 let mut len = 0;
                 for (key, values) in properties {
                     for value in values {
@@ -527,7 +502,7 @@ impl StructPropertyValue {
         match self {
             Self::CustomStruct {
                 type_name,
-                properties,
+                properties: HashableIndexMap(properties),
             } => Some((type_name, properties)),
             _ => None,
         }
@@ -541,7 +516,7 @@ impl StructPropertyValue {
         match self {
             Self::CustomStruct {
                 type_name,
-                properties,
+                properties: HashableIndexMap(properties),
             } => Some((type_name, properties)),
             _ => None,
         }

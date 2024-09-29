@@ -13,7 +13,7 @@ use gvas::{
         struct_types::DateTime,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
@@ -319,10 +319,10 @@ pub(crate) fn expected() -> GvasFile {
                     guid: Guid::default(),
                     value: StructPropertyValue::CustomStruct {
                         type_name: String::from("CustomStruct"),
-                        properties: IndexMap::from([(
+                        properties: HashableIndexMap(IndexMap::from([(
                             String::from("test_field"),
                             vec![Property::from(UInt64Property::new(12345u64))],
-                        )]),
+                        )])),
                     },
                 }),
             ),
@@ -346,20 +346,20 @@ pub(crate) fn expected() -> GvasFile {
                             guid: Guid::default(),
                             value: StructPropertyValue::CustomStruct {
                                 type_name: String::from("CustomStruct"),
-                                properties: IndexMap::from([(
+                                properties: HashableIndexMap(IndexMap::from([(
                                     String::from("test_field"),
                                     vec![Property::from(UInt64Property::new(10u64))],
-                                )]),
+                                )])),
                             },
                         },
                         StructProperty {
                             guid: Guid::default(),
                             value: StructPropertyValue::CustomStruct {
                                 type_name: String::from("CustomStruct"),
-                                properties: IndexMap::from([(
+                                properties: HashableIndexMap(IndexMap::from([(
                                     String::from("test_field"),
                                     vec![Property::from(UInt64Property::new(10u64))],
-                                )]),
+                                )])),
                             },
                         },
                     ],

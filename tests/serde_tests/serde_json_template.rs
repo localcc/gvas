@@ -27,7 +27,7 @@ use gvas::{
         unknown_property::UnknownProperty,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile,
 };
 use indexmap::{indexmap, IndexMap};
@@ -1558,10 +1558,10 @@ fn struct_custom() {
             Guid::default(),
             StructPropertyValue::CustomStruct {
                 type_name: String::from("custom name"),
-                properties: IndexMap::from([(
+                properties: HashableIndexMap(IndexMap::from([(
                     String::from("key"),
                     vec![Property::from(StrProperty::from("value"))],
-                )]),
+                )])),
             },
         )),
         r#"{
@@ -1588,7 +1588,7 @@ fn struct_array_index() {
             guid: Guid::default(),
             value: StructPropertyValue::CustomStruct {
                 type_name: String::from("TowersTrackedQuests"),
-                properties: IndexMap::from([(
+                properties: HashableIndexMap(IndexMap::from([(
                     String::from("TrackedQuestsNames"),
                     vec![
                         Property::NameProperty(NameProperty {
@@ -1600,7 +1600,7 @@ fn struct_array_index() {
                             value: Some(String::from("QU91_InvestigateTower_B2")),
                         }),
                     ],
-                )]),
+                )])),
             },
         }),
         r#"{
@@ -1707,7 +1707,10 @@ fn text_namedformat() {
                         culture_invariant_string: None,
                     },
                 }),
-                arguments: IndexMap::from([(String::from("key"), FormatArgumentValue::Int(2))]),
+                arguments: HashableIndexMap(IndexMap::from([(
+                    String::from("key"),
+                    FormatArgumentValue::Int(2),
+                )])),
             },
         })),
         r#"{

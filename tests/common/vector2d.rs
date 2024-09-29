@@ -9,7 +9,7 @@ use gvas::{
         struct_types::Vector2D,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
@@ -721,7 +721,7 @@ pub(crate) fn expected() -> GvasFile {
                     guid: Guid::default(),
                     value: StructPropertyValue::CustomStruct {
                         type_name: String::from("GameAudioSettings"),
-                        properties: IndexMap::from([
+                        properties: HashableIndexMap(IndexMap::from([
                             (
                                 String::from("MasterLevel"),
                                 vec![Property::FloatProperty(FloatProperty {
@@ -740,7 +740,7 @@ pub(crate) fn expected() -> GvasFile {
                                     value: OrderedFloat::from(0.5436054),
                                 })],
                             ),
-                        ]),
+                        ])),
                     },
                 }),
             ),
@@ -750,7 +750,7 @@ pub(crate) fn expected() -> GvasFile {
                     guid: Guid::default(),
                     value: StructPropertyValue::CustomStruct {
                         type_name: String::from("GameSettings"),
-                        properties: IndexMap::from([
+                        properties: HashableIndexMap(IndexMap::from([
                             (
                                 String::from("CurrentSaveSlot"),
                                 vec![Property::StrProperty(StrProperty::from("SAVE2"))],
@@ -793,7 +793,7 @@ pub(crate) fn expected() -> GvasFile {
                                     }),
                                 })],
                             ),
-                        ]),
+                        ])),
                     },
                 }),
             ),
