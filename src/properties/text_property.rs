@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::{
     fmt::Debug,
     io::{Cursor, Read, Seek, Write},
@@ -13,6 +13,7 @@ use unreal_helpers::{UnrealReadExt, UnrealWriteExt};
 use crate::custom_version::FEditorObjectVersion;
 use crate::properties::int_property::UInt64Property;
 use crate::properties::struct_types::DateTime;
+use crate::types::map::HashableIndexMap;
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::Error,
@@ -172,7 +173,7 @@ pub enum TextHistoryType {
 }
 
 /// FText history
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", serde_with::skip_serializing_none)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(tag = "history"))]
@@ -198,7 +199,7 @@ pub enum FTextHistory {
         /// Source format
         source_format: Box<FText>,
         /// Arguments
-        arguments: IndexMap<String, FormatArgumentValue>,
+        arguments: HashableIndexMap<String, FormatArgumentValue>,
     },
     /// Ordered format text history
     OrderedFormat {
@@ -341,6 +342,7 @@ impl FTextHistory {
                     arguments.insert(key, value);
                 }
 
+                let arguments = HashableIndexMap(arguments);
                 FTextHistory::NamedFormat {
                     source_format,
                     arguments,
@@ -546,7 +548,7 @@ impl FTextHistory {
 
             FTextHistory::NamedFormat {
                 source_format,
-                arguments,
+                arguments: HashableIndexMap(arguments),
             } => {
                 let mut len = 1;
                 cursor.write_enum(TextHistoryType::NamedFormat)?;
@@ -703,140 +705,6 @@ impl FTextHistory {
                 len += table_id.write(cursor, options)?;
                 len += cursor.write_string(key)?;
                 Ok(len)
-            }
-        }
-    }
-}
-
-impl Hash for FTextHistory {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self {
-            FTextHistory::Empty {} => {
-                state.write_u8(0);
-            }
-            FTextHistory::None {
-                culture_invariant_string,
-            } => {
-                state.write_u8(0);
-                culture_invariant_string.hash(state);
-            }
-            FTextHistory::Base {
-                namespace,
-                key,
-                source_string,
-            } => {
-                state.write_u8(1);
-                namespace.hash(state);
-                key.hash(state);
-                source_string.hash(state);
-            }
-            FTextHistory::NamedFormat {
-                source_format,
-                arguments,
-            } => {
-                state.write_u8(2);
-                source_format.hash(state);
-                for (key, value) in arguments {
-                    key.hash(state);
-                    value.hash(state);
-                }
-            }
-            FTextHistory::OrderedFormat {
-                source_format,
-                arguments,
-            } => {
-                state.write_u8(3);
-                source_format.hash(state);
-                arguments.hash(state);
-            }
-            FTextHistory::ArgumentFormat {
-                source_format,
-                arguments,
-            } => {
-                state.write_u8(4);
-                source_format.hash(state);
-                arguments.hash(state);
-            }
-            FTextHistory::AsNumber {
-                source_value,
-                format_options,
-                target_culture,
-            } => {
-                state.write_u8(5);
-                source_value.hash(state);
-                format_options.hash(state);
-                target_culture.hash(state);
-            }
-            FTextHistory::AsPercent {
-                source_value,
-                format_options,
-                target_culture,
-            } => {
-                state.write_u8(6);
-                source_value.hash(state);
-                format_options.hash(state);
-                target_culture.hash(state);
-            }
-            FTextHistory::AsCurrency {
-                currency_code,
-                source_value,
-                format_options,
-                target_culture,
-            } => {
-                state.write_u8(7);
-                currency_code.hash(state);
-                source_value.hash(state);
-                format_options.hash(state);
-                target_culture.hash(state);
-            }
-            FTextHistory::AsDate {
-                date_time,
-                date_style,
-                target_culture,
-            } => {
-                state.write_u8(8);
-                date_time.hash(state);
-                date_style.hash(state);
-                target_culture.hash(state);
-            }
-            FTextHistory::AsTime {
-                source_date_time,
-                time_style,
-                time_zone,
-                target_culture,
-            } => {
-                state.write_u8(9);
-                source_date_time.hash(state);
-                time_style.hash(state);
-                time_zone.hash(state);
-                target_culture.hash(state);
-            }
-            FTextHistory::AsDateTime {
-                source_date_time,
-                date_style,
-                time_style,
-                time_zone,
-                target_culture,
-            } => {
-                state.write_u8(10);
-                source_date_time.hash(state);
-                date_style.hash(state);
-                time_style.hash(state);
-                time_zone.hash(state);
-                target_culture.hash(state);
-            }
-            FTextHistory::Transform {
-                source_text,
-                transform_type,
-            } => {
-                state.write_u8(11);
-                source_text.hash(state);
-                transform_type.hash(state);
-            }
-            FTextHistory::StringTableEntry { table_id, key } => {
-                state.write_u8(12);
-                table_id.hash(state);
-                key.hash(state);
             }
         }
     }

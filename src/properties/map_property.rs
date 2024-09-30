@@ -4,62 +4,61 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-
 use indexmap::IndexMap;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
+    properties::{
+        enum_property::EnumProperty,
+        impl_read_header, impl_write, impl_write_header_part,
+        int_property::{BoolProperty, IntProperty},
+        name_property::NameProperty,
+        str_property::StrProperty,
+        Property, PropertyOptions, PropertyTrait,
+    },
     scoped_stack_entry::ScopedStackEntry,
-};
-
-use super::{
-    enum_property::EnumProperty,
-    impl_read_header, impl_write, impl_write_header_part,
-    int_property::{BoolProperty, IntProperty},
-    name_property::NameProperty,
-    str_property::StrProperty,
-    Property, PropertyOptions, PropertyTrait,
+    types::map::HashableIndexMap,
 };
 
 /// A property that stores a map of properties to properties.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(untagged))]
 pub enum MapProperty {
     /// Map<EnumProperty, BoolProperty>
     EnumBool {
         /// Map entries.
-        enum_bools: IndexMap<String, bool>,
+        enum_bools: HashableIndexMap<String, bool>,
     },
     /// Map<EnumProperty, IntProperty>
     EnumInt {
         /// Map entries.
-        enum_ints: IndexMap<String, i32>,
+        enum_ints: HashableIndexMap<String, i32>,
     },
     /// Map<EnumProperty, Property>
     EnumProperty {
         /// Value type.
         value_type: String,
         /// Map entries.
-        enum_props: IndexMap<String, Property>,
+        enum_props: HashableIndexMap<String, Property>,
     },
     /// Map<NameProperty, BoolProperty>
     NameBool {
         /// Map entries.
-        name_bools: IndexMap<String, bool>,
+        name_bools: HashableIndexMap<String, bool>,
     },
     /// Map<NameProperty, IntProperty>
     NameInt {
         /// Map entries.
-        name_ints: IndexMap<String, i32>,
+        name_ints: HashableIndexMap<String, i32>,
     },
     /// Map<NameProperty, Property>
     NameProperty {
         /// Value type.
         value_type: String,
         /// Map entries.
-        name_props: IndexMap<String, Property>,
+        name_props: HashableIndexMap<String, Property>,
     },
     /// Map<Property, Property>
     Properties {
@@ -70,30 +69,30 @@ pub enum MapProperty {
         /// Allocation flags.
         allocation_flags: u32,
         /// Map entries.
-        #[cfg_attr(feature = "serde", serde(with = "indexmap::map::serde_seq"))]
-        value: IndexMap<Property, Property>,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::map::serde_seq"))]
+        value: HashableIndexMap<Property, Property>,
     },
     /// Map<StrProperty, BoolProperty>
     StrBool {
         /// Map entries.
-        str_bools: IndexMap<String, bool>,
+        str_bools: HashableIndexMap<String, bool>,
     },
     /// Map<StrProperty, IntProperty>
     StrInt {
         /// Map entries.
-        str_ints: IndexMap<String, i32>,
+        str_ints: HashableIndexMap<String, i32>,
     },
     /// Map<StrProperty, Property>
     StrProperty {
         /// Value type.
         value_type: String,
         /// Map entries.
-        str_props: IndexMap<String, Property>,
+        str_props: HashableIndexMap<String, Property>,
     },
     /// Map<StrProperty, StrProperty>
     StrStr {
         /// Map entries.
-        str_strs: IndexMap<String, Option<String>>,
+        str_strs: HashableIndexMap<String, Option<String>>,
     },
 }
 
@@ -122,7 +121,9 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(enum_bools) => MapProperty::EnumBool { enum_bools },
+                Ok(enum_bools) => MapProperty::EnumBool {
+                    enum_bools: HashableIndexMap(enum_bools),
+                },
                 // Err(e) => Err(SerializeError::invalid_value(&format!(
                 //     "Map entry type does not match container type ({}, {}): {:#?}",
                 //     key_type, value_type, e
@@ -131,7 +132,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -149,12 +150,14 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(enum_ints) => MapProperty::EnumInt { enum_ints },
+                Ok(enum_ints) => MapProperty::EnumInt {
+                    enum_ints: HashableIndexMap(enum_ints),
+                },
                 Err(_) => MapProperty::Properties {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -175,13 +178,13 @@ impl MapProperty {
                 {
                     Ok(enum_props) => MapProperty::EnumProperty {
                         value_type,
-                        enum_props,
+                        enum_props: HashableIndexMap(enum_props),
                     },
                     Err(_) => MapProperty::Properties {
                         key_type,
                         value_type,
                         allocation_flags,
-                        value,
+                        value: HashableIndexMap(value),
                     },
                 }
             }
@@ -200,12 +203,14 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(name_bools) => MapProperty::NameBool { name_bools },
+                Ok(name_bools) => MapProperty::NameBool {
+                    name_bools: HashableIndexMap(name_bools),
+                },
                 Err(_) => MapProperty::Properties {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -223,12 +228,14 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(name_ints) => MapProperty::NameInt { name_ints },
+                Ok(name_ints) => MapProperty::NameInt {
+                    name_ints: HashableIndexMap(name_ints),
+                },
                 Err(_) => MapProperty::Properties {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -249,13 +256,13 @@ impl MapProperty {
                 {
                     Ok(name_props) => MapProperty::NameProperty {
                         value_type,
-                        name_props,
+                        name_props: HashableIndexMap(name_props),
                     },
                     Err(_) => MapProperty::Properties {
                         key_type,
                         value_type,
                         allocation_flags,
-                        value,
+                        value: HashableIndexMap(value),
                     },
                 }
             }
@@ -271,12 +278,14 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(str_bools) => MapProperty::StrBool { str_bools },
+                Ok(str_bools) => MapProperty::StrBool {
+                    str_bools: HashableIndexMap(str_bools),
+                },
                 Err(_) => MapProperty::Properties {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -291,12 +300,14 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(str_ints) => MapProperty::StrInt { str_ints },
+                Ok(str_ints) => MapProperty::StrInt {
+                    str_ints: HashableIndexMap(str_ints),
+                },
                 Err(_) => MapProperty::Properties {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -311,12 +322,14 @@ impl MapProperty {
                 })
                 .collect::<Result<_, _>>()
             {
-                Ok(str_strs) => MapProperty::StrStr { str_strs },
+                Ok(str_strs) => MapProperty::StrStr {
+                    str_strs: HashableIndexMap(str_strs),
+                },
                 Err(_) => MapProperty::Properties {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value,
+                    value: HashableIndexMap(value),
                 },
             },
 
@@ -333,13 +346,13 @@ impl MapProperty {
                 {
                     Ok(str_props) => MapProperty::StrProperty {
                         value_type,
-                        str_props,
+                        str_props: HashableIndexMap(str_props),
                     },
                     Err(_) => MapProperty::Properties {
                         key_type,
                         value_type,
                         allocation_flags,
-                        value,
+                        value: HashableIndexMap(value),
                     },
                 }
             }
@@ -348,7 +361,7 @@ impl MapProperty {
                 key_type,
                 value_type,
                 allocation_flags,
-                value,
+                value: HashableIndexMap(value),
             },
         }
     }
@@ -491,7 +504,9 @@ impl PropertyTrait for MapProperty {
         options: &mut PropertyOptions,
     ) -> Result<usize, Error> {
         match self {
-            MapProperty::EnumBool { enum_bools } => {
+            MapProperty::EnumBool {
+                enum_bools: HashableIndexMap(enum_bools),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(enum_bools.len() as u32)?;
                 let mut len = 8;
@@ -504,7 +519,9 @@ impl PropertyTrait for MapProperty {
                 Ok(len)
             }
 
-            MapProperty::EnumInt { enum_ints } => {
+            MapProperty::EnumInt {
+                enum_ints: HashableIndexMap(enum_ints),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(enum_ints.len() as u32)?;
                 let mut len = 8;
@@ -519,7 +536,7 @@ impl PropertyTrait for MapProperty {
 
             MapProperty::EnumProperty {
                 value_type: _,
-                enum_props,
+                enum_props: HashableIndexMap(enum_props),
             } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(enum_props.len() as u32)?;
@@ -532,7 +549,9 @@ impl PropertyTrait for MapProperty {
                 Ok(len)
             }
 
-            MapProperty::NameBool { name_bools } => {
+            MapProperty::NameBool {
+                name_bools: HashableIndexMap(name_bools),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(name_bools.len() as u32)?;
                 let mut len = 8;
@@ -545,7 +564,9 @@ impl PropertyTrait for MapProperty {
                 Ok(len)
             }
 
-            MapProperty::NameInt { name_ints } => {
+            MapProperty::NameInt {
+                name_ints: HashableIndexMap(name_ints),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(name_ints.len() as u32)?;
                 let mut len = 8;
@@ -560,7 +581,7 @@ impl PropertyTrait for MapProperty {
 
             MapProperty::NameProperty {
                 value_type: _,
-                name_props,
+                name_props: HashableIndexMap(name_props),
             } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(name_props.len() as u32)?;
@@ -577,7 +598,7 @@ impl PropertyTrait for MapProperty {
                 key_type: _,
                 value_type: _,
                 allocation_flags,
-                value,
+                value: HashableIndexMap(value),
             } => {
                 cursor.write_u32::<LittleEndian>(*allocation_flags)?;
                 cursor.write_u32::<LittleEndian>(value.len() as u32)?;
@@ -589,7 +610,9 @@ impl PropertyTrait for MapProperty {
                 Ok(len)
             }
 
-            MapProperty::StrBool { str_bools } => {
+            MapProperty::StrBool {
+                str_bools: HashableIndexMap(str_bools),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_bools.len() as u32)?;
                 let mut len = 8;
@@ -602,7 +625,9 @@ impl PropertyTrait for MapProperty {
                 Ok(len)
             }
 
-            MapProperty::StrInt { str_ints } => {
+            MapProperty::StrInt {
+                str_ints: HashableIndexMap(str_ints),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_ints.len() as u32)?;
                 let mut len = 8;
@@ -617,7 +642,7 @@ impl PropertyTrait for MapProperty {
 
             MapProperty::StrProperty {
                 value_type: _,
-                str_props,
+                str_props: HashableIndexMap(str_props),
             } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_props.len() as u32)?;
@@ -630,7 +655,9 @@ impl PropertyTrait for MapProperty {
                 Ok(len)
             }
 
-            MapProperty::StrStr { str_strs } => {
+            MapProperty::StrStr {
+                str_strs: HashableIndexMap(str_strs),
+            } => {
                 cursor.write_u32::<LittleEndian>(0)?;
                 cursor.write_u32::<LittleEndian>(str_strs.len() as u32)?;
                 let mut len = 8;
@@ -641,28 +668,6 @@ impl PropertyTrait for MapProperty {
                     len += v_property.write(cursor, false, options)?;
                 }
                 Ok(len)
-            }
-        }
-    }
-}
-
-impl Hash for MapProperty {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            MapProperty::Properties {
-                key_type,
-                value_type,
-                allocation_flags,
-                value: _,
-            } => {
-                key_type.hash(state);
-                value_type.hash(state);
-                allocation_flags.hash(state);
-            }
-            _ => {
-                self.key_type().hash(state);
-                self.value_type().hash(state);
-                0u32.hash(state);
             }
         }
     }

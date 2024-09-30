@@ -13,7 +13,7 @@ use gvas::{
         struct_types::DateTime,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
@@ -297,95 +297,95 @@ pub(crate) fn expected() -> GvasFile {
                             Property::from(NameProperty::from("unlock.welcomescreen.seen")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
-                                StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(0f32)),
+                                            vec![Property::from(FloatProperty::new(0f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             )),
                         ),
                         (
                             Property::from(NameProperty::from("game.tutorial.finished")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
-                                StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             )),
                         ),
                         (
                             Property::from(NameProperty::from("game.tutorial.skipped")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
-                                StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             )),
                         ),
                         (
                             Property::from(NameProperty::from("dialogs.messages.seen.Rumiko.0.50")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
-                                StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             )),
                         ),
                         (
                             Property::from(NameProperty::from("codex.Rumiko")),
                             Property::from(StructProperty::new(
                                 Guid::from(0),
-                                StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AsFloat"),
-                                            Property::from(FloatProperty::new(1f32)),
+                                            vec![Property::from(FloatProperty::new(1f32))],
                                         ),
                                         (
                                             String::from("AsString"),
-                                            Property::from(StrProperty::new(None)),
+                                            vec![Property::from(StrProperty::new(None))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             )),
                         ),
                     ]),
@@ -397,62 +397,70 @@ pub(crate) fn expected() -> GvasFile {
                     key_type: String::from("StructProperty"),
                     value_type: String::from("FloatProperty"),
                     allocation_flags: 0,
-                    value: IndexMap::from([
+                    value: HashableIndexMap(IndexMap::from([
                         (
                             Property::from(StructProperty {
                                 guid: Guid::from(0),
-                                value: StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                value: StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AttributeName"),
-                                            Property::from(StrProperty::from(
+                                            vec![Property::from(StrProperty::from(
                                                 "Currency_Blueprints",
-                                            )),
+                                            ))],
                                         ),
                                         (
                                             String::from("Attribute"),
-                                            Property::from(FieldPathProperty::new(FieldPath::new(
-                                                Vec::from([String::from("Currency_Blueprints")]),
-                                                String::from("/Script/CD.CDPlayerAttributeSet"),
-                                            ))),
+                                            vec![Property::from(FieldPathProperty::new(
+                                                FieldPath::new(
+                                                    Vec::from([String::from(
+                                                        "Currency_Blueprints",
+                                                    )]),
+                                                    String::from("/Script/CD.CDPlayerAttributeSet"),
+                                                ),
+                                            ))],
                                         ),
                                         (
                                             String::from("AttributeOwner"),
-                                            Property::from(ObjectProperty::from("None")),
+                                            vec![Property::from(ObjectProperty::from("None"))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             }),
                             Property::from(FloatProperty::new(0f32)),
                         ),
                         (
                             Property::from(StructProperty {
                                 guid: Guid::from(0),
-                                value: StructPropertyValue::CustomStruct(
-                                    String::from("Struct"),
-                                    vec![
+                                value: StructPropertyValue::CustomStruct {
+                                    type_name: String::from("Struct"),
+                                    properties: HashableIndexMap(IndexMap::from([
                                         (
                                             String::from("AttributeName"),
-                                            Property::from(StrProperty::from("Currency_Electrum")),
+                                            vec![Property::from(StrProperty::from(
+                                                "Currency_Electrum",
+                                            ))],
                                         ),
                                         (
                                             String::from("Attribute"),
-                                            Property::from(FieldPathProperty::new(FieldPath::new(
-                                                Vec::from([String::from("Currency_Electrum")]),
-                                                String::from("/Script/CD.CDPlayerAttributeSet"),
-                                            ))),
+                                            vec![Property::from(FieldPathProperty::new(
+                                                FieldPath::new(
+                                                    Vec::from([String::from("Currency_Electrum")]),
+                                                    String::from("/Script/CD.CDPlayerAttributeSet"),
+                                                ),
+                                            ))],
                                         ),
                                         (
                                             String::from("AttributeOwner"),
-                                            Property::from(ObjectProperty::from("None")),
+                                            vec![Property::from(ObjectProperty::from("None"))],
                                         ),
-                                    ],
-                                ),
+                                    ])),
+                                },
                             }),
                             Property::from(FloatProperty::new(0f32)),
                         ),
-                    ]),
+                    ])),
                 }),
             ),
             (
@@ -556,108 +564,98 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
       "name_props": {
         "unlock.welcomescreen.seen": {
           "type": "StructProperty",
-          "CustomStruct": [
-            "Struct",
-            [
-              [
-                "AsFloat",
+          "CustomStruct": {
+            "type_name": "Struct",
+            "properties": {
+              "AsFloat": [
                 {
                   "type": "FloatProperty",
                   "value": 0.0
                 }
               ],
-              [
-                "AsString",
+              "AsString": [
                 {
                   "type": "StrProperty"
                 }
               ]
-            ]
-          ]
+            }
+          }
         },
         "game.tutorial.finished": {
           "type": "StructProperty",
-          "CustomStruct": [
-            "Struct",
-            [
-              [
-                "AsFloat",
+          "CustomStruct": {
+            "type_name": "Struct",
+            "properties": {
+              "AsFloat": [
                 {
                   "type": "FloatProperty",
                   "value": 1.0
                 }
               ],
-              [
-                "AsString",
+              "AsString": [
                 {
                   "type": "StrProperty"
                 }
               ]
-            ]
-          ]
+            }
+          }
         },
         "game.tutorial.skipped": {
           "type": "StructProperty",
-          "CustomStruct": [
-            "Struct",
-            [
-              [
-                "AsFloat",
+          "CustomStruct": {
+            "type_name": "Struct",
+            "properties": {
+              "AsFloat": [
                 {
                   "type": "FloatProperty",
                   "value": 1.0
                 }
               ],
-              [
-                "AsString",
+              "AsString": [
                 {
                   "type": "StrProperty"
                 }
               ]
-            ]
-          ]
+            }
+          }
         },
         "dialogs.messages.seen.Rumiko.0.50": {
           "type": "StructProperty",
-          "CustomStruct": [
-            "Struct",
-            [
-              [
-                "AsFloat",
+          "CustomStruct": {
+            "type_name": "Struct",
+            "properties": {
+              "AsFloat": [
                 {
                   "type": "FloatProperty",
                   "value": 1.0
                 }
               ],
-              [
-                "AsString",
+              "AsString": [
                 {
                   "type": "StrProperty"
                 }
               ]
-            ]
-          ]
+            }
+          }
         },
         "codex.Rumiko": {
           "type": "StructProperty",
-          "CustomStruct": [
-            "Struct",
-            [
-              [
-                "AsFloat",
+          "CustomStruct": {
+            "type_name": "Struct",
+            "properties": {
+              "AsFloat": [
                 {
                   "type": "FloatProperty",
                   "value": 1.0
                 }
               ],
-              [
-                "AsString",
+              "AsString": [
                 {
                   "type": "StrProperty"
                 }
               ]
-            ]
-          ]
+            }
+          }
         }
       }
     },
@@ -670,18 +668,16 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
         [
           {
             "type": "StructProperty",
-            "CustomStruct": [
-              "Struct",
-              [
-                [
-                  "AttributeName",
+            "CustomStruct": {
+              "type_name": "Struct",
+              "properties": {
+                "AttributeName": [
                   {
                     "type": "StrProperty",
                     "value": "Currency_Blueprints"
                   }
                 ],
-                [
-                  "Attribute",
+                "Attribute": [
                   {
                     "type": "FieldPathProperty",
                     "value": {
@@ -692,15 +688,14 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
                     }
                   }
                 ],
-                [
-                  "AttributeOwner",
+                "AttributeOwner": [
                   {
                     "type": "ObjectProperty",
                     "value": "None"
                   }
                 ]
-              ]
-            ]
+              }
+            }
           },
           {
             "type": "FloatProperty",
@@ -710,18 +705,16 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
         [
           {
             "type": "StructProperty",
-            "CustomStruct": [
-              "Struct",
-              [
-                [
-                  "AttributeName",
+            "CustomStruct": {
+              "type_name": "Struct",
+              "properties": {
+                "AttributeName": [
                   {
                     "type": "StrProperty",
                     "value": "Currency_Electrum"
                   }
                 ],
-                [
-                  "Attribute",
+                "Attribute": [
                   {
                     "type": "FieldPathProperty",
                     "value": {
@@ -732,15 +725,14 @@ pub(crate) const SAVESLOT_03_JSON: &str = r#"{
                     }
                   }
                 ],
-                [
-                  "AttributeOwner",
+                "AttributeOwner": [
                   {
                     "type": "ObjectProperty",
                     "value": "None"
                   }
                 ]
-              ]
-            ]
+              }
+            }
           },
           {
             "type": "FloatProperty",

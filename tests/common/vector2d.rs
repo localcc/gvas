@@ -9,7 +9,7 @@ use gvas::{
         struct_types::Vector2D,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
 use indexmap::IndexMap;
@@ -719,82 +719,82 @@ pub(crate) fn expected() -> GvasFile {
                 String::from("AudioSettings"),
                 Property::StructProperty(StructProperty {
                     guid: Guid::default(),
-                    value: StructPropertyValue::CustomStruct(
-                        String::from("GameAudioSettings"),
-                        vec![
+                    value: StructPropertyValue::CustomStruct {
+                        type_name: String::from("GameAudioSettings"),
+                        properties: HashableIndexMap(IndexMap::from([
                             (
                                 String::from("MasterLevel"),
-                                Property::FloatProperty(FloatProperty {
+                                vec![Property::FloatProperty(FloatProperty {
                                     value: OrderedFloat::from(0.20348908),
-                                }),
+                                })],
                             ),
                             (
                                 String::from("MusicLevel"),
-                                Property::FloatProperty(FloatProperty {
+                                vec![Property::FloatProperty(FloatProperty {
                                     value: OrderedFloat::from(0.1511635),
-                                }),
+                                })],
                             ),
                             (
                                 String::from("SFXLevel"),
-                                Property::FloatProperty(FloatProperty {
+                                vec![Property::FloatProperty(FloatProperty {
                                     value: OrderedFloat::from(0.5436054),
-                                }),
+                                })],
                             ),
-                        ],
-                    ),
+                        ])),
+                    },
                 }),
             ),
             (
                 String::from("GameSettings"),
                 Property::StructProperty(StructProperty {
                     guid: Guid::default(),
-                    value: StructPropertyValue::CustomStruct(
-                        String::from("GameSettings"),
-                        vec![
+                    value: StructPropertyValue::CustomStruct {
+                        type_name: String::from("GameSettings"),
+                        properties: HashableIndexMap(IndexMap::from([
                             (
                                 String::from("CurrentSaveSlot"),
-                                Property::StrProperty(StrProperty::from("SAVE2")),
+                                vec![Property::StrProperty(StrProperty::from("SAVE2"))],
                             ),
                             (
                                 String::from("LoadTutorial"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("DisplayNewOrders"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("EscapeExitsTool"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("UseDarkMode"),
-                                Property::BoolProperty(BoolProperty::new(true)),
+                                vec![Property::BoolProperty(BoolProperty::new(true))],
                             ),
                             (
                                 String::from("AnimateDayCycle"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("EnableTractorCollision"),
-                                Property::BoolProperty(BoolProperty::new(false)),
+                                vec![Property::BoolProperty(BoolProperty::new(false))],
                             ),
                             (
                                 String::from("ShowInventory"),
-                                Property::BoolProperty(BoolProperty::new(true)),
+                                vec![Property::BoolProperty(BoolProperty::new(true))],
                             ),
                             (
                                 String::from("CameraAngle"),
-                                Property::StructProperty(StructProperty {
+                                vec![Property::StructProperty(StructProperty {
                                     guid: Guid::default(),
                                     value: StructPropertyValue::Vector2D(Vector2D {
                                         x: OrderedFloat::from(30.574748247861862),
                                         y: OrderedFloat::from(60.42525175213814),
                                     }),
-                                }),
+                                })],
                             ),
-                        ],
-                    ),
+                        ])),
+                    },
                 }),
             ),
             (
@@ -1214,96 +1214,84 @@ pub const VECTOR2D_JSON: &str = r#"{
     },
     "AudioSettings": {
       "type": "StructProperty",
-      "CustomStruct": [
-        "GameAudioSettings",
-        [
-          [
-            "MasterLevel",
+      "CustomStruct": {
+        "type_name": "GameAudioSettings",
+        "properties": {
+          "MasterLevel": [
             {
               "type": "FloatProperty",
               "value": 0.20348908
             }
           ],
-          [
-            "MusicLevel",
+          "MusicLevel": [
             {
               "type": "FloatProperty",
               "value": 0.1511635
             }
           ],
-          [
-            "SFXLevel",
+          "SFXLevel": [
             {
               "type": "FloatProperty",
               "value": 0.5436054
             }
           ]
-        ]
-      ]
+        }
+      }
     },
     "GameSettings": {
       "type": "StructProperty",
-      "CustomStruct": [
-        "GameSettings",
-        [
-          [
-            "CurrentSaveSlot",
+      "CustomStruct": {
+        "type_name": "GameSettings",
+        "properties": {
+          "CurrentSaveSlot": [
             {
               "type": "StrProperty",
               "value": "SAVE2"
             }
           ],
-          [
-            "LoadTutorial",
+          "LoadTutorial": [
             {
               "type": "BoolProperty",
               "value": false
             }
           ],
-          [
-            "DisplayNewOrders",
+          "DisplayNewOrders": [
             {
               "type": "BoolProperty",
               "value": false
             }
           ],
-          [
-            "EscapeExitsTool",
+          "EscapeExitsTool": [
             {
               "type": "BoolProperty",
               "value": false
             }
           ],
-          [
-            "UseDarkMode",
+          "UseDarkMode": [
             {
               "type": "BoolProperty",
               "value": true
             }
           ],
-          [
-            "AnimateDayCycle",
+          "AnimateDayCycle": [
             {
               "type": "BoolProperty",
               "value": false
             }
           ],
-          [
-            "EnableTractorCollision",
+          "EnableTractorCollision": [
             {
               "type": "BoolProperty",
               "value": false
             }
           ],
-          [
-            "ShowInventory",
+          "ShowInventory": [
             {
               "type": "BoolProperty",
               "value": true
             }
           ],
-          [
-            "CameraAngle",
+          "CameraAngle": [
             {
               "type": "StructProperty",
               "Vector2D": {
@@ -1312,8 +1300,8 @@ pub const VECTOR2D_JSON: &str = r#"{
               }
             }
           ]
-        ]
-      ]
+        }
+      }
     },
     "HighScore": {
       "type": "IntProperty",

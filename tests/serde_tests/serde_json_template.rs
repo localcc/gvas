@@ -27,7 +27,7 @@ use gvas::{
         unknown_property::UnknownProperty,
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile,
 };
 use indexmap::{indexmap, IndexMap};
@@ -491,40 +491,6 @@ fn array_name() {
   "names": [
     null,
     "b"
-  ]
-}"#,
-    )
-}
-
-#[test]
-fn array_name_array_index() {
-    serde_json(
-        &Property::ArrayProperty(
-            ArrayProperty::new(
-                String::from("NameProperty"),
-                None,
-                vec![
-                    Property::NameProperty(NameProperty::from(None)),
-                    Property::NameProperty(NameProperty {
-                        array_index: 1,
-                        value: Some("b".to_string()),
-                    }),
-                ],
-            )
-            .expect("ArrayProperty::new"),
-        ),
-        r#"{
-  "type": "ArrayProperty",
-  "property_type": "NameProperty",
-  "properties": [
-    {
-      "type": "NameProperty"
-    },
-    {
-      "type": "NameProperty",
-      "array_index": 1,
-      "value": "b"
-    }
   ]
 }"#,
     )
@@ -1590,28 +1556,71 @@ fn struct_custom() {
     serde_json(
         &Property::StructProperty(StructProperty::new(
             Guid::default(),
-            StructPropertyValue::CustomStruct(
-                String::from("custom name"),
-                vec![(
+            StructPropertyValue::CustomStruct {
+                type_name: String::from("custom name"),
+                properties: HashableIndexMap(IndexMap::from([(
                     String::from("key"),
-                    Property::from(StrProperty::from("value")),
-                )],
-            ),
+                    vec![Property::from(StrProperty::from("value"))],
+                )])),
+            },
         )),
         r#"{
   "type": "StructProperty",
-  "CustomStruct": [
-    "custom name",
-    [
-      [
-        "key",
+  "CustomStruct": {
+    "type_name": "custom name",
+    "properties": {
+      "key": [
         {
           "type": "StrProperty",
           "value": "value"
         }
       ]
-    ]
-  ]
+    }
+  }
+}"#,
+    )
+}
+
+#[test]
+fn struct_array_index() {
+    serde_json(
+        &Property::StructProperty(StructProperty {
+            guid: Guid::default(),
+            value: StructPropertyValue::CustomStruct {
+                type_name: String::from("TowersTrackedQuests"),
+                properties: HashableIndexMap(IndexMap::from([(
+                    String::from("TrackedQuestsNames"),
+                    vec![
+                        Property::NameProperty(NameProperty {
+                            array_index: 0,
+                            value: Some(String::from("QU91_InvestigateTower_B2")),
+                        }),
+                        Property::NameProperty(NameProperty {
+                            array_index: 1,
+                            value: Some(String::from("QU91_InvestigateTower_B2")),
+                        }),
+                    ],
+                )])),
+            },
+        }),
+        r#"{
+  "type": "StructProperty",
+  "CustomStruct": {
+    "type_name": "TowersTrackedQuests",
+    "properties": {
+      "TrackedQuestsNames": [
+        {
+          "type": "NameProperty",
+          "value": "QU91_InvestigateTower_B2"
+        },
+        {
+          "type": "NameProperty",
+          "array_index": 1,
+          "value": "QU91_InvestigateTower_B2"
+        }
+      ]
+    }
+  }
 }"#,
     )
 }
@@ -1698,7 +1707,10 @@ fn text_namedformat() {
                         culture_invariant_string: None,
                     },
                 }),
-                arguments: IndexMap::from([(String::from("key"), FormatArgumentValue::Int(2))]),
+                arguments: HashableIndexMap(IndexMap::from([(
+                    String::from("key"),
+                    FormatArgumentValue::Int(2),
+                )])),
             },
         })),
         r#"{

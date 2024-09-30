@@ -1,6 +1,7 @@
 use std::{
     error::Error,
     fmt::{Debug, Display},
+    hash::Hash,
     str::FromStr,
 };
 
@@ -203,5 +204,77 @@ impl<'de> serde::Deserialize<'de> for Guid {
     {
         let s = String::deserialize(deserializer)?;
         Guid::from_str(&s).map_err(serde::de::Error::custom)
+    }
+}
+
+/// Map types
+pub mod map {
+    use std::{fmt::Debug, hash::Hash};
+
+    use indexmap::IndexMap;
+
+    /// Wrapper around `IndexMap` to implement Hash and Eq functionality.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+    pub struct HashableIndexMap<K: Hash + Eq, V: Hash>(pub IndexMap<K, V>);
+
+    impl<K, V> Hash for HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+            for (key, value) in &self.0 {
+                key.hash(state);
+                value.hash(state);
+            }
+        }
+    }
+
+    impl<K, V> From<IndexMap<K, V>> for HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        fn from(value: IndexMap<K, V>) -> Self {
+            Self(value)
+        }
+    }
+
+    /// Functions to serialize and deserialize an [`HashableIndexMap`] as an ordered sequence.
+    #[cfg(feature = "serde")]
+    pub mod serde_seq {
+        use std::hash::Hash;
+
+        use indexmap::map::serde_seq;
+        use serde::de::{Deserialize, Deserializer};
+        use serde::ser::{Serialize, Serializer};
+
+        use super::HashableIndexMap;
+
+        /// Serializes an [`HashableIndexMap`] as an ordered sequence.
+        pub fn serialize<K, V, T>(
+            map: &HashableIndexMap<K, V>,
+            serializer: T,
+        ) -> Result<T::Ok, T::Error>
+        where
+            K: Serialize + Hash + Eq,
+            V: Serialize + Hash,
+            T: Serializer,
+        {
+            serde_seq::serialize(&map.0, serializer)
+        }
+
+        /// Deserializes an [`HashableIndexMap`] from an ordered sequence.
+        pub fn deserialize<'de, D, K, V>(
+            deserializer: D,
+        ) -> Result<HashableIndexMap<K, V>, D::Error>
+        where
+            D: Deserializer<'de>,
+            K: Deserialize<'de> + Eq + Hash,
+            V: Deserialize<'de> + Hash,
+        {
+            Ok(HashableIndexMap(serde_seq::deserialize(deserializer)?))
+        }
     }
 }

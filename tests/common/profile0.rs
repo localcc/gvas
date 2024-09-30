@@ -280,11 +280,10 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
     },
     "UnlockLayer": {
       "type": "StructProperty",
-      "CustomStruct": [
-        "UnlockLayer",
-        [
-          [
-            "ownCounts",
+      "CustomStruct": {
+        "type_name": "UnlockLayer",
+        "properties": {
+          "ownCounts": [
             {
               "type": "MapProperty",
               "name_ints": {
@@ -417,8 +416,7 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
               }
             }
           ],
-          [
-            "historicCounts",
+          "historicCounts": [
             {
               "type": "MapProperty",
               "name_ints": {
@@ -551,27 +549,25 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
               }
             }
           ]
-        ]
-      ]
+        }
+      }
     },
     "achievementHistoryScope": {
       "type": "StructProperty",
-      "CustomStruct": [
-        "MetaMetricStorageScope",
-        [
-          [
-            "metrics",
+      "CustomStruct": {
+        "type_name": "MetaMetricStorageScope",
+        "properties": {
+          "metrics": [
             {
               "type": "MapProperty",
               "value_type": "StructProperty",
               "name_props": {
                 "Profit": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -579,16 +575,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "export.rate": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -597,16 +592,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "produce": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -615,16 +609,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "cycle": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -632,16 +625,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "build.track": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -649,16 +641,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "build.branch": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -666,16 +657,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "build.train": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -683,16 +673,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "arrive.length": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -700,16 +689,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "arrive.freight": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -718,16 +706,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "salvage.track": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -735,16 +722,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "salvage.branch": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -752,16 +738,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "upgrade": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -770,16 +755,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "Path": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -787,16 +771,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "mission": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -804,16 +787,15 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 },
                 "maxupgrade": {
                   "type": "StructProperty",
-                  "CustomStruct": [
-                    "this type hint is unused",
-                    [
-                      [
-                        "valueByFilter",
+                  "CustomStruct": {
+                    "type_name": "this type hint is unused",
+                    "properties": {
+                      "valueByFilter": [
                         {
                           "type": "MapProperty",
                           "name_ints": {
@@ -821,14 +803,14 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
                           }
                         }
                       ]
-                    ]
-                  ]
+                    }
+                  }
                 }
               }
             }
           ]
-        ]
-      ]
+        }
+      }
     }
   }
 }"#;
