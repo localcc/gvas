@@ -12,7 +12,6 @@ use gvas::{
     types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
-use indexmap::IndexMap;
 use ordered_float::OrderedFloat;
 use std::str::FromStr;
 
@@ -32,7 +31,7 @@ pub(crate) fn expected() -> GvasFile {
                 branch: String::from("++UE5+Release-5.3"),
             },
             custom_version_format: 3,
-            custom_versions: IndexMap::from([
+            custom_versions: HashableIndexMap::from([
                 (
                     Guid::from_str("22D5549C-BE4F-26A8-4607-2194D082B461").unwrap(),
                     44,
@@ -334,7 +333,7 @@ pub(crate) fn expected() -> GvasFile {
                 "/Game/_Blueprints/BP_SettingsSave.BP_SettingsSave_C",
             ),
         },
-        properties: IndexMap::from([
+        properties: HashableIndexMap::from([
             (
                 String::from("SettingsChanged"),
                 Property::from(MulticastInlineDelegateProperty {
@@ -721,7 +720,7 @@ pub(crate) fn expected() -> GvasFile {
                     guid: Guid::default(),
                     value: StructPropertyValue::CustomStruct {
                         type_name: String::from("GameAudioSettings"),
-                        properties: HashableIndexMap(IndexMap::from([
+                        properties: HashableIndexMap::from([
                             (
                                 String::from("MasterLevel"),
                                 vec![Property::FloatProperty(FloatProperty {
@@ -740,7 +739,7 @@ pub(crate) fn expected() -> GvasFile {
                                     value: OrderedFloat::from(0.5436054),
                                 })],
                             ),
-                        ])),
+                        ]),
                     },
                 }),
             ),
@@ -750,7 +749,7 @@ pub(crate) fn expected() -> GvasFile {
                     guid: Guid::default(),
                     value: StructPropertyValue::CustomStruct {
                         type_name: String::from("GameSettings"),
-                        properties: HashableIndexMap(IndexMap::from([
+                        properties: HashableIndexMap::from([
                             (
                                 String::from("CurrentSaveSlot"),
                                 vec![Property::StrProperty(StrProperty::from("SAVE2"))],
@@ -793,7 +792,7 @@ pub(crate) fn expected() -> GvasFile {
                                     }),
                                 })],
                             ),
-                        ])),
+                        ]),
                     },
                 }),
             ),

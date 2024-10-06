@@ -4,7 +4,6 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use indexmap::IndexMap;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
@@ -103,7 +102,7 @@ impl MapProperty {
         key_type: String,
         value_type: String,
         allocation_flags: u32,
-        value: IndexMap<Property, Property>,
+        value: HashableIndexMap<Property, Property>,
     ) -> Self {
         match (key_type.as_str(), value_type.as_str(), allocation_flags) {
             ("EnumProperty", "BoolProperty", 0) => match value
@@ -132,7 +131,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -157,7 +156,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -184,7 +183,7 @@ impl MapProperty {
                         key_type,
                         value_type,
                         allocation_flags,
-                        value: HashableIndexMap(value),
+                        value,
                     },
                 }
             }
@@ -210,7 +209,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -235,7 +234,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -262,7 +261,7 @@ impl MapProperty {
                         key_type,
                         value_type,
                         allocation_flags,
-                        value: HashableIndexMap(value),
+                        value,
                     },
                 }
             }
@@ -285,7 +284,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -307,7 +306,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -329,7 +328,7 @@ impl MapProperty {
                     key_type,
                     value_type,
                     allocation_flags,
-                    value: HashableIndexMap(value),
+                    value,
                 },
             },
 
@@ -352,7 +351,7 @@ impl MapProperty {
                         key_type,
                         value_type,
                         allocation_flags,
-                        value: HashableIndexMap(value),
+                        value,
                     },
                 }
             }
@@ -361,7 +360,7 @@ impl MapProperty {
                 key_type,
                 value_type,
                 allocation_flags,
-                value: HashableIndexMap(value),
+                value,
             },
         }
     }
@@ -466,7 +465,7 @@ impl MapProperty {
         let allocation_flags = cursor.read_u32::<LittleEndian>()?;
         let element_count = cursor.read_u32::<LittleEndian>()?;
 
-        let mut map = IndexMap::new();
+        let mut map = HashableIndexMap::with_capacity(element_count as usize);
         for _ in 0..element_count {
             let properties_stack = &mut options.properties_stack;
             let key_stack_entry = ScopedStackEntry::new(properties_stack, "Key".to_string());
