@@ -218,7 +218,7 @@ impl StructProperty {
                 UInt32Property::read(cursor, false)?.value,
             ])),
             _ => {
-                let mut properties = IndexMap::new();
+                let mut properties = HashableIndexMap::new();
                 loop {
                     let property_name = cursor.read_string()?;
                     if property_name == "None" {
@@ -231,7 +231,6 @@ impl StructProperty {
                     let property = Property::new(cursor, &property_type, true, options, None)?;
                     insert_property(&mut properties, property_name, property);
                 }
-                let properties = HashableIndexMap(properties);
                 StructPropertyValue::CustomStruct {
                     type_name,
                     properties,
