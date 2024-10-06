@@ -1,6 +1,6 @@
 use gvas::cursor_ext::ReadExt;
 use gvas::properties::{name_property::NameProperty, PropertyOptions, PropertyTrait};
-use indexmap::IndexMap;
+use gvas::types::map::HashableIndexMap;
 use std::collections::HashMap;
 use std::io::Cursor;
 
@@ -33,7 +33,7 @@ fn name_property_with_array_index() {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
         large_world_coordinates: false,
-        custom_versions: &IndexMap::new(),
+        custom_versions: &HashableIndexMap::new(),
     };
     let mut writer = Cursor::new(Vec::new());
     prop.write(&mut writer, true, &mut options)

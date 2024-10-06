@@ -30,7 +30,6 @@ use gvas::{
     types::{map::HashableIndexMap, Guid},
     GvasFile,
 };
-use indexmap::{indexmap, IndexMap};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -563,13 +562,13 @@ fn array_map() {
                         "kta".to_string(),
                         "vta".to_string(),
                         0,
-                        indexmap! {},
+                        HashableIndexMap::from([]),
                     )),
                     Property::MapProperty(MapProperty::new(
                         "ktb".to_string(),
                         "vtb".to_string(),
                         1,
-                        indexmap! {},
+                        HashableIndexMap::from([]),
                     )),
                 ],
             )
@@ -706,7 +705,7 @@ fn map_enum_bool() {
             String::from("EnumProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::from(EnumProperty::new(None, String::from("a"))),
                     Property::from(BoolProperty::new(false)),
@@ -734,7 +733,7 @@ fn map_enum_int() {
             String::from("EnumProperty"),
             String::from("IntProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::from(EnumProperty::new(None, String::from("a"))),
                     Property::from(IntProperty::new(0)),
@@ -762,7 +761,7 @@ fn map_enum_unknown() {
             String::from("EnumProperty"),
             String::from("UnknownProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::from(EnumProperty::new(None, String::from("a"))),
                     Property::from(UnknownProperty::new(String::from("n"), vec![])),
@@ -801,7 +800,7 @@ fn map_int_bool() {
             String::from("IntProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::IntProperty(IntProperty::new(0)),
                     Property::BoolProperty(BoolProperty::new(false)),
@@ -864,7 +863,7 @@ fn map_name_bool() {
             String::from("NameProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::NameProperty(NameProperty::from("a")),
                     Property::BoolProperty(BoolProperty::new(false)),
@@ -892,7 +891,7 @@ fn map_name_int() {
             String::from("NameProperty"),
             String::from("IntProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::NameProperty(NameProperty::from("a")),
                     Property::IntProperty(IntProperty::new(0)),
@@ -920,7 +919,7 @@ fn map_name_property() {
             String::from("NameProperty"),
             String::from("UnknownProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::NameProperty(NameProperty::from("a")),
                     Property::UnknownProperty(UnknownProperty::new(String::from("b"), vec![])),
@@ -959,7 +958,7 @@ fn map_str_bool() {
             String::from("StrProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("a")),
                     Property::BoolProperty(BoolProperty::new(false)),
@@ -987,7 +986,7 @@ fn map_str_int() {
             String::from("StrProperty"),
             String::from("IntProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("zero")),
                     Property::IntProperty(IntProperty::new(0)),
@@ -1020,7 +1019,7 @@ fn map_str_property() {
             String::from("StrProperty"),
             String::from("UnknownProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("a")),
                     Property::UnknownProperty(UnknownProperty::new(String::from("b"), vec![])),
@@ -1059,7 +1058,7 @@ fn map_str_str() {
             String::from("StrProperty"),
             String::from("StrProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("a")),
                     Property::StrProperty(StrProperty::from("b")),
@@ -1087,7 +1086,7 @@ fn map_struct_float() {
             String::from("StructProperty"),
             String::from("FloatProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StructProperty(StructProperty::new(
                         Guid([0u8; 16]),
@@ -1558,10 +1557,10 @@ fn struct_custom() {
             Guid::default(),
             StructPropertyValue::CustomStruct {
                 type_name: String::from("custom name"),
-                properties: HashableIndexMap(IndexMap::from([(
+                properties: HashableIndexMap::from([(
                     String::from("key"),
                     vec![Property::from(StrProperty::from("value"))],
-                )])),
+                )]),
             },
         )),
         r#"{
@@ -1588,7 +1587,7 @@ fn struct_array_index() {
             guid: Guid::default(),
             value: StructPropertyValue::CustomStruct {
                 type_name: String::from("TowersTrackedQuests"),
-                properties: HashableIndexMap(IndexMap::from([(
+                properties: HashableIndexMap::from([(
                     String::from("TrackedQuestsNames"),
                     vec![
                         Property::NameProperty(NameProperty {
@@ -1600,7 +1599,7 @@ fn struct_array_index() {
                             value: Some(String::from("QU91_InvestigateTower_B2")),
                         }),
                     ],
-                )])),
+                )]),
             },
         }),
         r#"{
@@ -1707,10 +1706,10 @@ fn text_namedformat() {
                         culture_invariant_string: None,
                     },
                 }),
-                arguments: HashableIndexMap(IndexMap::from([(
+                arguments: HashableIndexMap::from([(
                     String::from("key"),
                     FormatArgumentValue::Int(2),
-                )])),
+                )]),
             },
         })),
         r#"{

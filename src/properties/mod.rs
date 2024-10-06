@@ -6,13 +6,12 @@ use std::{
 };
 
 use enum_dispatch::enum_dispatch;
-use indexmap::IndexMap;
 
 use crate::{
     custom_version::{CustomVersionTrait, FCustomVersion},
     error::{DeserializeError, Error},
     scoped_stack_entry::ScopedStackEntry,
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
 };
 
 use self::{
@@ -442,7 +441,7 @@ pub struct PropertyOptions<'a> {
     /// Tracks the property tree location in a GVAS file.
     pub properties_stack: &'a mut Vec<String>,
     /// Custom versions
-    pub custom_versions: &'a IndexMap<Guid, u32>,
+    pub custom_versions: &'a HashableIndexMap<Guid, u32>,
     /// Enables large world coordinates.
     pub large_world_coordinates: bool,
 }

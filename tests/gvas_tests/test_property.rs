@@ -18,11 +18,10 @@ use gvas::{
         text_property::TextProperty,
         Property, PropertyOptions, PropertyTrait,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
 };
 
 use gvas::properties::text_property::FText;
-use indexmap::IndexMap;
 
 macro_rules! test_property {
     ($function_name:ident, $type:ident, $property_value:expr) => {
@@ -34,7 +33,7 @@ macro_rules! test_property {
                 hints: &HashMap::new(),
                 properties_stack: &mut Vec::new(),
                 large_world_coordinates: false,
-                custom_versions: &IndexMap::new(),
+                custom_versions: &HashableIndexMap::new(),
             };
 
             // Export the property to a byte array
@@ -178,7 +177,7 @@ test_property!(
         String::from("StrProperty"),
         String::from("FloatProperty"),
         0,
-        IndexMap::from([
+        HashableIndexMap::from([
             (
                 Property::from(StrProperty::from("key1")),
                 Property::from(FloatProperty::new(-1f32)),
