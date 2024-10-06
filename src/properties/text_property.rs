@@ -5,7 +5,6 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use indexmap::IndexMap;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use ordered_float::OrderedFloat;
 
@@ -333,7 +332,7 @@ impl FTextHistory {
                 let source_format = Box::new(FText::read(cursor, options)?);
 
                 let argument_count = cursor.read_i32::<LittleEndian>()?;
-                let mut arguments = IndexMap::with_capacity(argument_count as usize);
+                let mut arguments = HashableIndexMap::with_capacity(argument_count as usize);
 
                 for _ in 0..argument_count {
                     let key = cursor.read_string()?;
@@ -341,7 +340,6 @@ impl FTextHistory {
                     arguments.insert(key, value);
                 }
 
-                let arguments = HashableIndexMap(arguments);
                 FTextHistory::NamedFormat {
                     source_format,
                     arguments,
@@ -365,7 +363,7 @@ impl FTextHistory {
             TextHistoryType::ArgumentFormat => {
                 let source_format = Box::new(FText::read(cursor, options)?);
                 let count = cursor.read_i32::<LittleEndian>()?;
-                let mut arguments = IndexMap::with_capacity(count as usize);
+                let mut arguments = HashableIndexMap::with_capacity(count as usize);
 
                 for _ in 0..count {
                     let key = cursor.read_string()?;
@@ -373,7 +371,6 @@ impl FTextHistory {
                     arguments.insert(key, value);
                 }
 
-                let arguments = HashableIndexMap(arguments);
                 FTextHistory::ArgumentFormat {
                     source_format,
                     arguments,

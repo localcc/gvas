@@ -2,10 +2,9 @@ use gvas::{
     engine_version::FEngineVersion,
     game_version::DeserializedGameVersion,
     properties::{int_property::FloatProperty, Property},
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
-use indexmap::IndexMap;
 use std::str::FromStr;
 
 pub(crate) fn expected() -> GvasFile {
@@ -21,7 +20,7 @@ pub(crate) fn expected() -> GvasFile {
                 branch: "++UE4+Release-4.25".into(),
             },
             custom_version_format: 3,
-            custom_versions: IndexMap::from([
+            custom_versions: HashableIndexMap::from([
                 (
                     Guid::from_str("ED0A3111-614D-552E-A39A-67AF2C08A1C5").unwrap(),
                     17,
@@ -225,7 +224,7 @@ pub(crate) fn expected() -> GvasFile {
             ]),
             save_game_class_name: "/Game/UI/BP_SaveOptions.BP_SaveOptions_C".into(),
         },
-        properties: IndexMap::from([
+        properties: HashableIndexMap::from([
             (
                 "Slider1".into(),
                 Property::from(FloatProperty::new(0.16610672)),

@@ -5,9 +5,9 @@ use gvas::{
         array_property::ArrayProperty, enum_property::EnumProperty, map_property::MapProperty,
         set_property::SetProperty, str_property::StrProperty, PropertyOptions,
     },
+    types::map::HashableIndexMap,
     GvasFile,
 };
-use indexmap::IndexMap;
 use std::{collections::HashMap, io::Cursor};
 
 const UNEXPECTED_EOF: [u8; 0] = [];
@@ -71,7 +71,7 @@ fn test_invalid_array_index() {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
         large_world_coordinates: false,
-        custom_versions: &IndexMap::new(),
+        custom_versions: &HashableIndexMap::new(),
     };
 
     // ArrayProperty
@@ -157,7 +157,7 @@ fn test_invalid_terminator() {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
         large_world_coordinates: false,
-        custom_versions: &IndexMap::new(),
+        custom_versions: &HashableIndexMap::new(),
     };
 
     // ArrayProperty
@@ -266,7 +266,7 @@ fn test_invalid_length() {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
         large_world_coordinates: false,
-        custom_versions: &IndexMap::new(),
+        custom_versions: &HashableIndexMap::new(),
     };
 
     // ArrayProperty
