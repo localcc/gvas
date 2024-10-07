@@ -316,8 +316,11 @@ impl ArrayProperty {
 
                 let struct_name = cursor.read_string()?;
                 let guid = cursor.read_guid()?;
-                let separator = cursor.read_u8()?;
-                assert_eq!(separator, 0);
+                let terminator = cursor.read_u8()?;
+                if terminator != 0 {
+                    let position = cursor.stream_position()? - 1;
+                    Err(DeserializeError::InvalidTerminator(terminator, position))?
+                }
 
                 let properties_start = cursor.stream_position()?;
                 for _ in 0..property_count {
