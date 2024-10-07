@@ -30,7 +30,7 @@ use self::{
     object_property::ObjectProperty,
     set_property::SetProperty,
     str_property::StrProperty,
-    struct_property::StructProperty,
+    struct_property::{StructProperty, StructPropertyValue},
     text_property::TextProperty,
     unknown_property::UnknownProperty,
 };
@@ -536,6 +536,8 @@ pub enum Property {
     StrProperty,
     /// A `StructProperty`.
     StructProperty,
+    /// A raw `StructPropertyValue`.
+    StructPropertyValue,
     /// A `TextProperty`.
     TextProperty,
     /// A `UInt16Property`.
@@ -585,7 +587,20 @@ impl Property {
                 Ok(MulticastSparseDelegateProperty::read(cursor, include_header)?.into())
             }
             "FieldPathProperty" => Ok(FieldPathProperty::read(cursor, include_header)?.into()),
-            "StructProperty" => Ok(StructProperty::read(cursor, include_header, options)?.into()),
+            "StructProperty" => match include_header {
+                true => Ok(StructProperty::read(cursor, include_header, options)?.into()),
+                false => {
+                    let struct_path = options.properties_stack.join(".");
+                    let Some(hint) = options.hints.get(&struct_path) else {
+                        Err(DeserializeError::MissingHint(
+                            "StructProperty".into(),
+                            struct_path.into_boxed_str(),
+                            cursor.stream_position()?,
+                        ))?
+                    };
+                    Ok(StructProperty::read_body(cursor, hint, options)?.into())
+                }
+            },
             "ArrayProperty" => Ok(ArrayProperty::read(cursor, include_header, options)?.into()),
             "SetProperty" => Ok(SetProperty::read(cursor, include_header, options)?.into()),
             "MapProperty" => Ok(MapProperty::read(cursor, include_header, options)?.into()),
