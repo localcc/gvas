@@ -17,11 +17,10 @@ use crate::{
 };
 
 use super::{
-    impl_write, impl_write_header_part,
-    int_property::{DoubleProperty, FloatProperty, IntProperty, UInt32Property, UInt64Property},
-    make_matcher,
+    impl_write, impl_write_header_part, make_matcher,
     struct_types::{
-        DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, Vector2D, Vector2F, VectorD, VectorF,
+        DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, Timespan, Vector2D, Vector2F,
+        VectorD, VectorF,
     },
     Property, PropertyOptions, PropertyTrait,
 };
@@ -44,6 +43,8 @@ pub struct StructProperty {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Guid::is_zero"))]
     #[cfg_attr(feature = "serde", serde(default))]
     pub guid: Guid,
+    /// Type name.
+    pub type_name: String,
     /// The value of the property.
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub value: StructPropertyValue,
@@ -72,7 +73,7 @@ pub enum StructPropertyValue {
     /// A `DateTime` value.
     DateTime(DateTime),
     /// A `Timespan` value
-    Timespan(DateTime),
+    Timespan(Timespan),
     /// A `Guid` value.
     Guid(Guid),
     /// A `LinearColor` value.
@@ -80,19 +81,18 @@ pub enum StructPropertyValue {
     /// An `IntPoint` value.
     IntPoint(IntPoint),
     /// A custom struct value.
-    CustomStruct {
-        /// Type name.
-        type_name: String,
-        /// Properties.
-        properties: HashableIndexMap<String, Vec<Property>>,
-    },
+    CustomStruct(HashableIndexMap<String, Vec<Property>>),
 }
 
 impl StructProperty {
     /// Creates a new `StructProperty` instance.
     #[inline]
-    pub fn new(guid: Guid, value: StructPropertyValue) -> Self {
-        StructProperty { guid, value }
+    pub fn new(guid: Guid, type_name: String, value: StructPropertyValue) -> Self {
+        StructProperty {
+            guid,
+            type_name,
+            value,
+        }
     }
 
     #[inline]
@@ -102,169 +102,80 @@ impl StructProperty {
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
         if include_header {
-            Ok(Self::read_real(cursor, true, None, options)?)
+            Self::read_header(cursor, options)
         } else {
-            let struct_path = options.properties_stack.join(".");
-            let Some(hint) = options.hints.get(&struct_path) else {
-                Err(DeserializeError::MissingHint(
-                    "StructProperty".into(),
-                    struct_path.into_boxed_str(),
-                    cursor.stream_position()?,
-                ))?
-            };
-            let hint = &hint.clone();
-            Self::read_with_type_name(cursor, hint, options)
+            Err(DeserializeError::invalid_property(
+                "StructProperty::read() include_header must be true, use read_body() instead",
+                cursor,
+            ))?
         }
     }
 
     #[inline]
-    fn read_real<R: Read + Seek>(
+    fn read_header<R: Read + Seek>(
         cursor: &mut R,
-        include_header: bool,
-        type_name: Option<String>,
         options: &mut PropertyOptions,
     ) -> Result<Self, Error> {
-        if include_header {
-            let _length = cursor.read_u64::<LittleEndian>()?;
+        let length = cursor.read_u32::<LittleEndian>()?;
+
+        let array_index = cursor.read_u32::<LittleEndian>()?;
+        if array_index != 0 {
+            let position = cursor.stream_position()? - 4;
+            Err(DeserializeError::InvalidArrayIndex(array_index, position))?
         }
 
-        let type_name = match include_header {
-            true => cursor.read_string()?,
-            false => match type_name {
-                Some(t) => t,
-                None => Err(DeserializeError::missing_argument("type_name", cursor))?,
-            },
-        };
+        let type_name = cursor.read_string()?;
 
-        let guid = match include_header {
-            true => cursor.read_guid()?,
-            false => Guid::default(),
-        };
+        let guid = cursor.read_guid()?;
 
-        if include_header {
-            let separator = cursor.read_u8()?;
-            assert_eq!(separator, 0);
+        let terminator = cursor.read_u8()?;
+        if terminator != 0 {
+            let position = cursor.stream_position()? - 1;
+            Err(DeserializeError::InvalidTerminator(terminator, position))?
         }
 
-        let value = match type_name.as_str() {
-            "Vector" => match options.large_world_coordinates {
-                true => StructPropertyValue::VectorD(VectorD::new(
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                )),
-                false => StructPropertyValue::VectorF(VectorF::new(
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                )),
-            },
-            "Vector2D" => match options.large_world_coordinates {
-                true => StructPropertyValue::Vector2D(Vector2D::new(
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                )),
-                false => StructPropertyValue::Vector2F(Vector2F::new(
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                )),
-            },
-            "Rotator" => match options.large_world_coordinates {
-                true => StructPropertyValue::RotatorD(RotatorD::new(
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                )),
-                false => StructPropertyValue::RotatorF(RotatorF::new(
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                )),
-            },
-            "Quat" => match options.large_world_coordinates {
-                true => StructPropertyValue::QuatD(QuatD::new(
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                    DoubleProperty::read(cursor, false)?.value.0,
-                )),
-                false => StructPropertyValue::QuatF(QuatF::new(
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                    FloatProperty::read(cursor, false)?.value.0,
-                )),
-            },
-            "DateTime" => StructPropertyValue::DateTime(DateTime {
-                ticks: UInt64Property::read(cursor, false)?.value,
-            }),
-            "Timespan" => StructPropertyValue::Timespan(DateTime {
-                ticks: UInt64Property::read(cursor, false)?.value,
-            }),
-            "LinearColor" => StructPropertyValue::LinearColor(LinearColor::new(
-                FloatProperty::read(cursor, false)?.value.0,
-                FloatProperty::read(cursor, false)?.value.0,
-                FloatProperty::read(cursor, false)?.value.0,
-                FloatProperty::read(cursor, false)?.value.0,
-            )),
-            "IntPoint" => StructPropertyValue::IntPoint(IntPoint {
-                x: IntProperty::read(cursor, false)?.value,
-                y: IntProperty::read(cursor, false)?.value,
-            }),
-            "Guid" => StructPropertyValue::Guid(Guid::from([
-                UInt32Property::read(cursor, false)?.value,
-                UInt32Property::read(cursor, false)?.value,
-                UInt32Property::read(cursor, false)?.value,
-                UInt32Property::read(cursor, false)?.value,
-            ])),
-            _ => {
-                let mut properties = HashableIndexMap::new();
-                loop {
-                    let property_name = cursor.read_string()?;
-                    if property_name == "None" {
-                        break;
-                    }
-                    let property_type = cursor.read_string()?;
-                    let _property_stack_entry =
-                        ScopedStackEntry::new(options.properties_stack, property_name.clone());
+        let start = cursor.stream_position()?;
+        let value = Self::read_body(cursor, &type_name, options)?;
+        let end = cursor.stream_position()?;
+        if end - start != length as u64 {
+            Err(DeserializeError::InvalidValueSize(
+                length as u64,
+                end - start,
+                start,
+            ))?
+        }
 
-                    let property = Property::new(cursor, &property_type, true, options, None)?;
-                    insert_property(&mut properties, property_name, property);
-                }
-                StructPropertyValue::CustomStruct {
-                    type_name,
-                    properties,
-                }
-            }
-        };
-
-        Ok(StructProperty { guid, value })
+        Ok(StructProperty {
+            guid,
+            type_name,
+            value,
+        })
     }
 
     #[inline]
-    pub(crate) fn read_with_type_name<R: Read + Seek>(
+    pub(crate) fn read_body<R: Read + Seek>(
         cursor: &mut R,
         type_name: &str,
         options: &mut PropertyOptions,
-    ) -> Result<Self, Error> {
-        Self::read_real(cursor, false, Some(type_name.to_string()), options)
+    ) -> Result<StructPropertyValue, Error> {
+        let value = match type_name {
+            "Vector" => StructPropertyValue::read_vector(cursor, options)?,
+            "Vector2D" => StructPropertyValue::read_vector2(cursor, options)?,
+            "Rotator" => StructPropertyValue::read_rotator(cursor, options)?,
+            "Quat" => StructPropertyValue::read_quat(cursor, options)?,
+            "DateTime" => StructPropertyValue::read_datetime(cursor)?,
+            "Timespan" => StructPropertyValue::read_timespan(cursor)?,
+            "LinearColor" => StructPropertyValue::read_linearcolor(cursor)?,
+            "IntPoint" => StructPropertyValue::read_intpoint(cursor)?,
+            "Guid" => StructPropertyValue::read_guid(cursor)?,
+            _ => StructPropertyValue::read_custom(cursor, options)?,
+        };
+        Ok(value)
     }
 
     #[inline]
-    fn get_property_name(&self) -> Result<&str, Error> {
-        let property_name = match &self.value {
-            StructPropertyValue::Vector2F(_) | StructPropertyValue::Vector2D(_) => "Vector2D",
-            StructPropertyValue::VectorF(_) | StructPropertyValue::VectorD(_) => "Vector",
-            StructPropertyValue::RotatorF(_) | StructPropertyValue::RotatorD(_) => "Rotator",
-            StructPropertyValue::QuatF(_) | StructPropertyValue::QuatD(_) => "Quat",
-            StructPropertyValue::DateTime(_) => "DateTime",
-            StructPropertyValue::Timespan(_) => "Timespan",
-            StructPropertyValue::Guid(_) => "Guid",
-            StructPropertyValue::LinearColor(_) => "LinearColor",
-            StructPropertyValue::IntPoint(_) => "IntPoint",
-            StructPropertyValue::CustomStruct { type_name, .. } => type_name,
-        };
-        Ok(property_name)
+    fn get_property_type(&self) -> Result<&str, Error> {
+        Ok(&self.type_name)
     }
 }
 
@@ -288,7 +199,7 @@ fn insert_property(map: &mut IndexMap<String, Vec<Property>>, key: String, prope
 impl PropertyTrait for StructProperty {
     impl_write!(
         StructProperty,
-        (write_string, fn, get_property_name),
+        (write_string, fn, get_property_type),
         (write_guid, guid)
     );
 
@@ -298,7 +209,33 @@ impl PropertyTrait for StructProperty {
         cursor: &mut W,
         options: &mut PropertyOptions,
     ) -> Result<usize, Error> {
-        match &self.value {
+        self.value.write_body(cursor, options)
+    }
+}
+
+impl PropertyTrait for StructPropertyValue {
+    #[inline]
+    fn write<W: Write>(
+        &self,
+        writer: &mut W,
+        include_header: bool,
+        options: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        if !include_header {
+            return self.write_body(writer, options);
+        }
+        Err(SerializeError::invalid_value(
+            "StructPropertyValue can not be serialized with a header",
+        ))?
+    }
+
+    #[inline]
+    fn write_body<W: Write>(
+        &self,
+        cursor: &mut W,
+        options: &mut PropertyOptions,
+    ) -> Result<usize, Error> {
+        match self {
             StructPropertyValue::Vector2F(vector) => {
                 validate!(
                     !options.large_world_coordinates,
@@ -403,10 +340,7 @@ impl PropertyTrait for StructProperty {
                 cursor.write_guid(guid)?;
                 Ok(16)
             }
-            StructPropertyValue::CustomStruct {
-                properties: HashableIndexMap(properties),
-                ..
-            } => {
+            StructPropertyValue::CustomStruct(properties) => {
                 let mut len = 0;
                 for (key, values) in properties {
                     for value in values {
@@ -421,70 +355,130 @@ impl PropertyTrait for StructProperty {
     }
 }
 
-impl From<VectorF> for StructProperty {
-    #[inline]
-    fn from(vector: VectorF) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::VectorF(vector))
-    }
-}
-
-impl From<VectorD> for StructProperty {
-    #[inline]
-    fn from(vector: VectorD) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::VectorD(vector))
-    }
-}
-
-impl From<RotatorF> for StructProperty {
-    #[inline]
-    fn from(rotator: RotatorF) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::RotatorF(rotator))
-    }
-}
-
-impl From<RotatorD> for StructProperty {
-    #[inline]
-    fn from(rotator: RotatorD) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::RotatorD(rotator))
-    }
-}
-
-impl From<QuatF> for StructProperty {
-    #[inline]
-    fn from(quat: QuatF) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::QuatF(quat))
-    }
-}
-
-impl From<QuatD> for StructProperty {
-    #[inline]
-    fn from(quat: QuatD) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::QuatD(quat))
-    }
-}
-
-impl From<DateTime> for StructProperty {
-    #[inline]
-    fn from(date_time: DateTime) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::DateTime(date_time))
-    }
-}
-
-impl From<IntPoint> for StructProperty {
-    #[inline]
-    fn from(int_point: IntPoint) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::IntPoint(int_point))
-    }
-}
-
-impl From<Guid> for StructProperty {
-    #[inline]
-    fn from(guid: Guid) -> Self {
-        Self::new(Guid([0u8; 16]), StructPropertyValue::Guid(guid))
-    }
-}
-
 impl StructPropertyValue {
+    fn read_custom<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+    ) -> Result<StructPropertyValue, Error> {
+        let mut properties = HashableIndexMap::new();
+        loop {
+            let property_name = cursor.read_string()?;
+            if property_name == "None" {
+                break;
+            }
+            let property_type = cursor.read_string()?;
+            let _property_stack_entry =
+                ScopedStackEntry::new(options.properties_stack, property_name.clone());
+
+            let property = Property::new(cursor, &property_type, true, options, None)?;
+            insert_property(&mut properties, property_name, property);
+        }
+        Ok(StructPropertyValue::CustomStruct(properties))
+    }
+
+    fn read_guid<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+        Ok(Self::Guid(cursor.read_guid()?))
+    }
+
+    fn read_intpoint<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+        Ok(Self::IntPoint(IntPoint::new(
+            cursor.read_i32::<LittleEndian>()?,
+            cursor.read_i32::<LittleEndian>()?,
+        )))
+    }
+
+    fn read_linearcolor<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+        Ok(Self::LinearColor(LinearColor::new(
+            cursor.read_f32::<LittleEndian>()?,
+            cursor.read_f32::<LittleEndian>()?,
+            cursor.read_f32::<LittleEndian>()?,
+            cursor.read_f32::<LittleEndian>()?,
+        )))
+    }
+
+    fn read_timespan<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+        Ok(Self::Timespan(Timespan::new(
+            cursor.read_u64::<LittleEndian>()?,
+        )))
+    }
+
+    fn read_datetime<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+        Ok(Self::DateTime(DateTime::new(
+            cursor.read_u64::<LittleEndian>()?,
+        )))
+    }
+
+    fn read_quat<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+    ) -> Result<Self, Error> {
+        match options.large_world_coordinates {
+            true => Ok(Self::QuatD(QuatD::new(
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+            ))),
+            false => Ok(Self::QuatF(QuatF::new(
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+            ))),
+        }
+    }
+
+    fn read_rotator<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+    ) -> Result<Self, Error> {
+        match options.large_world_coordinates {
+            true => Ok(Self::RotatorD(RotatorD::new(
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+            ))),
+            false => Ok(Self::RotatorF(RotatorF::new(
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+            ))),
+        }
+    }
+
+    fn read_vector2<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+    ) -> Result<Self, Error> {
+        match options.large_world_coordinates {
+            true => Ok(Self::Vector2D(Vector2D::new(
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+            ))),
+            false => Ok(Self::Vector2F(Vector2F::new(
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+            ))),
+        }
+    }
+
+    fn read_vector<R: Read + Seek>(
+        cursor: &mut R,
+        options: &mut PropertyOptions,
+    ) -> Result<Self, Error> {
+        match options.large_world_coordinates {
+            true => Ok(Self::VectorD(VectorD::new(
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+                cursor.read_f64::<LittleEndian>()?,
+            ))),
+            false => Ok(Self::VectorF(VectorF::new(
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+                cursor.read_f32::<LittleEndian>()?,
+            ))),
+        }
+    }
     make_matcher!(VectorF, get_vector_f, get_vector_f_mut);
     make_matcher!(VectorD, get_vector_d, get_vector_d_mut);
     make_matcher!(RotatorF, get_rotator_f, get_rotator_f_mut);
@@ -497,12 +491,9 @@ impl StructPropertyValue {
 
     /// Retrieves the enum value as a `CustomStruct`.
     #[inline]
-    pub fn get_custom_struct(&self) -> Option<(&String, &IndexMap<String, Vec<Property>>)> {
+    pub fn get_custom_struct(&self) -> Option<&HashableIndexMap<String, Vec<Property>>> {
         match self {
-            Self::CustomStruct {
-                type_name,
-                properties: HashableIndexMap(properties),
-            } => Some((type_name, properties)),
+            Self::CustomStruct(properties) => Some(properties),
             _ => None,
         }
     }
@@ -511,13 +502,101 @@ impl StructPropertyValue {
     #[inline]
     pub fn get_custom_struct_mut(
         &mut self,
-    ) -> Option<(&mut String, &mut IndexMap<String, Vec<Property>>)> {
+    ) -> Option<&mut HashableIndexMap<String, Vec<Property>>> {
         match self {
-            Self::CustomStruct {
-                type_name,
-                properties: HashableIndexMap(properties),
-            } => Some((type_name, properties)),
+            Self::CustomStruct(properties) => Some(properties),
             _ => None,
         }
+    }
+}
+
+impl From<Vector2F> for StructPropertyValue {
+    #[inline]
+    fn from(value: Vector2F) -> Self {
+        StructPropertyValue::Vector2F(value)
+    }
+}
+
+impl From<Vector2D> for StructPropertyValue {
+    #[inline]
+    fn from(value: Vector2D) -> Self {
+        StructPropertyValue::Vector2D(value)
+    }
+}
+
+impl From<VectorF> for StructPropertyValue {
+    #[inline]
+    fn from(vector: VectorF) -> Self {
+        StructPropertyValue::VectorF(vector)
+    }
+}
+
+impl From<VectorD> for StructPropertyValue {
+    #[inline]
+    fn from(vector: VectorD) -> Self {
+        StructPropertyValue::VectorD(vector)
+    }
+}
+
+impl From<RotatorF> for StructPropertyValue {
+    #[inline]
+    fn from(rotator: RotatorF) -> Self {
+        StructPropertyValue::RotatorF(rotator)
+    }
+}
+
+impl From<RotatorD> for StructPropertyValue {
+    #[inline]
+    fn from(rotator: RotatorD) -> Self {
+        StructPropertyValue::RotatorD(rotator)
+    }
+}
+
+impl From<QuatF> for StructPropertyValue {
+    #[inline]
+    fn from(quat: QuatF) -> Self {
+        StructPropertyValue::QuatF(quat)
+    }
+}
+
+impl From<QuatD> for StructPropertyValue {
+    #[inline]
+    fn from(quat: QuatD) -> Self {
+        StructPropertyValue::QuatD(quat)
+    }
+}
+
+impl From<DateTime> for StructPropertyValue {
+    #[inline]
+    fn from(date_time: DateTime) -> Self {
+        StructPropertyValue::DateTime(date_time)
+    }
+}
+
+impl From<Timespan> for StructPropertyValue {
+    #[inline]
+    fn from(timespan: Timespan) -> Self {
+        StructPropertyValue::Timespan(timespan)
+    }
+}
+
+impl From<Guid> for StructPropertyValue {
+    #[inline]
+    fn from(guid: Guid) -> Self {
+        StructPropertyValue::Guid(guid)
+    }
+}
+
+impl From<LinearColor> for StructPropertyValue {
+    #[inline]
+    fn from(linear_color: LinearColor) -> Self {
+        StructPropertyValue::LinearColor(linear_color)
+    }
+}
+
+impl From<IntPoint> for StructPropertyValue {
+    #[inline]
+    fn from(int_point: IntPoint) -> Self {
+        StructPropertyValue::IntPoint(int_point)
     }
 }
