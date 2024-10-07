@@ -13,7 +13,7 @@ use gvas::{
         map_property::MapProperty,
         set_property::SetProperty,
         str_property::StrProperty,
-        struct_property::StructProperty,
+        struct_property::{StructProperty, StructPropertyValue},
         struct_types::VectorF,
         text_property::TextProperty,
         Property, PropertyOptions, PropertyTrait,
@@ -96,7 +96,11 @@ test_property!(
 test_property!(
     test_struct,
     StructProperty,
-    StructProperty::from(VectorF::new(0f32, 1f32, 2f32))
+    StructProperty::new(
+        Guid::default(),
+        "Vector".to_string(),
+        StructPropertyValue::from(VectorF::new(0f32, 1f32, 2f32))
+    )
 );
 
 // ArrayProperty
@@ -131,8 +135,8 @@ test_property!(
             Guid::from(0u128)
         )),
         vec![
-            Property::from(StructProperty::from(VectorF::new(0f32, 1f32, 2f32))),
-            Property::from(StructProperty::from(VectorF::new(3f32, 4f32, 5f32))),
+            Property::from(StructPropertyValue::from(VectorF::new(0f32, 1f32, 2f32))),
+            Property::from(StructPropertyValue::from(VectorF::new(3f32, 4f32, 5f32))),
         ],
     )
     .expect("ArrayProperty::new")

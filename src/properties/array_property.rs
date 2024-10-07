@@ -18,7 +18,7 @@ use super::{
     int_property::{BoolProperty, ByteProperty, BytePropertyValue, FloatProperty, IntProperty},
     name_property::NameProperty,
     str_property::StrProperty,
-    struct_property::StructProperty,
+    struct_property::{StructProperty, StructPropertyValue},
     Property, PropertyOptions, PropertyTrait,
 };
 
@@ -78,7 +78,7 @@ pub enum ArrayProperty {
         #[cfg_attr(feature = "serde", serde(default))]
         guid: Guid,
         /// An array of values.
-        structs: Vec<StructProperty>,
+        structs: Vec<StructPropertyValue>,
     },
     /// Any other Property value
     Properties {
@@ -226,7 +226,7 @@ impl ArrayProperty {
             ("StructProperty", Some((field_name, type_name, guid))) => match properties
                 .iter()
                 .map(|p| match p {
-                    Property::StructProperty(struct_property) => Ok(struct_property.clone()),
+                    Property::StructPropertyValue(value) => Ok(value.clone()),
                     _ => Err(p),
                 })
                 .collect::<Result<_, _>>()
@@ -324,9 +324,8 @@ impl ArrayProperty {
 
                 let properties_start = cursor.stream_position()?;
                 for _ in 0..property_count {
-                    properties.push(
-                        StructProperty::read_with_type_name(cursor, &struct_name, options)?.into(),
-                    );
+                    let value = StructProperty::read_body(cursor, &struct_name, options)?;
+                    properties.push(Property::from(value));
                 }
                 let properties_end = cursor.stream_position()?;
                 let actual_size = properties_end - properties_start;
