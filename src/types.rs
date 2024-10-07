@@ -209,7 +209,11 @@ impl<'de> serde::Deserialize<'de> for Guid {
 
 /// Map types
 pub mod map {
-    use std::{fmt::Debug, hash::Hash};
+    use std::{
+        fmt::Debug,
+        hash::Hash,
+        ops::{Deref, DerefMut},
+    };
 
     use indexmap::IndexMap;
 
@@ -217,6 +221,27 @@ pub mod map {
     #[derive(Debug, Clone, PartialEq, Eq)]
     #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
     pub struct HashableIndexMap<K: Hash + Eq, V: Hash>(pub IndexMap<K, V>);
+
+    impl<K, V> HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        /// Create a new map. (Does not allocate.)
+        #[inline]
+        pub fn new() -> Self {
+            Self(IndexMap::new())
+        }
+
+        /// Create a new map with capacity for `n` key-value pairs. (Does not
+        /// allocate if `n` is zero.)
+        ///
+        /// Computes in **O(n)** time.
+        #[inline]
+        pub fn with_capacity(n: usize) -> Self {
+            Self(IndexMap::with_capacity(n))
+        }
+    }
 
     impl<K, V> Hash for HashableIndexMap<K, V>
     where
@@ -231,13 +256,83 @@ pub mod map {
         }
     }
 
-    impl<K, V> From<IndexMap<K, V>> for HashableIndexMap<K, V>
+    impl<K, V, const N: usize> From<[(K, V); N]> for HashableIndexMap<K, V>
     where
         K: Hash + Eq,
         V: Hash,
     {
-        fn from(value: IndexMap<K, V>) -> Self {
-            Self(value)
+        /// # Examples
+        ///
+        /// ```
+        /// use gvas::types::map::HashableIndexMap;
+        ///
+        /// let map1 = HashableIndexMap::from([(1, 2), (3, 4)]);
+        /// let map2: HashableIndexMap<_, _> = [(1, 2), (3, 4)].into();
+        /// assert_eq!(map1, map2);
+        /// ```
+        fn from(arr: [(K, V); N]) -> Self {
+            Self(IndexMap::from_iter(arr))
+        }
+    }
+
+    impl<K, V> Deref for HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        type Target = IndexMap<K, V>;
+
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl<K, V> DerefMut for HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
+        }
+    }
+
+    impl<K, V> Default for HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        /// Return an empty [`IndexMap`]
+        fn default() -> Self {
+            Self(IndexMap::default())
+        }
+    }
+
+    // Implement IntoIterator for &HashableIndexMap
+    impl<'a, K, V> IntoIterator for &'a HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        type Item = (&'a K, &'a V);
+        type IntoIter = indexmap::map::Iter<'a, K, V>;
+
+        fn into_iter(self) -> Self::IntoIter {
+            self.0.iter()
+        }
+    }
+
+    // Implement IntoIterator for &mut HashableIndexMap
+    impl<'a, K, V> IntoIterator for &'a mut HashableIndexMap<K, V>
+    where
+        K: Hash + Eq,
+        V: Hash,
+    {
+        type Item = (&'a K, &'a mut V);
+        type IntoIter = indexmap::map::IterMut<'a, K, V>;
+
+        fn into_iter(self) -> Self::IntoIter {
+            self.0.iter_mut()
         }
     }
 

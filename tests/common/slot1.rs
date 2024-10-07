@@ -16,7 +16,6 @@ use gvas::{
     types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
-use indexmap::IndexMap;
 use std::str::FromStr;
 
 #[allow(clippy::approx_constant)]
@@ -33,7 +32,7 @@ pub(crate) fn expected() -> GvasFile {
                 branch: String::from("++UE4+Release-4.27"),
             },
             custom_version_format: 3,
-            custom_versions: IndexMap::from([
+            custom_versions: HashableIndexMap::from([
                 (
                     Guid::from_str("22D5549C-BE4F-26A8-4607-2194D082B461").unwrap(),
                     43,
@@ -265,7 +264,7 @@ pub(crate) fn expected() -> GvasFile {
             ]),
             save_game_class_name: String::from("/Script/UE4SaveFile.TestSaveGame"),
         },
-        properties: IndexMap::from([
+        properties: HashableIndexMap::from([
             (
                 String::from("u8_test"),
                 Property::from(ByteProperty {
@@ -319,10 +318,10 @@ pub(crate) fn expected() -> GvasFile {
                     guid: Guid::default(),
                     value: StructPropertyValue::CustomStruct {
                         type_name: String::from("CustomStruct"),
-                        properties: HashableIndexMap(IndexMap::from([(
+                        properties: HashableIndexMap::from([(
                             String::from("test_field"),
                             vec![Property::from(UInt64Property::new(12345u64))],
-                        )])),
+                        )]),
                     },
                 }),
             ),
@@ -346,20 +345,20 @@ pub(crate) fn expected() -> GvasFile {
                             guid: Guid::default(),
                             value: StructPropertyValue::CustomStruct {
                                 type_name: String::from("CustomStruct"),
-                                properties: HashableIndexMap(IndexMap::from([(
+                                properties: HashableIndexMap::from([(
                                     String::from("test_field"),
                                     vec![Property::from(UInt64Property::new(10u64))],
-                                )])),
+                                )]),
                             },
                         },
                         StructProperty {
                             guid: Guid::default(),
                             value: StructPropertyValue::CustomStruct {
                                 type_name: String::from("CustomStruct"),
-                                properties: HashableIndexMap(IndexMap::from([(
+                                properties: HashableIndexMap::from([(
                                     String::from("test_field"),
                                     vec![Property::from(UInt64Property::new(10u64))],
-                                )])),
+                                )]),
                             },
                         },
                     ],

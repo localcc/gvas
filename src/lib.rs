@@ -89,24 +89,23 @@ use std::{
     io::{Read, Seek, Write},
 };
 
-use crate::error::DeserializeError;
-use crate::game_version::{
-    DeserializedGameVersion, GameVersion, PalworldCompressionType, PLZ_MAGIC,
-};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use cursor_ext::{ReadExt, WriteExt};
-use custom_version::FCustomVersion;
-use engine_version::FEngineVersion;
-use error::Error;
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
-use indexmap::IndexMap;
-use object_version::EUnrealEngineObjectUE5Version;
-use ord_ext::OrdExt;
-use properties::{Property, PropertyOptions, PropertyTrait};
-use savegame_version::SaveGameVersion;
-use types::Guid;
+
+use crate::{
+    cursor_ext::{ReadExt, WriteExt},
+    custom_version::FCustomVersion,
+    engine_version::FEngineVersion,
+    error::{DeserializeError, Error},
+    game_version::{DeserializedGameVersion, GameVersion, PalworldCompressionType, PLZ_MAGIC},
+    object_version::EUnrealEngineObjectUE5Version,
+    ord_ext::OrdExt,
+    properties::{Property, PropertyOptions, PropertyTrait},
+    savegame_version::SaveGameVersion,
+    types::{map::HashableIndexMap, Guid},
+};
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.
 pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
@@ -125,7 +124,7 @@ pub enum GvasHeader {
         /// Custom version format.
         custom_version_format: u32,
         /// Custom versions.
-        custom_versions: IndexMap<Guid, u32>,
+        custom_versions: HashableIndexMap<Guid, u32>,
         /// Save game class name.
         save_game_class_name: String,
     },
@@ -140,7 +139,7 @@ pub enum GvasHeader {
         /// Custom version format.
         custom_version_format: u32,
         /// Custom versions.
-        custom_versions: IndexMap<Guid, u32>,
+        custom_versions: HashableIndexMap<Guid, u32>,
         /// Save game class name.
         save_game_class_name: String,
     },
@@ -222,7 +221,7 @@ impl GvasHeader {
         }
 
         let custom_versions_len = cursor.read_u32::<LittleEndian>()?;
-        let mut custom_versions = IndexMap::new();
+        let mut custom_versions = HashableIndexMap::with_capacity(custom_versions_len as usize);
         for _ in 0..custom_versions_len {
             let FCustomVersion { key, version } = FCustomVersion::read(cursor)?;
             custom_versions.insert(key, version);
@@ -315,7 +314,7 @@ impl GvasHeader {
     }
 
     /// Get custom versions from this header
-    pub fn get_custom_versions(&self) -> &IndexMap<Guid, u32> {
+    pub fn get_custom_versions(&self) -> &HashableIndexMap<Guid, u32> {
         match self {
             GvasHeader::Version2 {
                 custom_versions, ..
@@ -340,7 +339,7 @@ pub struct GvasFile {
     /// GVAS file header.
     pub header: GvasHeader,
     /// GVAS properties.
-    pub properties: IndexMap<String, Property>,
+    pub properties: HashableIndexMap<String, Property>,
 }
 
 trait GvasHeaderTrait {
@@ -481,7 +480,7 @@ impl GvasFile {
             custom_versions: header.get_custom_versions(),
         };
 
-        let mut properties = IndexMap::new();
+        let mut properties = HashableIndexMap::new();
         loop {
             let property_name = cursor.read_string()?;
             if property_name == "None" {
