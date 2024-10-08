@@ -5,7 +5,6 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use indexmap::IndexMap;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use ordered_float::OrderedFloat;
 
@@ -212,7 +211,7 @@ pub enum FTextHistory {
         /// Source format
         source_format: Box<FText>,
         /// Arguments
-        arguments: Vec<FormatArgumentData>,
+        arguments: HashableIndexMap<String, FormatArgumentValue>,
     },
     /// Convert to number
     AsNumber {
@@ -333,7 +332,7 @@ impl FTextHistory {
                 let source_format = Box::new(FText::read(cursor, options)?);
 
                 let argument_count = cursor.read_i32::<LittleEndian>()?;
-                let mut arguments = IndexMap::with_capacity(argument_count as usize);
+                let mut arguments = HashableIndexMap::with_capacity(argument_count as usize);
 
                 for _ in 0..argument_count {
                     let key = cursor.read_string()?;
@@ -341,7 +340,6 @@ impl FTextHistory {
                     arguments.insert(key, value);
                 }
 
-                let arguments = HashableIndexMap(arguments);
                 FTextHistory::NamedFormat {
                     source_format,
                     arguments,
@@ -365,10 +363,12 @@ impl FTextHistory {
             TextHistoryType::ArgumentFormat => {
                 let source_format = Box::new(FText::read(cursor, options)?);
                 let count = cursor.read_i32::<LittleEndian>()?;
-                let mut arguments = Vec::with_capacity(count as usize);
+                let mut arguments = HashableIndexMap::with_capacity(count as usize);
 
                 for _ in 0..count {
-                    arguments.push(FormatArgumentData::read(cursor, options)?);
+                    let key = cursor.read_string()?;
+                    let value = FormatArgumentValue::read(cursor, options)?;
+                    arguments.insert(key, value);
                 }
 
                 FTextHistory::ArgumentFormat {
@@ -578,15 +578,16 @@ impl FTextHistory {
 
             FTextHistory::ArgumentFormat {
                 source_format,
-                arguments,
+                arguments: HashableIndexMap(arguments),
             } => {
                 let mut len = 1;
                 cursor.write_enum(TextHistoryType::ArgumentFormat)?;
                 len += source_format.write(cursor, options)?;
                 len += 4;
                 cursor.write_i32::<LittleEndian>(arguments.len() as i32)?;
-                for argument in arguments {
-                    len += argument.write(cursor, options)?;
+                for (key, value) in arguments {
+                    len += cursor.write_string(key)?;
+                    len += value.write(cursor, options)?;
                 }
                 Ok(len)
             }
@@ -725,40 +726,6 @@ pub enum FormatArgumentType {
     Text,
     /// ?
     Gender,
-}
-
-/// Format argument data
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct FormatArgumentData {
-    /// Argument name
-    pub name: String,
-    /// Argument value
-    pub value: FormatArgumentValue,
-}
-
-impl FormatArgumentData {
-    /// Read [`FormatArgumentData`] from a cursor
-    #[inline]
-    pub fn read<R: Read + Seek>(cursor: &mut R, options: &PropertyOptions) -> Result<Self, Error> {
-        let name = cursor.read_string()?;
-        let value = FormatArgumentValue::read(cursor, options)?;
-
-        Ok(FormatArgumentData { name, value })
-    }
-
-    /// Write [`FormatArgumentData`] to a cursor
-    #[inline]
-    pub fn write<W: Write>(
-        &self,
-        cursor: &mut W,
-        options: &PropertyOptions,
-    ) -> Result<usize, Error> {
-        let mut len = 0;
-        len += cursor.write_string(&self.name)?;
-        len += self.value.write(cursor, options)?;
-        Ok(len)
-    }
 }
 
 /// Format argument value

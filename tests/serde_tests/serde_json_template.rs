@@ -16,13 +16,14 @@ use gvas::{
         object_property::ObjectProperty,
         set_property::SetProperty,
         str_property::StrProperty,
-        struct_property::{StructProperty, StructPropertyValue},
+        struct_property::StructPropertyValue,
         struct_types::{
-            DateTime, IntPoint, LinearColor, QuatD, QuatF, RotatorD, RotatorF, VectorD, VectorF,
+            DateTime, IntPoint, LinearColor, QuatD, QuatF, RotatorD, RotatorF, Timespan, VectorD,
+            VectorF,
         },
         text_property::{
-            DateTimeStyle, FText, FTextHistory, FormatArgumentData, FormatArgumentValue,
-            NumberFormattingOptions, RoundingMode, TextProperty, TransformType,
+            DateTimeStyle, FText, FTextHistory, FormatArgumentValue, NumberFormattingOptions,
+            RoundingMode, TextProperty, TransformType,
         },
         unknown_property::UnknownProperty,
         Property,
@@ -30,7 +31,6 @@ use gvas::{
     types::{map::HashableIndexMap, Guid},
     GvasFile,
 };
-use indexmap::{indexmap, IndexMap};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -86,6 +86,11 @@ fn file_profile_0() {
 #[test]
 fn file_regression_01() {
     file(REGRESSION_01_PATH, regression::REGRESSION_01_JSON);
+}
+
+#[test]
+fn file_slot1() {
+    file(SLOT1_PATH, slot1::SLOT1_JSON);
 }
 
 #[test]
@@ -563,13 +568,13 @@ fn array_map() {
                         "kta".to_string(),
                         "vta".to_string(),
                         0,
-                        indexmap! {},
+                        HashableIndexMap::new(),
                     )),
                     Property::MapProperty(MapProperty::new(
                         "ktb".to_string(),
                         "vtb".to_string(),
                         1,
-                        indexmap! {},
+                        HashableIndexMap::new(),
                     )),
                 ],
             )
@@ -606,14 +611,8 @@ fn array_struct() {
                 String::from("StructProperty"),
                 Some((String::from("fn"), String::from("tn"), Guid([0x11u8; 16]))),
                 vec![
-                    Property::StructProperty(StructProperty::new(
-                        Guid([0x22u8; 16]),
-                        StructPropertyValue::DateTime(DateTime { ticks: 0 }),
-                    )),
-                    Property::StructProperty(StructProperty::new(
-                        Guid::default(),
-                        StructPropertyValue::DateTime(DateTime { ticks: 1 }),
-                    )),
+                    Property::from(StructPropertyValue::from(DateTime { ticks: 0 })),
+                    Property::from(StructPropertyValue::from(DateTime { ticks: 1 })),
                 ],
             )
             .expect("ArrayProperty::new"),
@@ -625,7 +624,6 @@ fn array_struct() {
   "guid": "11111111-1111-1111-1111-111111111111",
   "structs": [
     {
-      "guid": "22222222-2222-2222-2222-222222222222",
       "DateTime": {
         "ticks": 0
       }
@@ -706,7 +704,7 @@ fn map_enum_bool() {
             String::from("EnumProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::from(EnumProperty::new(None, String::from("a"))),
                     Property::from(BoolProperty::new(false)),
@@ -734,7 +732,7 @@ fn map_enum_int() {
             String::from("EnumProperty"),
             String::from("IntProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::from(EnumProperty::new(None, String::from("a"))),
                     Property::from(IntProperty::new(0)),
@@ -762,7 +760,7 @@ fn map_enum_unknown() {
             String::from("EnumProperty"),
             String::from("UnknownProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::from(EnumProperty::new(None, String::from("a"))),
                     Property::from(UnknownProperty::new(String::from("n"), vec![])),
@@ -801,7 +799,7 @@ fn map_int_bool() {
             String::from("IntProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::IntProperty(IntProperty::new(0)),
                     Property::BoolProperty(BoolProperty::new(false)),
@@ -864,7 +862,7 @@ fn map_name_bool() {
             String::from("NameProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::NameProperty(NameProperty::from("a")),
                     Property::BoolProperty(BoolProperty::new(false)),
@@ -892,7 +890,7 @@ fn map_name_int() {
             String::from("NameProperty"),
             String::from("IntProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::NameProperty(NameProperty::from("a")),
                     Property::IntProperty(IntProperty::new(0)),
@@ -920,7 +918,7 @@ fn map_name_property() {
             String::from("NameProperty"),
             String::from("UnknownProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::NameProperty(NameProperty::from("a")),
                     Property::UnknownProperty(UnknownProperty::new(String::from("b"), vec![])),
@@ -959,7 +957,7 @@ fn map_str_bool() {
             String::from("StrProperty"),
             String::from("BoolProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("a")),
                     Property::BoolProperty(BoolProperty::new(false)),
@@ -987,7 +985,7 @@ fn map_str_int() {
             String::from("StrProperty"),
             String::from("IntProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("zero")),
                     Property::IntProperty(IntProperty::new(0)),
@@ -1020,7 +1018,7 @@ fn map_str_property() {
             String::from("StrProperty"),
             String::from("UnknownProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("a")),
                     Property::UnknownProperty(UnknownProperty::new(String::from("b"), vec![])),
@@ -1059,7 +1057,7 @@ fn map_str_str() {
             String::from("StrProperty"),
             String::from("StrProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
                     Property::StrProperty(StrProperty::from("a")),
                     Property::StrProperty(StrProperty::from("b")),
@@ -1087,26 +1085,17 @@ fn map_struct_float() {
             String::from("StructProperty"),
             String::from("FloatProperty"),
             0,
-            IndexMap::from([
+            HashableIndexMap::from([
                 (
-                    Property::StructProperty(StructProperty::new(
-                        Guid([0u8; 16]),
-                        StructPropertyValue::VectorF(VectorF::new(0f32, 1f32, 2f32)),
-                    )),
+                    Property::from(StructPropertyValue::from(VectorF::new(0f32, 1f32, 2f32))),
                     Property::FloatProperty(FloatProperty::new(0f32)),
                 ),
                 (
-                    Property::StructProperty(StructProperty::new(
-                        Guid([0x11u8; 16]),
-                        StructPropertyValue::Timespan(DateTime::new(0)),
-                    )),
+                    Property::from(StructPropertyValue::from(Timespan::new(0))),
                     Property::FloatProperty(FloatProperty::new(1f32)),
                 ),
                 (
-                    Property::StructProperty(StructProperty::new(
-                        Guid([0x22u8; 16]),
-                        StructPropertyValue::DateTime(DateTime::new(0)),
-                    )),
+                    Property::from(StructPropertyValue::from(DateTime::new(0))),
                     Property::FloatProperty(FloatProperty::new(2f32)),
                 ),
             ]),
@@ -1119,7 +1108,7 @@ fn map_struct_float() {
   "value": [
     [
       {
-        "type": "StructProperty",
+        "type": "StructPropertyValue",
         "VectorF": {
           "x": 0.0,
           "y": 1.0,
@@ -1133,8 +1122,7 @@ fn map_struct_float() {
     ],
     [
       {
-        "type": "StructProperty",
-        "guid": "11111111-1111-1111-1111-111111111111",
+        "type": "StructPropertyValue",
         "Timespan": {
           "ticks": 0
         }
@@ -1146,8 +1134,7 @@ fn map_struct_float() {
     ],
     [
       {
-        "type": "StructProperty",
-        "guid": "22222222-2222-2222-2222-222222222222",
+        "type": "StructPropertyValue",
         "DateTime": {
           "ticks": 0
         }
@@ -1389,12 +1376,9 @@ fn str_some() {
 #[test]
 fn struct_vectorf() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::VectorF(VectorF::new(0f32, 1f32, 2f32)),
-        )),
+        &Property::from(StructPropertyValue::from(VectorF::new(0f32, 1f32, 2f32))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "VectorF": {
     "x": 0.0,
     "y": 1.0,
@@ -1407,12 +1391,9 @@ fn struct_vectorf() {
 #[test]
 fn struct_vectord() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::VectorD(VectorD::new(0f64, 1f64, 2f64)),
-        )),
+        &Property::from(StructPropertyValue::from(VectorD::new(0f64, 1f64, 2f64))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "VectorD": {
     "x": 0.0,
     "y": 1.0,
@@ -1425,12 +1406,9 @@ fn struct_vectord() {
 #[test]
 fn struct_rotatorf() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::RotatorF(RotatorF::new(0f32, 1f32, 2f32)),
-        )),
+        &Property::from(StructPropertyValue::from(RotatorF::new(0f32, 1f32, 2f32))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "RotatorF": {
     "pitch": 0.0,
     "yaw": 1.0,
@@ -1443,12 +1421,9 @@ fn struct_rotatorf() {
 #[test]
 fn struct_rotatord() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::RotatorD(RotatorD::new(0f64, 1f64, 2f64)),
-        )),
+        &Property::from(StructPropertyValue::from(RotatorD::new(0f64, 1f64, 2f64))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "RotatorD": {
     "pitch": 0.0,
     "yaw": 1.0,
@@ -1461,12 +1436,11 @@ fn struct_rotatord() {
 #[test]
 fn struct_quatf() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::QuatF(QuatF::new(0f32, 1f32, 2f32, 3f32)),
-        )),
+        &Property::from(StructPropertyValue::from(QuatF::new(
+            0f32, 1f32, 2f32, 3f32,
+        ))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "QuatF": {
     "x": 0.0,
     "y": 1.0,
@@ -1480,12 +1454,11 @@ fn struct_quatf() {
 #[test]
 fn struct_quatd() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::QuatD(QuatD::new(0f64, 1f64, 2f64, 3f64)),
-        )),
+        &Property::from(StructPropertyValue::from(QuatD::new(
+            0f64, 1f64, 2f64, 3f64,
+        ))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "QuatD": {
     "x": 0.0,
     "y": 1.0,
@@ -1499,12 +1472,11 @@ fn struct_quatd() {
 #[test]
 fn struct_datetime() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid([0u8; 16]),
-            StructPropertyValue::QuatD(QuatD::new(0f64, 1f64, 2f64, 3f64)),
-        )),
+        &Property::from(StructPropertyValue::from(QuatD::new(
+            0f64, 1f64, 2f64, 3f64,
+        ))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "QuatD": {
     "x": 0.0,
     "y": 1.0,
@@ -1518,12 +1490,11 @@ fn struct_datetime() {
 #[test]
 fn struct_linearcolor() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid::default(),
-            StructPropertyValue::LinearColor(LinearColor::new(0.0, 1.0, 2.0, 3.0)),
-        )),
+        &Property::from(StructPropertyValue::from(LinearColor::new(
+            0.0, 1.0, 2.0, 3.0,
+        ))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "LinearColor": {
     "r": 0.0,
     "g": 1.0,
@@ -1537,12 +1508,9 @@ fn struct_linearcolor() {
 #[test]
 fn struct_intpoint() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid::default(),
-            StructPropertyValue::IntPoint(IntPoint::new(0, 1)),
-        )),
+        &Property::from(StructPropertyValue::from(IntPoint::new(0, 1))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "IntPoint": {
     "x": 0,
     "y": 1
@@ -1554,28 +1522,21 @@ fn struct_intpoint() {
 #[test]
 fn struct_custom() {
     serde_json(
-        &Property::StructProperty(StructProperty::new(
-            Guid::default(),
-            StructPropertyValue::CustomStruct {
-                type_name: String::from("custom name"),
-                properties: HashableIndexMap(IndexMap::from([(
-                    String::from("key"),
-                    vec![Property::from(StrProperty::from("value"))],
-                )])),
-            },
-        )),
+        &Property::from(StructPropertyValue::CustomStruct(HashableIndexMap::from([
+            (
+                String::from("key"),
+                vec![Property::from(StrProperty::from("value"))],
+            ),
+        ]))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "CustomStruct": {
-    "type_name": "custom name",
-    "properties": {
-      "key": [
-        {
-          "type": "StrProperty",
-          "value": "value"
-        }
-      ]
-    }
+    "key": [
+      {
+        "type": "StrProperty",
+        "value": "value"
+      }
+    ]
   }
 }"#,
     )
@@ -1584,42 +1545,35 @@ fn struct_custom() {
 #[test]
 fn struct_array_index() {
     serde_json(
-        &Property::StructProperty(StructProperty {
-            guid: Guid::default(),
-            value: StructPropertyValue::CustomStruct {
-                type_name: String::from("TowersTrackedQuests"),
-                properties: HashableIndexMap(IndexMap::from([(
-                    String::from("TrackedQuestsNames"),
-                    vec![
-                        Property::NameProperty(NameProperty {
-                            array_index: 0,
-                            value: Some(String::from("QU91_InvestigateTower_B2")),
-                        }),
-                        Property::NameProperty(NameProperty {
-                            array_index: 1,
-                            value: Some(String::from("QU91_InvestigateTower_B2")),
-                        }),
-                    ],
-                )])),
-            },
-        }),
+        &Property::from(StructPropertyValue::CustomStruct(HashableIndexMap::from([
+            (
+                String::from("TrackedQuestsNames"),
+                vec![
+                    Property::NameProperty(NameProperty {
+                        array_index: 0,
+                        value: Some(String::from("QU91_InvestigateTower_B2")),
+                    }),
+                    Property::NameProperty(NameProperty {
+                        array_index: 1,
+                        value: Some(String::from("QU91_InvestigateTower_B2")),
+                    }),
+                ],
+            ),
+        ]))),
         r#"{
-  "type": "StructProperty",
+  "type": "StructPropertyValue",
   "CustomStruct": {
-    "type_name": "TowersTrackedQuests",
-    "properties": {
-      "TrackedQuestsNames": [
-        {
-          "type": "NameProperty",
-          "value": "QU91_InvestigateTower_B2"
-        },
-        {
-          "type": "NameProperty",
-          "array_index": 1,
-          "value": "QU91_InvestigateTower_B2"
-        }
-      ]
-    }
+    "TrackedQuestsNames": [
+      {
+        "type": "NameProperty",
+        "value": "QU91_InvestigateTower_B2"
+      },
+      {
+        "type": "NameProperty",
+        "array_index": 1,
+        "value": "QU91_InvestigateTower_B2"
+      }
+    ]
   }
 }"#,
     )
@@ -1707,10 +1661,10 @@ fn text_namedformat() {
                         culture_invariant_string: None,
                     },
                 }),
-                arguments: HashableIndexMap(IndexMap::from([(
+                arguments: HashableIndexMap::from([(
                     String::from("key"),
                     FormatArgumentValue::Int(2),
-                )])),
+                )]),
             },
         })),
         r#"{
@@ -1772,10 +1726,10 @@ fn text_argumentformat() {
                         culture_invariant_string: None,
                     },
                 }),
-                arguments: vec![FormatArgumentData {
-                    name: String::from("key"),
-                    value: FormatArgumentValue::UInt(2),
-                }],
+                arguments: HashableIndexMap::from([(
+                    String::from("key"),
+                    FormatArgumentValue::UInt(2),
+                )]),
             },
         })),
         r#"{
@@ -1785,14 +1739,11 @@ fn text_argumentformat() {
     "flags": 1,
     "history": "None"
   },
-  "arguments": [
-    {
-      "name": "key",
-      "value": {
-        "UInt": 2
-      }
+  "arguments": {
+    "key": {
+      "UInt": 2
     }
-  ]
+  }
 }"#,
     );
 }

@@ -8,10 +8,9 @@ use gvas::{
         },
         Property,
     },
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
     GvasFile, GvasHeader,
 };
-use indexmap::IndexMap;
 use std::str::FromStr;
 
 const DELEGATE_STR: &str =
@@ -30,7 +29,7 @@ pub(crate) fn expected() -> GvasFile {
                 branch: String::from("++UE4+Release-4.23"),
             },
             custom_version_format: 3,
-            custom_versions: IndexMap::from([
+            custom_versions: HashableIndexMap::from([
                 (
                     Guid::from_str("22D5549C-BE4F-26A8-4607-2194D082B461").unwrap(),
                     23,
@@ -214,7 +213,7 @@ pub(crate) fn expected() -> GvasFile {
             ]),
             save_game_class_name: String::from("/Script/SaveFileTest.TestSaveGame"),
         },
-        properties: IndexMap::from([
+        properties: HashableIndexMap::from([
             (
                 String::from("DynamicDelegate"),
                 Property::from(DelegateProperty::new(Delegate::new(

@@ -156,6 +156,12 @@ make_struct!(
 );
 
 make_struct!(
+    Timespan,
+    "A struct that stores a duration.",
+    (ticks, u64, "Ticks."),
+);
+
+make_struct!(
     LinearColor,
     "A structure storing linear color.",
     (r, f32, "Red component."),

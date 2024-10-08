@@ -280,536 +280,487 @@ pub(crate) const PROFILE_0_JSON: &str = r#"{
     },
     "UnlockLayer": {
       "type": "StructProperty",
+      "type_name": "UnlockLayer",
       "CustomStruct": {
-        "type_name": "UnlockLayer",
-        "properties": {
-          "ownCounts": [
-            {
-              "type": "MapProperty",
-              "name_ints": {
-                "unlock.c1.t2": 1,
-                "unlock.c1.t3": 1,
-                "unlock.c1.m1": 1,
-                "unlock.c1.m2": 1,
-                "unlock.milestone.oilwell": 1,
-                "unlock.upgrade.oilpower": 1,
-                "unlock.milestone.Workhorse": 1,
-                "unlock.c1.m2bonus": 1,
-                "unlock.c1.m3": 1,
-                "unlock.CustomEngine": 1,
-                "unlock.placeable.geothermal": 1,
-                "unlock.upgrade.geothermal": 1,
-                "unlock.milestone.oilPower": 1,
-                "unlock.c1.m4": 1,
-                "unlock.milestone.coppermine": 1,
-                "unlock.milestone.coiler": 1,
-                "unlock.milestone.limestonemine": 1,
-                "unlock.milestone.concreteYard": 1,
-                "unlock.upgrade.concreteyard": 1,
-                "unlock.upgrade.coiler": 1,
-                "unlock.c1.mspecial1": 1,
-                "unlock.milestone.autoBranching": 1,
-                "unlock.c1.m6": 1,
-                "unlock.milestone.MediumHeight": 1,
-                "unlock.c1.m7": 1,
-                "unlock.milestone.saltsifter": 1,
-                "unlock.milestone.coalMine": 1,
-                "unlock.upgrade.saltsifter": 1,
-                "unlock.c1.m8": 1,
-                "unlock.milestone.coalpower": 1,
-                "unlock.milestone.Industrial": 1,
-                "unlock.milestone.ironmine": 1,
-                "unlock.c1.m9": 1,
-                "unlock.c1.m8bonus1": 1,
-                "unlock.c1.m8bonus2": 1,
-                "unlock.milestone.steelMill": 1,
-                "unlock.milestone.plasticizer": 1,
-                "unlock.c1.mspecial2": 1,
-                "unlock.c1.m9bonus": 1,
-                "unlock.milestone.furnitureAssembler": 1,
-                "unlock.upgrade.plasticizer": 1,
-                "unlock.upgrade.furnitureassembler": 1,
-                "unlock.upgrade.coalpower": 1,
-                "unlock.upgrade.steelmill": 1,
-                "unlock.c1.m10a1": 1,
-                "unlock.c1.m10b1": 1,
-                "unlock.milestone.oilrefinery": 1,
-                "unlock.milestone.neonrefinery": 1,
-                "unlock.milestone.goodsFactory": 1,
-                "unlock.milestone.hardmold": 1,
-                "unlock.milestone.electronicsFab": 1,
-                "unlock.c1.m11": 1,
-                "unlock.c1.m10bonus": 1,
-                "unlock.milestone.incinerator": 1,
-                "unlock.milestone.oreGassifier": 1,
-                "unlock.c1.mspecial3": 1,
-                "unlock.c1.m11bonus1": 1,
-                "unlock.c1.m11bonus2": 1,
-                "unlock.placeable.electronicsfab": 1,
-                "unlock.upgrade.goodsfactory": 1,
-                "unlock.c1.m12": 1,
-                "unlock.milestone.tooldie": 1,
-                "unlock.c1.m12bonus": 1,
-                "unlock.c1.m13": 1,
-                "unlock.upgrade.tooldie": 1,
-                "unlock.upgrade.oilrefinery": 1,
-                "unlock.c1.m10a2": 1,
-                "unlock.milestone.Electric": 1,
-                "unlock.c1.m13bonus1": 1,
-                "unlock.c1.m13bonus2": 1,
-                "unlock.c1.m14": 1,
-                "unlock.milestone.hullyard": 1,
-                "unlock.milestone.MaxHeight": 1,
-                "unlock.HybridEngine": 1,
-                "unlock.upgrade.neonrefinery": 1,
-                "unlock.upgrade.electronicsfab": 1,
-                "unlock.upgrade.hullyard": 1,
-                "unlock.upgrade.incinerator": 1,
-                "unlock.upgrade.oregassifier": 1,
-                "unlock.upgrade.hardmold": 1,
-                "unlock.milestone.luxuryAssembler": 1,
-                "unlock.c1.mspecial4": 1,
-                "unlock.c1.m14bonus": 1,
-                "unlock.milestone.rescue": 1,
-                "unlock.c1.m15": 1,
-                "unlock.milestone.glassSmelter": 1,
-                "unlock.milestone.signworks": 1,
-                "unlock.c1.m16": 1,
-                "unlock.c1.m15bonus1": 1,
-                "unlock.c1.m15bonus2": 1,
-                "unlock.milestone.chipfab": 1,
-                "unlock.upgrade.glasssmelter": 1,
-                "unlock.stationSpeed": 1,
-                "unlock.c1.m17a": 1,
-                "unlock.c1.m17b": 1,
-                "unlock.c1.m16bonus": 1,
-                "unlock.milestone.tubePlant": 1,
-                "unlock.milestone.diesel": 1,
-                "unlock.milestone.motor": 1,
-                "unlock.upgrade.motorAssembly": 1,
-                "unlock.milestone.heavyworks": 1,
-                "unlock.milestone.framer": 1,
-                "unlock.c1.m18a": 1,
-                "unlock.c1.m18b": 1,
-                "unlock.c1.m17bonus": 1,
-                "placeholder": 1,
-                "unlock.c1.m4bonus": 1,
-                "unlock.c1.m5": 1,
-                "unlock.c1.m4bonus2": 1,
-                "unlock.DieselEngine": 1,
-                "unlock.upgrade.signworks": 1,
-                "unlock.upgrade.chipfab": 1,
-                "unlock.RescueEngine": 1,
-                "unlock.upgrade.tubeplant": 1,
-                "unlock.upgrade.luxuryassembler": 1,
-                "unlock.upgrade.framer": 1,
-                "unlock.upgrade.heavyworks": 1,
-                "unlock.milestone.armory": 1,
-                "unlock.milestone.boosterplant": 1,
-                "unlock.milestone.rocketfactory": 1,
-                "unlock.milestone.Bullet": 1,
-                "unlock.c1.m19a": 1,
-                "unlock.c1.m19b": 1,
-                "unlock.c1.m18bonus": 1,
-                "unlock.BulletEngine": 1,
-                "unlock.upgrade.rocketfactory": 1
-              }
+        "ownCounts": [
+          {
+            "type": "MapProperty",
+            "name_ints": {
+              "unlock.c1.t2": 1,
+              "unlock.c1.t3": 1,
+              "unlock.c1.m1": 1,
+              "unlock.c1.m2": 1,
+              "unlock.milestone.oilwell": 1,
+              "unlock.upgrade.oilpower": 1,
+              "unlock.milestone.Workhorse": 1,
+              "unlock.c1.m2bonus": 1,
+              "unlock.c1.m3": 1,
+              "unlock.CustomEngine": 1,
+              "unlock.placeable.geothermal": 1,
+              "unlock.upgrade.geothermal": 1,
+              "unlock.milestone.oilPower": 1,
+              "unlock.c1.m4": 1,
+              "unlock.milestone.coppermine": 1,
+              "unlock.milestone.coiler": 1,
+              "unlock.milestone.limestonemine": 1,
+              "unlock.milestone.concreteYard": 1,
+              "unlock.upgrade.concreteyard": 1,
+              "unlock.upgrade.coiler": 1,
+              "unlock.c1.mspecial1": 1,
+              "unlock.milestone.autoBranching": 1,
+              "unlock.c1.m6": 1,
+              "unlock.milestone.MediumHeight": 1,
+              "unlock.c1.m7": 1,
+              "unlock.milestone.saltsifter": 1,
+              "unlock.milestone.coalMine": 1,
+              "unlock.upgrade.saltsifter": 1,
+              "unlock.c1.m8": 1,
+              "unlock.milestone.coalpower": 1,
+              "unlock.milestone.Industrial": 1,
+              "unlock.milestone.ironmine": 1,
+              "unlock.c1.m9": 1,
+              "unlock.c1.m8bonus1": 1,
+              "unlock.c1.m8bonus2": 1,
+              "unlock.milestone.steelMill": 1,
+              "unlock.milestone.plasticizer": 1,
+              "unlock.c1.mspecial2": 1,
+              "unlock.c1.m9bonus": 1,
+              "unlock.milestone.furnitureAssembler": 1,
+              "unlock.upgrade.plasticizer": 1,
+              "unlock.upgrade.furnitureassembler": 1,
+              "unlock.upgrade.coalpower": 1,
+              "unlock.upgrade.steelmill": 1,
+              "unlock.c1.m10a1": 1,
+              "unlock.c1.m10b1": 1,
+              "unlock.milestone.oilrefinery": 1,
+              "unlock.milestone.neonrefinery": 1,
+              "unlock.milestone.goodsFactory": 1,
+              "unlock.milestone.hardmold": 1,
+              "unlock.milestone.electronicsFab": 1,
+              "unlock.c1.m11": 1,
+              "unlock.c1.m10bonus": 1,
+              "unlock.milestone.incinerator": 1,
+              "unlock.milestone.oreGassifier": 1,
+              "unlock.c1.mspecial3": 1,
+              "unlock.c1.m11bonus1": 1,
+              "unlock.c1.m11bonus2": 1,
+              "unlock.placeable.electronicsfab": 1,
+              "unlock.upgrade.goodsfactory": 1,
+              "unlock.c1.m12": 1,
+              "unlock.milestone.tooldie": 1,
+              "unlock.c1.m12bonus": 1,
+              "unlock.c1.m13": 1,
+              "unlock.upgrade.tooldie": 1,
+              "unlock.upgrade.oilrefinery": 1,
+              "unlock.c1.m10a2": 1,
+              "unlock.milestone.Electric": 1,
+              "unlock.c1.m13bonus1": 1,
+              "unlock.c1.m13bonus2": 1,
+              "unlock.c1.m14": 1,
+              "unlock.milestone.hullyard": 1,
+              "unlock.milestone.MaxHeight": 1,
+              "unlock.HybridEngine": 1,
+              "unlock.upgrade.neonrefinery": 1,
+              "unlock.upgrade.electronicsfab": 1,
+              "unlock.upgrade.hullyard": 1,
+              "unlock.upgrade.incinerator": 1,
+              "unlock.upgrade.oregassifier": 1,
+              "unlock.upgrade.hardmold": 1,
+              "unlock.milestone.luxuryAssembler": 1,
+              "unlock.c1.mspecial4": 1,
+              "unlock.c1.m14bonus": 1,
+              "unlock.milestone.rescue": 1,
+              "unlock.c1.m15": 1,
+              "unlock.milestone.glassSmelter": 1,
+              "unlock.milestone.signworks": 1,
+              "unlock.c1.m16": 1,
+              "unlock.c1.m15bonus1": 1,
+              "unlock.c1.m15bonus2": 1,
+              "unlock.milestone.chipfab": 1,
+              "unlock.upgrade.glasssmelter": 1,
+              "unlock.stationSpeed": 1,
+              "unlock.c1.m17a": 1,
+              "unlock.c1.m17b": 1,
+              "unlock.c1.m16bonus": 1,
+              "unlock.milestone.tubePlant": 1,
+              "unlock.milestone.diesel": 1,
+              "unlock.milestone.motor": 1,
+              "unlock.upgrade.motorAssembly": 1,
+              "unlock.milestone.heavyworks": 1,
+              "unlock.milestone.framer": 1,
+              "unlock.c1.m18a": 1,
+              "unlock.c1.m18b": 1,
+              "unlock.c1.m17bonus": 1,
+              "placeholder": 1,
+              "unlock.c1.m4bonus": 1,
+              "unlock.c1.m5": 1,
+              "unlock.c1.m4bonus2": 1,
+              "unlock.DieselEngine": 1,
+              "unlock.upgrade.signworks": 1,
+              "unlock.upgrade.chipfab": 1,
+              "unlock.RescueEngine": 1,
+              "unlock.upgrade.tubeplant": 1,
+              "unlock.upgrade.luxuryassembler": 1,
+              "unlock.upgrade.framer": 1,
+              "unlock.upgrade.heavyworks": 1,
+              "unlock.milestone.armory": 1,
+              "unlock.milestone.boosterplant": 1,
+              "unlock.milestone.rocketfactory": 1,
+              "unlock.milestone.Bullet": 1,
+              "unlock.c1.m19a": 1,
+              "unlock.c1.m19b": 1,
+              "unlock.c1.m18bonus": 1,
+              "unlock.BulletEngine": 1,
+              "unlock.upgrade.rocketfactory": 1
             }
-          ],
-          "historicCounts": [
-            {
-              "type": "MapProperty",
-              "name_ints": {
-                "unlock.c1.t2": 1,
-                "unlock.c1.t3": 1,
-                "unlock.c1.m1": 1,
-                "unlock.c1.m2": 1,
-                "unlock.milestone.oilwell": 1,
-                "unlock.upgrade.oilpower": 1,
-                "unlock.milestone.Workhorse": 1,
-                "unlock.c1.m2bonus": 1,
-                "unlock.c1.m3": 1,
-                "unlock.CustomEngine": 1,
-                "unlock.placeable.geothermal": 1,
-                "unlock.upgrade.geothermal": 1,
-                "unlock.milestone.oilPower": 1,
-                "unlock.c1.m4": 1,
-                "unlock.milestone.coppermine": 1,
-                "unlock.milestone.coiler": 1,
-                "unlock.milestone.limestonemine": 1,
-                "unlock.milestone.concreteYard": 1,
-                "unlock.upgrade.concreteyard": 1,
-                "unlock.upgrade.coiler": 1,
-                "unlock.c1.mspecial1": 1,
-                "unlock.milestone.autoBranching": 1,
-                "unlock.c1.m6": 1,
-                "unlock.milestone.MediumHeight": 1,
-                "unlock.c1.m7": 1,
-                "unlock.milestone.saltsifter": 1,
-                "unlock.milestone.coalMine": 1,
-                "unlock.upgrade.saltsifter": 1,
-                "unlock.c1.m8": 1,
-                "unlock.milestone.coalpower": 1,
-                "unlock.milestone.Industrial": 1,
-                "unlock.milestone.ironmine": 1,
-                "unlock.c1.m9": 1,
-                "unlock.c1.m8bonus1": 1,
-                "unlock.c1.m8bonus2": 1,
-                "unlock.milestone.steelMill": 1,
-                "unlock.milestone.plasticizer": 1,
-                "unlock.c1.mspecial2": 1,
-                "unlock.c1.m9bonus": 1,
-                "unlock.milestone.furnitureAssembler": 1,
-                "unlock.upgrade.plasticizer": 1,
-                "unlock.upgrade.furnitureassembler": 1,
-                "unlock.upgrade.coalpower": 1,
-                "unlock.upgrade.steelmill": 1,
-                "unlock.c1.m10a1": 1,
-                "unlock.c1.m10b1": 1,
-                "unlock.milestone.oilrefinery": 1,
-                "unlock.milestone.neonrefinery": 1,
-                "unlock.milestone.goodsFactory": 1,
-                "unlock.milestone.hardmold": 1,
-                "unlock.milestone.electronicsFab": 1,
-                "unlock.c1.m11": 1,
-                "unlock.c1.m10bonus": 1,
-                "unlock.milestone.incinerator": 1,
-                "unlock.milestone.oreGassifier": 1,
-                "unlock.c1.mspecial3": 1,
-                "unlock.c1.m11bonus1": 1,
-                "unlock.c1.m11bonus2": 1,
-                "unlock.placeable.electronicsfab": 1,
-                "unlock.upgrade.goodsfactory": 1,
-                "unlock.c1.m12": 1,
-                "unlock.milestone.tooldie": 1,
-                "unlock.c1.m12bonus": 1,
-                "unlock.c1.m13": 1,
-                "unlock.upgrade.tooldie": 1,
-                "unlock.upgrade.oilrefinery": 1,
-                "unlock.c1.m10a2": 1,
-                "unlock.milestone.Electric": 1,
-                "unlock.c1.m13bonus1": 1,
-                "unlock.c1.m13bonus2": 1,
-                "unlock.c1.m14": 1,
-                "unlock.milestone.hullyard": 1,
-                "unlock.milestone.MaxHeight": 1,
-                "unlock.HybridEngine": 1,
-                "unlock.upgrade.neonrefinery": 1,
-                "unlock.upgrade.electronicsfab": 1,
-                "unlock.upgrade.hullyard": 1,
-                "unlock.upgrade.incinerator": 1,
-                "unlock.upgrade.oregassifier": 1,
-                "unlock.upgrade.hardmold": 1,
-                "unlock.milestone.luxuryAssembler": 1,
-                "unlock.c1.mspecial4": 1,
-                "unlock.c1.m14bonus": 1,
-                "unlock.milestone.rescue": 1,
-                "unlock.c1.m15": 1,
-                "unlock.milestone.glassSmelter": 1,
-                "unlock.milestone.signworks": 1,
-                "unlock.c1.m16": 1,
-                "unlock.c1.m15bonus1": 1,
-                "unlock.c1.m15bonus2": 1,
-                "unlock.milestone.chipfab": 1,
-                "unlock.upgrade.glasssmelter": 1,
-                "unlock.stationSpeed": 1,
-                "unlock.c1.m17a": 1,
-                "unlock.c1.m17b": 1,
-                "unlock.c1.m16bonus": 1,
-                "unlock.milestone.tubePlant": 1,
-                "unlock.milestone.diesel": 1,
-                "unlock.milestone.motor": 1,
-                "unlock.upgrade.motorAssembly": 1,
-                "unlock.milestone.heavyworks": 1,
-                "unlock.milestone.framer": 1,
-                "unlock.c1.m18a": 1,
-                "unlock.c1.m18b": 1,
-                "unlock.c1.m17bonus": 1,
-                "placeholder": 1,
-                "unlock.c1.m4bonus": 1,
-                "unlock.c1.m5": 1,
-                "unlock.c1.m4bonus2": 1,
-                "unlock.DieselEngine": 1,
-                "unlock.upgrade.signworks": 1,
-                "unlock.upgrade.chipfab": 1,
-                "unlock.RescueEngine": 1,
-                "unlock.upgrade.tubeplant": 1,
-                "unlock.upgrade.luxuryassembler": 1,
-                "unlock.upgrade.framer": 1,
-                "unlock.upgrade.heavyworks": 1,
-                "unlock.milestone.armory": 1,
-                "unlock.milestone.boosterplant": 1,
-                "unlock.milestone.rocketfactory": 1,
-                "unlock.milestone.Bullet": 1,
-                "unlock.c1.m19a": 1,
-                "unlock.c1.m19b": 1,
-                "unlock.c1.m18bonus": 1,
-                "unlock.BulletEngine": 1,
-                "unlock.upgrade.rocketfactory": 1
-              }
+          }
+        ],
+        "historicCounts": [
+          {
+            "type": "MapProperty",
+            "name_ints": {
+              "unlock.c1.t2": 1,
+              "unlock.c1.t3": 1,
+              "unlock.c1.m1": 1,
+              "unlock.c1.m2": 1,
+              "unlock.milestone.oilwell": 1,
+              "unlock.upgrade.oilpower": 1,
+              "unlock.milestone.Workhorse": 1,
+              "unlock.c1.m2bonus": 1,
+              "unlock.c1.m3": 1,
+              "unlock.CustomEngine": 1,
+              "unlock.placeable.geothermal": 1,
+              "unlock.upgrade.geothermal": 1,
+              "unlock.milestone.oilPower": 1,
+              "unlock.c1.m4": 1,
+              "unlock.milestone.coppermine": 1,
+              "unlock.milestone.coiler": 1,
+              "unlock.milestone.limestonemine": 1,
+              "unlock.milestone.concreteYard": 1,
+              "unlock.upgrade.concreteyard": 1,
+              "unlock.upgrade.coiler": 1,
+              "unlock.c1.mspecial1": 1,
+              "unlock.milestone.autoBranching": 1,
+              "unlock.c1.m6": 1,
+              "unlock.milestone.MediumHeight": 1,
+              "unlock.c1.m7": 1,
+              "unlock.milestone.saltsifter": 1,
+              "unlock.milestone.coalMine": 1,
+              "unlock.upgrade.saltsifter": 1,
+              "unlock.c1.m8": 1,
+              "unlock.milestone.coalpower": 1,
+              "unlock.milestone.Industrial": 1,
+              "unlock.milestone.ironmine": 1,
+              "unlock.c1.m9": 1,
+              "unlock.c1.m8bonus1": 1,
+              "unlock.c1.m8bonus2": 1,
+              "unlock.milestone.steelMill": 1,
+              "unlock.milestone.plasticizer": 1,
+              "unlock.c1.mspecial2": 1,
+              "unlock.c1.m9bonus": 1,
+              "unlock.milestone.furnitureAssembler": 1,
+              "unlock.upgrade.plasticizer": 1,
+              "unlock.upgrade.furnitureassembler": 1,
+              "unlock.upgrade.coalpower": 1,
+              "unlock.upgrade.steelmill": 1,
+              "unlock.c1.m10a1": 1,
+              "unlock.c1.m10b1": 1,
+              "unlock.milestone.oilrefinery": 1,
+              "unlock.milestone.neonrefinery": 1,
+              "unlock.milestone.goodsFactory": 1,
+              "unlock.milestone.hardmold": 1,
+              "unlock.milestone.electronicsFab": 1,
+              "unlock.c1.m11": 1,
+              "unlock.c1.m10bonus": 1,
+              "unlock.milestone.incinerator": 1,
+              "unlock.milestone.oreGassifier": 1,
+              "unlock.c1.mspecial3": 1,
+              "unlock.c1.m11bonus1": 1,
+              "unlock.c1.m11bonus2": 1,
+              "unlock.placeable.electronicsfab": 1,
+              "unlock.upgrade.goodsfactory": 1,
+              "unlock.c1.m12": 1,
+              "unlock.milestone.tooldie": 1,
+              "unlock.c1.m12bonus": 1,
+              "unlock.c1.m13": 1,
+              "unlock.upgrade.tooldie": 1,
+              "unlock.upgrade.oilrefinery": 1,
+              "unlock.c1.m10a2": 1,
+              "unlock.milestone.Electric": 1,
+              "unlock.c1.m13bonus1": 1,
+              "unlock.c1.m13bonus2": 1,
+              "unlock.c1.m14": 1,
+              "unlock.milestone.hullyard": 1,
+              "unlock.milestone.MaxHeight": 1,
+              "unlock.HybridEngine": 1,
+              "unlock.upgrade.neonrefinery": 1,
+              "unlock.upgrade.electronicsfab": 1,
+              "unlock.upgrade.hullyard": 1,
+              "unlock.upgrade.incinerator": 1,
+              "unlock.upgrade.oregassifier": 1,
+              "unlock.upgrade.hardmold": 1,
+              "unlock.milestone.luxuryAssembler": 1,
+              "unlock.c1.mspecial4": 1,
+              "unlock.c1.m14bonus": 1,
+              "unlock.milestone.rescue": 1,
+              "unlock.c1.m15": 1,
+              "unlock.milestone.glassSmelter": 1,
+              "unlock.milestone.signworks": 1,
+              "unlock.c1.m16": 1,
+              "unlock.c1.m15bonus1": 1,
+              "unlock.c1.m15bonus2": 1,
+              "unlock.milestone.chipfab": 1,
+              "unlock.upgrade.glasssmelter": 1,
+              "unlock.stationSpeed": 1,
+              "unlock.c1.m17a": 1,
+              "unlock.c1.m17b": 1,
+              "unlock.c1.m16bonus": 1,
+              "unlock.milestone.tubePlant": 1,
+              "unlock.milestone.diesel": 1,
+              "unlock.milestone.motor": 1,
+              "unlock.upgrade.motorAssembly": 1,
+              "unlock.milestone.heavyworks": 1,
+              "unlock.milestone.framer": 1,
+              "unlock.c1.m18a": 1,
+              "unlock.c1.m18b": 1,
+              "unlock.c1.m17bonus": 1,
+              "placeholder": 1,
+              "unlock.c1.m4bonus": 1,
+              "unlock.c1.m5": 1,
+              "unlock.c1.m4bonus2": 1,
+              "unlock.DieselEngine": 1,
+              "unlock.upgrade.signworks": 1,
+              "unlock.upgrade.chipfab": 1,
+              "unlock.RescueEngine": 1,
+              "unlock.upgrade.tubeplant": 1,
+              "unlock.upgrade.luxuryassembler": 1,
+              "unlock.upgrade.framer": 1,
+              "unlock.upgrade.heavyworks": 1,
+              "unlock.milestone.armory": 1,
+              "unlock.milestone.boosterplant": 1,
+              "unlock.milestone.rocketfactory": 1,
+              "unlock.milestone.Bullet": 1,
+              "unlock.c1.m19a": 1,
+              "unlock.c1.m19b": 1,
+              "unlock.c1.m18bonus": 1,
+              "unlock.BulletEngine": 1,
+              "unlock.upgrade.rocketfactory": 1
             }
-          ]
-        }
+          }
+        ]
       }
     },
     "achievementHistoryScope": {
       "type": "StructProperty",
+      "type_name": "MetaMetricStorageScope",
       "CustomStruct": {
-        "type_name": "MetaMetricStorageScope",
-        "properties": {
-          "metrics": [
-            {
-              "type": "MapProperty",
-              "value_type": "StructProperty",
-              "name_props": {
-                "Profit": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 737
-                          }
-                        }
-                      ]
+        "metrics": [
+          {
+            "type": "MapProperty",
+            "value_type": "StructProperty",
+            "name_props": {
+              "Profit": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 737
+                      }
                     }
-                  }
-                },
-                "export.rate": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "Energy": 0,
-                            "Mainframes": 0
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "export.rate": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "Energy": 0,
+                        "Mainframes": 0
+                      }
                     }
-                  }
-                },
-                "produce": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "Energy": 1043,
-                            "CrudeOil": 1047
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "produce": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "Energy": 1043,
+                        "CrudeOil": 1047
+                      }
                     }
-                  }
-                },
-                "cycle": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "placeable.geothermal": 70
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "cycle": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "placeable.geothermal": 70
+                      }
                     }
-                  }
-                },
-                "build.track": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 8341
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "build.track": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 8341
+                      }
                     }
-                  }
-                },
-                "build.branch": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 1848
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "build.branch": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 1848
+                      }
                     }
-                  }
-                },
-                "build.train": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 1120
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "build.train": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 1120
+                      }
                     }
-                  }
-                },
-                "arrive.length": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 13
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "arrive.length": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 13
+                      }
                     }
-                  }
-                },
-                "arrive.freight": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "Water": 2067,
-                            "Steel": 2059
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "arrive.freight": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "Water": 2067,
+                        "Steel": 2059
+                      }
                     }
-                  }
-                },
-                "salvage.track": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 1128
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "salvage.track": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 1128
+                      }
                     }
-                  }
-                },
-                "salvage.branch": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 59
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "salvage.branch": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 59
+                      }
                     }
-                  }
-                },
-                "upgrade": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 268,
-                            "placeable.waterpump": 32
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "upgrade": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 268,
+                        "placeable.waterpump": 32
+                      }
                     }
-                  }
-                },
-                "Path": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "None": 61
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "Path": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "None": 61
+                      }
                     }
-                  }
-                },
-                "mission": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "82A9B46F42BF6C5555D608A6619B35E6": 2
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "mission": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "82A9B46F42BF6C5555D608A6619B35E6": 2
+                      }
                     }
-                  }
-                },
-                "maxupgrade": {
-                  "type": "StructProperty",
-                  "CustomStruct": {
-                    "type_name": "this type hint is unused",
-                    "properties": {
-                      "valueByFilter": [
-                        {
-                          "type": "MapProperty",
-                          "name_ints": {
-                            "city": 2
-                          }
-                        }
-                      ]
+                  ]
+                }
+              },
+              "maxupgrade": {
+                "type": "StructPropertyValue",
+                "CustomStruct": {
+                  "valueByFilter": [
+                    {
+                      "type": "MapProperty",
+                      "name_ints": {
+                        "city": 2
+                      }
                     }
-                  }
+                  ]
                 }
               }
             }
-          ]
-        }
+          }
+        ]
       }
     }
   }
