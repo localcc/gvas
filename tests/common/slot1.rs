@@ -315,21 +315,20 @@ pub(crate) fn expected() -> GvasFile {
             (
                 String::from("struct_property"),
                 Property::from(StructProperty {
+                    type_name: String::from("CustomStruct"),
                     guid: Guid::default(),
-                    value: StructPropertyValue::CustomStruct {
-                        type_name: String::from("CustomStruct"),
-                        properties: HashableIndexMap::from([(
-                            String::from("test_field"),
-                            vec![Property::from(UInt64Property::new(12345u64))],
-                        )]),
-                    },
+                    value: StructPropertyValue::CustomStruct(HashableIndexMap::from([(
+                        String::from("test_field"),
+                        vec![Property::from(UInt64Property::new(12345u64))],
+                    )])),
                 }),
             ),
             (
                 String::from("date_time_property"),
                 Property::from(StructProperty {
+                    type_name: String::from("DateTime"),
                     guid: Guid::default(),
-                    value: StructPropertyValue::DateTime(DateTime {
+                    value: StructPropertyValue::from(DateTime {
                         ticks: 637864237380020000,
                     }),
                 }),
@@ -341,26 +340,14 @@ pub(crate) fn expected() -> GvasFile {
                     type_name: String::from("CustomStruct"),
                     guid: Guid::default(),
                     structs: vec![
-                        StructProperty {
-                            guid: Guid::default(),
-                            value: StructPropertyValue::CustomStruct {
-                                type_name: String::from("CustomStruct"),
-                                properties: HashableIndexMap::from([(
-                                    String::from("test_field"),
-                                    vec![Property::from(UInt64Property::new(10u64))],
-                                )]),
-                            },
-                        },
-                        StructProperty {
-                            guid: Guid::default(),
-                            value: StructPropertyValue::CustomStruct {
-                                type_name: String::from("CustomStruct"),
-                                properties: HashableIndexMap::from([(
-                                    String::from("test_field"),
-                                    vec![Property::from(UInt64Property::new(10u64))],
-                                )]),
-                            },
-                        },
+                        StructPropertyValue::CustomStruct(HashableIndexMap::from([(
+                            String::from("test_field"),
+                            vec![Property::from(UInt64Property::new(10u64))],
+                        )])),
+                        StructPropertyValue::CustomStruct(HashableIndexMap::from([(
+                            String::from("test_field"),
+                            vec![Property::from(UInt64Property::new(10u64))],
+                        )])),
                     ],
                 }),
             ),
@@ -383,3 +370,189 @@ pub(crate) fn expected() -> GvasFile {
         ]),
     }
 }
+
+pub const SLOT1_JSON: &str = r#"{
+  "header": {
+    "type": "Version2",
+    "package_file_version": 522,
+    "engine_version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "change_list": 18319896,
+      "branch": "++UE4+Release-4.27"
+    },
+    "custom_version_format": 3,
+    "custom_versions": {
+      "22D5549C-BE4F-26A8-4607-2194D082B461": 43,
+      "E432D8B0-0D4F-891F-B77E-CFACA24AFD36": 10,
+      "2843C6E1-534D-2CA2-868E-6CA38CBD1764": 0,
+      "3CC15E37-FB48-E406-F084-00B57E712A26": 4,
+      "ED68B0E4-E942-94F4-0BDA-31A241BB462E": 40,
+      "3F74FCCF-8044-B043-DF14-919373201D17": 37,
+      "B5492BB0-E944-20BB-B732-04A36003E452": 3,
+      "5C10E4A4-B549-A159-C440-C5A7EEDF7E54": 0,
+      "C931C839-DC47-E65A-179C-449A7C8E1C3E": 0,
+      "331BF078-984F-EAEB-EA84-B4B9A25AB9CC": 14,
+      "0F383166-E043-4D2D-27CF-09805AA95669": 0,
+      "9F8BF812-FC4A-7588-0CD9-7CA629BD3A38": 45,
+      "4CE75A7B-104C-70D2-9857-58A95A2A210B": 13,
+      "186929D7-DD4B-D61D-A864-E29D8438C13C": 3,
+      "7852A1C2-FE4A-E7BF-FF90-176C55F71D53": 1,
+      "D4A3AC6E-C14C-EC40-ED8B-86B7C58F4209": 3,
+      "DD75E529-2746-A3E0-76D2-109DEADC2C23": 17,
+      "5DA643AF-4749-D37F-8E3E-739805BBC1D9": 15,
+      "EC6C266B-8F4B-C71E-D9E4-0BA307FC4209": 1,
+      "613DF70D-EA47-3FA2-E989-27B79A49410C": 1,
+      "86181D60-844F-64AC-DED3-16AAD6C7EA0D": 47,
+      "686308E7-584C-236B-701B-3984915E2616": 1,
+      "D6BCFF9D-5801-4F49-8212-21E288A8923C": 10,
+      "ACD0AEF2-6F41-FE9A-7FAA-6486FCD626FA": 1,
+      "0B1F4F17-A545-C6B4-E82E-3FB17D91FBD0": 10,
+      "834AF935-6C40-58E2-F509-18A37C241096": 41,
+      "6EC18FB6-E242-1B8B-5C21-53B4FE448805": 1,
+      "0685E1B2-C2CF-7342-BBF4-4EA507BA8B75": 1,
+      "3689F564-BA42-1BFD-8972-96BA4EFAD0D5": 1,
+      "27D80E6F-9548-09A6-8D99-919CA40E1890": 2,
+      "E79E7F71-3A49-B0E9-3291-B3880781381B": 8,
+      "50326854-AF48-9980-9698-C88BB7F9ADFB": 0,
+      "B3DC7D8E-BB47-DA80-A246-D39FF64D9893": 1,
+      "CDB08ACB-DE4B-8CE7-9313-62A862EFE914": 0,
+      "965196AB-FC08-D845-8D22-D7B79E56AD78": 1,
+      "0EB75099-174E-1AB4-0DFA-CCBBD67F8157": 1,
+      "F20A68FB-A34B-EF59-B519-A8BA3D44C873": 2,
+      "9186E0AF-5249-0D3A-3B67-73B61E2DF27C": 2,
+      "BDFDB52E-104D-AC01-8FF3-3681DAA59333": 5,
+      "4F359D50-2F49-E6F6-B285-49A71C633C07": 0,
+      "EAB762A4-3A4E-99F4-1FEC-C199B2E12482": 4,
+      "194D0C43-7049-5471-699B-6987E5B090DF": 15,
+      "BD32FEAA-144C-9553-255E-6AB6DDD13210": 1,
+      "8EE1AF23-584E-E14C-52C2-618DB7BE53B9": 11,
+      "40EB564A-DC11-F510-7E34-D392E76AC9B2": 2,
+      "004A8AD7-9746-58E8-B519-A8BAB4467D48": 18,
+      "86F87955-1F4C-3A93-7B08-BA832FB96163": 2,
+      "52BE2F61-0B40-53DA-914F-0D917C85B19F": 1,
+      "367A23A4-C941-EACA-F818-A28FF31B6858": 4,
+      "753F4E80-494B-8870-068C-D6A4DCB67E3C": 5,
+      "2923A576-B545-2309-41D8-AE98D86A2FCF": 5,
+      "0769BC5F-AE40-C855-84F1-678E3FF1FF5E": 1,
+      "FA7AF5FC-8342-7650-58E6-A9B9322DA0FF": 68,
+      "F37ABB24-834F-4656-C22D-2F1FFF96AD49": 5,
+      "ED0A3111-614D-552E-A39A-67AF2C08A1C5": 17,
+      "4E7CE782-A543-2333-C513-6BB4F30D3197": 0,
+      "12E426FB-4D4B-151F-0A55-7293702F1D96": 3
+    },
+    "save_game_class_name": "/Script/UE4SaveFile.TestSaveGame"
+  },
+  "properties": {
+    "u8_test": {
+      "type": "ByteProperty",
+      "name": "None",
+      "Byte": 129
+    },
+    "i8_test": {
+      "type": "Int8Property",
+      "value": -123
+    },
+    "ushort_test": {
+      "type": "UInt16Property",
+      "value": 65530
+    },
+    "short_test": {
+      "type": "Int16Property",
+      "value": -32764
+    },
+    "uint32_test": {
+      "type": "UInt32Property",
+      "value": 4294967294
+    },
+    "int32_test": {
+      "type": "IntProperty",
+      "value": -2147483647
+    },
+    "ulong_test": {
+      "type": "UInt64Property",
+      "value": 18446744073709551614
+    },
+    "long_test": {
+      "type": "Int64Property",
+      "value": -9223372036854775807
+    },
+    "f_property": {
+      "type": "FloatProperty",
+      "value": 3.14159
+    },
+    "d_property": {
+      "type": "DoubleProperty",
+      "value": 3.14159265358979
+    },
+    "str_property": {
+      "type": "StrProperty",
+      "value": "Hello world"
+    },
+    "struct_property": {
+      "type": "StructProperty",
+      "type_name": "CustomStruct",
+      "CustomStruct": {
+        "test_field": [
+          {
+            "type": "UInt64Property",
+            "value": 12345
+          }
+        ]
+      }
+    },
+    "date_time_property": {
+      "type": "StructProperty",
+      "type_name": "DateTime",
+      "DateTime": {
+        "ticks": 637864237380020000
+      }
+    },
+    "array_of_structs": {
+      "type": "ArrayProperty",
+      "field_name": "array_of_structs",
+      "type_name": "CustomStruct",
+      "structs": [
+        {
+          "CustomStruct": {
+            "test_field": [
+              {
+                "type": "UInt64Property",
+                "value": 10
+              }
+            ]
+          }
+        },
+        {
+          "CustomStruct": {
+            "test_field": [
+              {
+                "type": "UInt64Property",
+                "value": 10
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "array_of_ints": {
+      "type": "ArrayProperty",
+      "ints": [
+        12,
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "array_of_strings": {
+      "type": "ArrayProperty",
+      "strings": [
+        "Hello world from array",
+        "Hello world from array",
+        "Hello world from array"
+      ]
+    }
+  }
+}"#;
