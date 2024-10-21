@@ -562,13 +562,13 @@ fn array_map() {
                         "kta".to_string(),
                         "vta".to_string(),
                         0,
-                        HashableIndexMap::new(),
+                        HashableIndexMap::from([]),
                     )),
                     Property::MapProperty(MapProperty::new(
                         "ktb".to_string(),
                         "vtb".to_string(),
                         1,
-                        HashableIndexMap::new(),
+                        HashableIndexMap::from([]),
                     )),
                 ],
             )
