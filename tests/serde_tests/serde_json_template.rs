@@ -21,8 +21,8 @@ use gvas::{
             DateTime, IntPoint, LinearColor, QuatD, QuatF, RotatorD, RotatorF, VectorD, VectorF,
         },
         text_property::{
-            DateTimeStyle, FText, FTextHistory, FormatArgumentData, FormatArgumentValue,
-            NumberFormattingOptions, RoundingMode, TextProperty, TransformType,
+            DateTimeStyle, FText, FTextHistory, FormatArgumentValue, NumberFormattingOptions,
+            RoundingMode, TextProperty, TransformType,
         },
         unknown_property::UnknownProperty,
         Property,
@@ -1771,10 +1771,10 @@ fn text_argumentformat() {
                         culture_invariant_string: None,
                     },
                 }),
-                arguments: vec![FormatArgumentData {
-                    name: String::from("key"),
-                    value: FormatArgumentValue::UInt(2),
-                }],
+                arguments: HashableIndexMap::from([(
+                    String::from("key"),
+                    FormatArgumentValue::UInt(2),
+                )]),
             },
         })),
         r#"{
@@ -1784,14 +1784,11 @@ fn text_argumentformat() {
     "flags": 1,
     "history": "None"
   },
-  "arguments": [
-    {
-      "name": "key",
-      "value": {
-        "UInt": 2
-      }
+  "arguments": {
+    "key": {
+      "UInt": 2
     }
-  ]
+  }
 }"#,
     );
 }
