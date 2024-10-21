@@ -409,7 +409,6 @@ pub(crate) use impl_write_header_part;
 ///
 /// This generates a `get_my_enum_variant` function that returns an `Option<&MyEnumVariant>`
 /// if the enum instance is of the `MyEnumVariant` variant.
-
 macro_rules! make_matcher {
     ($type:ident, $name:ident, $name_mut:ident) => {
         #[doc = concat!("Retrieves the enum value as a `", stringify!($type), "`.")]
@@ -446,7 +445,7 @@ pub struct PropertyOptions<'a> {
     pub large_world_coordinates: bool,
 }
 
-impl<'a> PropertyOptions<'a> {
+impl PropertyOptions<'_> {
     /// Get custom version
     #[inline]
     pub fn get_custom_version<T>(&self) -> FCustomVersion
