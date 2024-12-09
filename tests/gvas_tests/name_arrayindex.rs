@@ -32,7 +32,6 @@ fn name_property_with_array_index() {
     let mut options = PropertyOptions {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
-        large_world_coordinates: false,
         custom_versions: &HashableIndexMap::new(),
     };
     let mut writer = Cursor::new(Vec::new());
