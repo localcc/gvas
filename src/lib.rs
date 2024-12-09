@@ -342,19 +342,6 @@ pub struct GvasFile {
     pub properties: HashableIndexMap<String, Property>,
 }
 
-trait GvasHeaderTrait {
-    fn use_large_world_coordinates(&self) -> bool;
-}
-
-impl GvasHeaderTrait for GvasHeader {
-    fn use_large_world_coordinates(&self) -> bool {
-        match self {
-            GvasHeader::Version2 { .. } => false,
-            GvasHeader::Version3 { .. } => true,
-        }
-    }
-}
-
 impl GvasFile {
     /// Read GvasFile from a binary file
     ///
@@ -476,7 +463,6 @@ impl GvasFile {
         let mut options = PropertyOptions {
             hints,
             properties_stack: &mut vec![],
-            large_world_coordinates: header.use_large_world_coordinates(),
             custom_versions: header.get_custom_versions(),
         };
 
@@ -536,7 +522,6 @@ impl GvasFile {
         let mut options = PropertyOptions {
             hints: &HashMap::new(),
             properties_stack: &mut vec![],
-            large_world_coordinates: self.header.use_large_world_coordinates(),
             custom_versions: self.header.get_custom_versions(),
         };
 

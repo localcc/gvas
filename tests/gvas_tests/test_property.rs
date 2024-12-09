@@ -32,7 +32,6 @@ macro_rules! test_property {
             let mut options = PropertyOptions {
                 hints: &HashMap::new(),
                 properties_stack: &mut Vec::new(),
-                large_world_coordinates: false,
                 custom_versions: &HashableIndexMap::new(),
             };
 
