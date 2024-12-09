@@ -8,7 +8,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use ordered_float::OrderedFloat;
 
-use crate::custom_version::FEditorObjectVersion;
+use crate::custom_version::{FEditorObjectVersion, FUE5ReleaseStreamObjectVersion};
 use crate::properties::int_property::UInt64Property;
 use crate::properties::struct_types::DateTime;
 use crate::types::map::HashableIndexMap;
@@ -742,6 +742,10 @@ pub enum FormatArgumentValue {
     Double(OrderedFloat<f64>),
     /// FText
     Text(FText),
+    /// 64-bit integer
+    Int64(i64),
+    /// 64-bit unsigned integer
+    UInt64(u64),
 }
 
 impl FormatArgumentValue {
@@ -754,13 +758,18 @@ impl FormatArgumentValue {
         let format_argument_type = cursor.read_enum()?;
 
         Ok(match format_argument_type {
-            FormatArgumentType::Int => {
-                // todo: hogwarts legacy support
-                FormatArgumentValue::Int(cursor.read_i32::<LittleEndian>()?)
-            }
-            FormatArgumentType::UInt => {
-                FormatArgumentValue::UInt(cursor.read_u32::<LittleEndian>()?)
-            }
+            FormatArgumentType::Int => match options.supports_version(
+                FUE5ReleaseStreamObjectVersion::TextFormatArgumentData64bitSupport,
+            ) {
+                true => FormatArgumentValue::Int64(cursor.read_i64::<LittleEndian>()?),
+                false => FormatArgumentValue::Int(cursor.read_i32::<LittleEndian>()?),
+            },
+            FormatArgumentType::UInt => match options.supports_version(
+                FUE5ReleaseStreamObjectVersion::TextFormatArgumentData64bitSupport,
+            ) {
+                true => FormatArgumentValue::UInt64(cursor.read_u64::<LittleEndian>()?),
+                false => FormatArgumentValue::UInt(cursor.read_u32::<LittleEndian>()?),
+            },
             FormatArgumentType::Float => {
                 FormatArgumentValue::Float(cursor.read_f32::<LittleEndian>()?.into())
             }
@@ -781,14 +790,48 @@ impl FormatArgumentValue {
     ) -> Result<usize, Error> {
         match self {
             FormatArgumentValue::Int(value) => {
+                assert!(
+                    !options.supports_version(
+                        FUE5ReleaseStreamObjectVersion::TextFormatArgumentData64bitSupport,
+                    ),
+                    "FormatArgumentValue::Int is not compatible with TextFormatArgumentData64bitSupport"
+                );
                 cursor.write_enum(FormatArgumentType::Int)?;
                 cursor.write_i32::<LittleEndian>(*value)?;
                 Ok(5)
             }
+            FormatArgumentValue::Int64(value) => {
+                assert!(
+                    options.supports_version(
+                        FUE5ReleaseStreamObjectVersion::TextFormatArgumentData64bitSupport,
+                    ),
+                    "FormatArgumentValue::Int64 requires TextFormatArgumentData64bitSupport"
+                );
+                cursor.write_enum(FormatArgumentType::Int)?;
+                cursor.write_i64::<LittleEndian>(*value)?;
+                Ok(9)
+            }
             FormatArgumentValue::UInt(value) => {
+                assert!(
+                    !options.supports_version(
+                        FUE5ReleaseStreamObjectVersion::TextFormatArgumentData64bitSupport,
+                    ),
+                    "FormatArgumentValue::UInt is not compatible with TextFormatArgumentData64bitSupport"
+                );
                 cursor.write_enum(FormatArgumentType::UInt)?;
                 cursor.write_u32::<LittleEndian>(*value)?;
                 Ok(5)
+            }
+            FormatArgumentValue::UInt64(value) => {
+                assert!(
+                    options.supports_version(
+                        FUE5ReleaseStreamObjectVersion::TextFormatArgumentData64bitSupport,
+                    ),
+                    "FormatArgumentValue::UInt64 requires TextFormatArgumentData64bitSupport"
+                );
+                cursor.write_enum(FormatArgumentType::UInt)?;
+                cursor.write_u64::<LittleEndian>(*value)?;
+                Ok(9)
             }
             FormatArgumentValue::Float(value) => {
                 cursor.write_enum(FormatArgumentType::Float)?;
