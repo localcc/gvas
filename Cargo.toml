@@ -17,7 +17,7 @@ ordered-float = "4.2.0"
 serde = { version = "1.0", optional = true, features = ["derive"] }
 serde_with = { version = "3.5", optional = true, features = ["hex"] }
 indexmap = "2.2.1"
-thiserror = "1.0.40"
+thiserror = "2.0.6"
 num_enum = "0.7.1"
 flate2 = "1.0.28"
 cfg_eval = "0.1.2"
