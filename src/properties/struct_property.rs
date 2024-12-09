@@ -9,11 +9,11 @@ use indexmap::IndexMap;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
+    custom_version::FUE5ReleaseStreamObjectVersion,
     error::{DeserializeError, Error, SerializeError},
     properties::{name_property::NameProperty, struct_types::LinearColor},
     scoped_stack_entry::ScopedStackEntry,
-    types::map::HashableIndexMap,
-    types::Guid,
+    types::{map::HashableIndexMap, Guid},
 };
 
 use super::{
@@ -147,7 +147,9 @@ impl StructProperty {
         }
 
         let value = match type_name.as_str() {
-            "Vector" => match options.large_world_coordinates {
+            "Vector" => match options
+                .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates)
+            {
                 true => StructPropertyValue::VectorD(VectorD::new(
                     DoubleProperty::read(cursor, false)?.value.0,
                     DoubleProperty::read(cursor, false)?.value.0,
@@ -159,7 +161,9 @@ impl StructProperty {
                     FloatProperty::read(cursor, false)?.value.0,
                 )),
             },
-            "Vector2D" => match options.large_world_coordinates {
+            "Vector2D" => match options
+                .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates)
+            {
                 true => StructPropertyValue::Vector2D(Vector2D::new(
                     DoubleProperty::read(cursor, false)?.value.0,
                     DoubleProperty::read(cursor, false)?.value.0,
@@ -169,7 +173,9 @@ impl StructProperty {
                     FloatProperty::read(cursor, false)?.value.0,
                 )),
             },
-            "Rotator" => match options.large_world_coordinates {
+            "Rotator" => match options
+                .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates)
+            {
                 true => StructPropertyValue::RotatorD(RotatorD::new(
                     DoubleProperty::read(cursor, false)?.value.0,
                     DoubleProperty::read(cursor, false)?.value.0,
@@ -181,7 +187,9 @@ impl StructProperty {
                     FloatProperty::read(cursor, false)?.value.0,
                 )),
             },
-            "Quat" => match options.large_world_coordinates {
+            "Quat" => match options
+                .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates)
+            {
                 true => StructPropertyValue::QuatD(QuatD::new(
                     DoubleProperty::read(cursor, false)?.value.0,
                     DoubleProperty::read(cursor, false)?.value.0,
@@ -301,7 +309,8 @@ impl PropertyTrait for StructProperty {
         match &self.value {
             StructPropertyValue::Vector2F(vector) => {
                 validate!(
-                    !options.large_world_coordinates,
+                    !options
+                        .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "Vector2F not supported when LWC is enabled, use Vector2D",
                 );
                 cursor.write_f32::<LittleEndian>(vector.x.0)?;
@@ -310,7 +319,7 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::Vector2D(vector) => {
                 validate!(
-                    options.large_world_coordinates,
+                    options.supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "Vector2D not supported when LWC is disabled, use Vector2F",
                 );
                 cursor.write_f64::<LittleEndian>(vector.x.0)?;
@@ -319,7 +328,8 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::VectorF(vector) => {
                 validate!(
-                    !options.large_world_coordinates,
+                    !options
+                        .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "VectorF not supported when LWC is enabled, use VectorD",
                 );
                 cursor.write_f32::<LittleEndian>(vector.x.0)?;
@@ -329,7 +339,7 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::VectorD(vector) => {
                 validate!(
-                    options.large_world_coordinates,
+                    options.supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "VectorD not supported when LWC is disabled, use VectorF",
                 );
                 cursor.write_f64::<LittleEndian>(vector.x.0)?;
@@ -339,7 +349,8 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::RotatorF(rotator) => {
                 validate!(
-                    !options.large_world_coordinates,
+                    !options
+                        .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "RotatorF not supported when LWC is enabled, use RotatorD",
                 );
                 cursor.write_f32::<LittleEndian>(rotator.pitch.0)?;
@@ -349,7 +360,7 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::RotatorD(rotator) => {
                 validate!(
-                    options.large_world_coordinates,
+                    options.supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "RotatorD not supported when LWC is disabled, use RotatorF",
                 );
                 cursor.write_f64::<LittleEndian>(rotator.pitch.0)?;
@@ -359,7 +370,8 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::QuatF(quat) => {
                 validate!(
-                    !options.large_world_coordinates,
+                    !options
+                        .supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "QuatF not supported when LWC is enabled, use QuatD",
                 );
                 cursor.write_f32::<LittleEndian>(quat.x.0)?;
@@ -370,7 +382,7 @@ impl PropertyTrait for StructProperty {
             }
             StructPropertyValue::QuatD(quat) => {
                 validate!(
-                    options.large_world_coordinates,
+                    options.supports_version(FUE5ReleaseStreamObjectVersion::LargeWorldCoordinates),
                     "QuatD not supported when LWC is disabled, use QuatF",
                 );
                 cursor.write_f64::<LittleEndian>(quat.x.0)?;

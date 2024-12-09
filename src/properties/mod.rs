@@ -442,8 +442,6 @@ pub struct PropertyOptions<'a> {
     pub properties_stack: &'a mut Vec<String>,
     /// Custom versions
     pub custom_versions: &'a HashableIndexMap<Guid, u32>,
-    /// Enables large world coordinates.
-    pub large_world_coordinates: bool,
 }
 
 impl<'a> PropertyOptions<'a> {

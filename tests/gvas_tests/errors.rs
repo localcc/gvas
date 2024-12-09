@@ -70,7 +70,6 @@ fn test_invalid_array_index() {
     let mut options = PropertyOptions {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
-        large_world_coordinates: false,
         custom_versions: &HashableIndexMap::new(),
     };
 
@@ -156,7 +155,6 @@ fn test_invalid_terminator() {
     let mut options = PropertyOptions {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
-        large_world_coordinates: false,
         custom_versions: &HashableIndexMap::new(),
     };
 
@@ -265,7 +263,6 @@ fn test_invalid_length() {
     let mut options = PropertyOptions {
         hints: &HashMap::new(),
         properties_stack: &mut Vec::new(),
-        large_world_coordinates: false,
         custom_versions: &HashableIndexMap::new(),
     };
 
