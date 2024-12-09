@@ -110,6 +110,11 @@ fn regression_01() {
 }
 
 #[test]
+fn ro_64bit_fav() {
+    test_gvas_file(RO_64BIT_FAV_PATH);
+}
+
+#[test]
 fn saveslot03() {
     assert_eq!(
         test_gvas_file_(SAVESLOT_03_PATH, GameVersion::Default, &saveslot3::hints()),
