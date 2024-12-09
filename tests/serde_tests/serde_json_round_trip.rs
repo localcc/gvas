@@ -65,6 +65,11 @@ fn serde_regression_01() {
 }
 
 #[test]
+fn serde_ro_64bit() {
+    test_file(RO_64BIT_FAV_PATH);
+}
+
+#[test]
 fn serde_saveslot_03() {
     test_file_with_hints(SAVESLOT_03_PATH, &saveslot3::hints());
 }

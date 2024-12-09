@@ -22,6 +22,7 @@ pub const PALWORLD_ZLIB_PATH: &str = "resources/test/palworld_zlib.sav";
 pub const PALWORLD_ZLIB_TWICE_PATH: &str = "resources/test/palworld_zlib_twice.sav";
 pub const PROFILE_0_PATH: &str = "resources/test/Profile_0.sav";
 pub const REGRESSION_01_PATH: &str = "resources/test/regression_01.bin";
+pub const RO_64BIT_FAV_PATH: &str = "resources/test/ro_64bit_fav.sav";
 pub const SAVESLOT_03_PATH: &str = "resources/test/SaveSlot_03.sav";
 pub const SLOT1_PATH: &str = "resources/test/Slot1.sav";
 pub const SLOT2_PATH: &str = "resources/test/Slot2.sav";
