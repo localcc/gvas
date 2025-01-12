@@ -138,6 +138,11 @@ fn slot3() {
 }
 
 #[test]
+fn string_table_entry() {
+    test_gvas_file(STRING_TABLE_ENTRY);
+}
+
+#[test]
 fn text_property_noarray() {
     test_gvas_file(TEXT_PROPERTY_NOARRAY);
 }
