@@ -80,6 +80,8 @@ pub enum StructPropertyValue {
     LinearColor(LinearColor),
     /// An `IntPoint` value.
     IntPoint(IntPoint),
+    /// A `GameplayTagContainer` value.
+    GameplayTagContainer(Vec<String>),
     /// A custom struct value.
     CustomStruct(HashableIndexMap<String, Vec<Property>>),
 }
@@ -168,6 +170,7 @@ impl StructProperty {
             "LinearColor" => StructPropertyValue::read_linearcolor(cursor)?,
             "IntPoint" => StructPropertyValue::read_intpoint(cursor)?,
             "Guid" => StructPropertyValue::read_guid(cursor)?,
+            "GameplayTagContainer" => StructPropertyValue::read_gameplaytagcontainer(cursor)?,
             _ => StructPropertyValue::read_custom(cursor, options)?,
         };
         Ok(value)
@@ -344,6 +347,13 @@ impl PropertyTrait for StructPropertyValue {
                 cursor.write_guid(guid)?;
                 Ok(16)
             }
+            StructPropertyValue::GameplayTagContainer(tags) => {
+                let mut len = tags.len();
+                for gameplaytag in tags {
+                    len += cursor.write_string(gameplaytag)?;
+                }
+                Ok(len)
+            }
             StructPropertyValue::CustomStruct(properties) => {
                 let mut len = 0;
                 for (key, values) in properties {
@@ -378,6 +388,15 @@ impl StructPropertyValue {
             insert_property(&mut properties, property_name, property);
         }
         Ok(StructPropertyValue::CustomStruct(properties))
+    }
+
+    fn read_gameplaytagcontainer<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
+        let len = cursor.read_i32::<LittleEndian>()?;
+        let mut tags: Vec<String> = Vec::with_capacity(len as usize);
+        for _ in 0..len {
+            tags.push(cursor.read_string()?);
+        }
+        Ok(Self::GameplayTagContainer(tags))
     }
 
     fn read_guid<R: Read + Seek>(cursor: &mut R) -> Result<Self, Error> {
