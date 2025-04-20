@@ -349,6 +349,7 @@ impl PropertyTrait for StructPropertyValue {
             }
             StructPropertyValue::GameplayTagContainer(tags) => {
                 let mut len = tags.len();
+                cursor.write_i32::<LittleEndian>(len as i32)?;
                 for gameplaytag in tags {
                     len += cursor.write_string(gameplaytag)?;
                 }
