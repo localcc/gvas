@@ -138,6 +138,11 @@ fn slot3() {
 }
 
 #[test]
+fn tagcontainer() {
+    test_gvas_file(TAGCONTAINER_PATH);
+}
+
+#[test]
 fn text_property_noarray() {
     test_gvas_file(TEXT_PROPERTY_NOARRAY);
 }
