@@ -9,6 +9,7 @@ pub mod regression;
 pub mod saveslot3;
 pub mod slot1;
 pub mod vector2d;
+pub mod tagcontainer;
 
 pub const ASSERT_FAILED_PATH: &str = "resources/test/assert_failed.sav";
 pub const COMPONENT8_PATH: &str = "resources/test/component8.sav";
@@ -30,3 +31,4 @@ pub const SLOT3_PATH: &str = "resources/test/Slot3.sav";
 pub const TEXT_PROPERTY_NOARRAY: &str = "resources/test/text_property_noarray.bin";
 pub const TRANSFORM_PATH: &str = "resources/test/transform.sav";
 pub const VECTOR2D_PATH: &str = "resources/test/vector2d.sav";
+pub const TAGCONTAINER_PATH: &str = "resources/test/tagcontainer.sav";
