@@ -8,8 +8,8 @@ pub mod profile0;
 pub mod regression;
 pub mod saveslot3;
 pub mod slot1;
-pub mod vector2d;
 pub mod tagcontainer;
+pub mod vector2d;
 
 pub const ASSERT_FAILED_PATH: &str = "resources/test/assert_failed.sav";
 pub const COMPONENT8_PATH: &str = "resources/test/component8.sav";
