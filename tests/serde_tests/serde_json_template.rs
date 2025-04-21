@@ -104,7 +104,7 @@ fn file_saveslot_03() {
 
 #[test]
 fn file_tagcontainer() {
-    file(TAGCONTAINER_PATH,tagcontainer::TAGCONTAINER_JSON)
+    file(TAGCONTAINER_PATH, tagcontainer::TAGCONTAINER_JSON)
 }
 
 #[test]
@@ -1589,7 +1589,7 @@ fn struct_gameplaytag() {
     serde_json(
         &Property::from(StructPropertyValue::GameplayTagContainer(vec![
             String::from("Gameplaytag.One"),
-            String::from("Gameplaytag.Two")
+            String::from("Gameplaytag.Two"),
         ])),
         r#"{
   "type": "StructPropertyValue",
@@ -1597,7 +1597,7 @@ fn struct_gameplaytag() {
     "Gameplaytag.One",
     "Gameplaytag.Two"
   ]
-}"#
+}"#,
     )
 }
 
