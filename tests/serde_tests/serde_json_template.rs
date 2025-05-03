@@ -103,6 +103,11 @@ fn file_saveslot_03() {
 }
 
 #[test]
+fn file_tagcontainer() {
+    file(TAGCONTAINER_PATH, tagcontainer::TAGCONTAINER_JSON)
+}
+
+#[test]
 fn file_vector2d() {
     file(VECTOR2D_PATH, vector2d::VECTOR2D_JSON)
 }
@@ -1575,6 +1580,23 @@ fn struct_array_index() {
       }
     ]
   }
+}"#,
+    )
+}
+
+#[test]
+fn struct_gameplaytag() {
+    serde_json(
+        &Property::from(StructPropertyValue::GameplayTagContainer(vec![
+            String::from("Gameplaytag.One"),
+            String::from("Gameplaytag.Two"),
+        ])),
+        r#"{
+  "type": "StructPropertyValue",
+  "GameplayTagContainer": [
+    "Gameplaytag.One",
+    "Gameplaytag.Two"
+  ]
 }"#,
     )
 }

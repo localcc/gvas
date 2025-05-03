@@ -90,6 +90,11 @@ fn serde_slot3() {
     test_file(SLOT3_PATH);
 }
 
+#[test]
+fn serde_tagcontainer() {
+    test_file(TAGCONTAINER_PATH);
+}
+
 #[ignore] // This test takes ~5 seconds to run
 #[test]
 fn serde_transform() {
