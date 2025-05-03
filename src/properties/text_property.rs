@@ -287,7 +287,7 @@ pub enum FTextHistory {
     /// String table entry
     StringTableEntry {
         /// Table id
-        table_id: Box<FText>,
+        table_id: String,
         /// Key
         key: String,
     },
@@ -488,7 +488,7 @@ impl FTextHistory {
                 }
             }
             TextHistoryType::StringTableEntry => {
-                let table_id = Box::new(FText::read(cursor, options)?);
+                let table_id = cursor.read_string()?;
                 let key = cursor.read_string()?;
 
                 FTextHistory::StringTableEntry { table_id, key }
@@ -632,7 +632,8 @@ impl FTextHistory {
                 format_options,
                 target_culture,
             } => {
-                let mut len = 0;
+                cursor.write_enum(TextHistoryType::AsCurrency)?;
+                let mut len = 1;
                 len += cursor.write_fstring(currency_code.as_deref())?;
                 len += source_value.write(cursor, options)?;
                 len += 4;
@@ -701,8 +702,9 @@ impl FTextHistory {
             }
 
             FTextHistory::StringTableEntry { table_id, key } => {
-                let mut len = 0;
-                len += table_id.write(cursor, options)?;
+                cursor.write_enum(TextHistoryType::StringTableEntry)?;
+                let mut len = 1;
+                len += cursor.write_string(table_id)?;
                 len += cursor.write_string(key)?;
                 Ok(len)
             }

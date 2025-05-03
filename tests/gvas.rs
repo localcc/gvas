@@ -138,6 +138,11 @@ fn slot3() {
 }
 
 #[test]
+fn string_table_entry() {
+    test_gvas_file(STRING_TABLE_ENTRY);
+}
+
+#[test]
 fn tagcontainer() {
     test_gvas_file(TAGCONTAINER_PATH);
 }
