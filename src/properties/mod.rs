@@ -11,7 +11,7 @@ use crate::{
     custom_version::{CustomVersionTrait, FCustomVersion},
     error::{DeserializeError, Error},
     scoped_stack_entry::ScopedStackEntry,
-    types::{map::HashableIndexMap, Guid},
+    types::{Guid, map::HashableIndexMap},
 };
 
 use self::{
@@ -22,8 +22,8 @@ use self::{
     enum_property::EnumProperty,
     field_path_property::FieldPathProperty,
     int_property::{
-        BoolProperty, ByteProperty, DoubleProperty, FloatProperty, Int16Property, Int64Property,
-        Int8Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
+        BoolProperty, ByteProperty, DoubleProperty, FloatProperty, Int8Property, Int16Property,
+        Int64Property, IntProperty, UInt16Property, UInt32Property, UInt64Property,
     },
     map_property::MapProperty,
     name_property::NameProperty,

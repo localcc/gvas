@@ -1,5 +1,5 @@
 use crate::common::*;
-use gvas::{game_version::GameVersion, GvasFile};
+use gvas::{GvasFile, game_version::GameVersion};
 use std::{collections::HashMap, fs::File, path::Path};
 
 fn test_file_with_hints(path: &str, hints: &HashMap<String, String>) {

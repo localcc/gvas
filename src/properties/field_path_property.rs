@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
+use super::{PropertyOptions, PropertyTrait, impl_read, impl_read_header, impl_write};
 
 /// Field path
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

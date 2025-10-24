@@ -7,9 +7,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ordered_float::OrderedFloat;
 
 use super::{
-    impl_write,
+    PropertyOptions, PropertyTrait, impl_write,
     struct_types::{unwrap_value, wrap_type, wrap_value},
-    PropertyOptions, PropertyTrait,
 };
 use crate::{
     cursor_ext::{ReadExt, WriteExt},

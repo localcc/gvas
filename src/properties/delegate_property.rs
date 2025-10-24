@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
+use super::{PropertyOptions, PropertyTrait, impl_read, impl_read_header, impl_write};
 
 /// An Unreal script delegate
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

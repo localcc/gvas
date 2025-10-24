@@ -1,9 +1,9 @@
 use gvas::{
+    GvasFile, GvasHeader,
     engine_version::FEngineVersion,
     game_version::DeserializedGameVersion,
-    properties::{int_property::FloatProperty, Property},
-    types::{map::HashableIndexMap, Guid},
-    GvasFile, GvasHeader,
+    properties::{Property, int_property::FloatProperty},
+    types::{Guid, map::HashableIndexMap},
 };
 use std::str::FromStr;
 

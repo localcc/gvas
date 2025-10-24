@@ -1,12 +1,12 @@
 use gvas::{
+    GvasFile,
     error::{DeserializeError, Error},
     game_version::GameVersion,
     properties::{
-        array_property::ArrayProperty, enum_property::EnumProperty, map_property::MapProperty,
-        set_property::SetProperty, str_property::StrProperty, PropertyOptions,
+        PropertyOptions, array_property::ArrayProperty, enum_property::EnumProperty,
+        map_property::MapProperty, set_property::SetProperty, str_property::StrProperty,
     },
     types::map::HashableIndexMap,
-    GvasFile,
 };
 use std::{collections::HashMap, io::Cursor};
 

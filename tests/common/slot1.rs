@@ -1,20 +1,20 @@
 use gvas::{
+    GvasFile, GvasHeader,
     engine_version::FEngineVersion,
     game_version::DeserializedGameVersion,
     properties::{
+        Property,
         array_property::ArrayProperty,
         int_property::{
-            ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty, Int16Property,
-            Int64Property, Int8Property, IntProperty, UInt16Property, UInt32Property,
+            ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty, Int8Property,
+            Int16Property, Int64Property, IntProperty, UInt16Property, UInt32Property,
             UInt64Property,
         },
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::DateTime,
-        Property,
     },
-    types::{map::HashableIndexMap, Guid},
-    GvasFile, GvasHeader,
+    types::{Guid, map::HashableIndexMap},
 };
 use std::str::FromStr;
 

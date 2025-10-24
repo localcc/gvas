@@ -2,8 +2,8 @@ mod common;
 use common::*;
 mod gvas_tests;
 use gvas::{
-    game_version::{DeserializedGameVersion, GameVersion, PalworldCompressionType},
     GvasFile,
+    game_version::{DeserializedGameVersion, GameVersion, PalworldCompressionType},
 };
 use std::{collections::HashMap, fs, io::Cursor, path::Path};
 

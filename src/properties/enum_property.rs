@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read_header, impl_write, impl_write_header_part, PropertyOptions, PropertyTrait};
+use super::{PropertyOptions, PropertyTrait, impl_read_header, impl_write, impl_write_header_part};
 
 /// A property that holds an enum value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
