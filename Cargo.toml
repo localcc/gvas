@@ -13,20 +13,20 @@ edition = "2024"
 [dependencies]
 enum_dispatch = "0.3.13"
 byteorder = "1.5.0"
-ordered-float = "5.0.0"
-serde = { version = "1.0.210", optional = true, features = ["derive"] }
-serde_with = { version = "3.11.0", optional = true, features = ["hex"] }
-indexmap = "2.6.0"
-thiserror = "2.0.12"
-num_enum = "0.7.3"
-flate2 = "1.0.34"
+ordered-float = "5.1.0"
+serde = { version = "1.0.228", optional = true, features = ["derive"] }
+serde_with = { version = "3.15.1", optional = true, features = ["hex"] }
+indexmap = "2.12.0"
+thiserror = "2.0.17"
+num_enum = "0.7.5"
+flate2 = "1.1.5"
 cfg_eval = "0.1.2"
 
 [features]
 serde = ["dep:serde", "dep:serde_with", "ordered-float/serde", "indexmap/serde"]
 
 [dev-dependencies]
-serde_json = { version = "1.0.132", features = ["float_roundtrip", "preserve_order"] }
+serde_json = { version = "1.0.145", features = ["float_roundtrip", "preserve_order"] }
 
 [[test]]
 name = "serde"
