@@ -1,5 +1,5 @@
 use gvas::cursor_ext::ReadExt;
-use gvas::properties::{name_property::NameProperty, PropertyOptions, PropertyTrait};
+use gvas::properties::{PropertyOptions, PropertyTrait, name_property::NameProperty};
 use gvas::types::map::HashableIndexMap;
 use std::collections::HashMap;
 use std::io::Cursor;

@@ -3,11 +3,12 @@ use std::{collections::HashMap, io::Cursor};
 use gvas::{
     cursor_ext::ReadExt,
     properties::{
+        Property, PropertyOptions, PropertyTrait,
         array_property::ArrayProperty,
         enum_property::EnumProperty,
         int_property::{
             BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty,
-            Int16Property, Int64Property, Int8Property, IntProperty, UInt16Property,
+            Int8Property, Int16Property, Int64Property, IntProperty, UInt16Property,
             UInt32Property, UInt64Property,
         },
         map_property::MapProperty,
@@ -16,9 +17,8 @@ use gvas::{
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::VectorF,
         text_property::TextProperty,
-        Property, PropertyOptions, PropertyTrait,
     },
-    types::{map::HashableIndexMap, Guid},
+    types::{Guid, map::HashableIndexMap},
 };
 
 use gvas::properties::text_property::FText;

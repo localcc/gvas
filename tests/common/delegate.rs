@@ -1,15 +1,15 @@
 use gvas::{
+    GvasFile, GvasHeader,
     engine_version::FEngineVersion,
     game_version::DeserializedGameVersion,
     properties::{
+        Property,
         delegate_property::{
             Delegate, DelegateProperty, MulticastInlineDelegateProperty, MulticastScriptDelegate,
             MulticastSparseDelegateProperty,
         },
-        Property,
     },
-    types::{map::HashableIndexMap, Guid},
-    GvasFile, GvasHeader,
+    types::{Guid, map::HashableIndexMap},
 };
 use std::str::FromStr;
 

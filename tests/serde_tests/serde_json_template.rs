@@ -1,14 +1,16 @@
 use crate::common::*;
 use gvas::{
+    GvasFile,
     game_version::GameVersion,
     properties::{
+        Property,
         array_property::ArrayProperty,
         delegate_property::{Delegate, DelegateProperty},
         enum_property::EnumProperty,
         field_path_property::{FieldPath, FieldPathProperty},
         int_property::{
             BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty, FloatProperty,
-            Int16Property, Int64Property, Int8Property, IntProperty, UInt16Property,
+            Int8Property, Int16Property, Int64Property, IntProperty, UInt16Property,
             UInt32Property, UInt64Property,
         },
         map_property::MapProperty,
@@ -26,10 +28,8 @@ use gvas::{
             RoundingMode, TextProperty, TransformType,
         },
         unknown_property::UnknownProperty,
-        Property,
     },
-    types::{map::HashableIndexMap, Guid},
-    GvasFile,
+    types::{Guid, map::HashableIndexMap},
 };
 use serde::{Deserialize, Serialize};
 use std::{

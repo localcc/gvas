@@ -1,6 +1,6 @@
 use crate::common::PACKAGE_VERSION_524_PATH;
-use gvas::game_version::GameVersion;
 use gvas::GvasFile;
+use gvas::game_version::GameVersion;
 use std::{
     fs::File,
     io::{Cursor, Read},

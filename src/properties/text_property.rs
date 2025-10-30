@@ -17,7 +17,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
+use super::{PropertyOptions, PropertyTrait, impl_read, impl_read_header, impl_write};
 
 /// A property that stores GVAS Text.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

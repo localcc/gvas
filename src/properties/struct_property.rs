@@ -13,16 +13,15 @@ use crate::{
     error::{DeserializeError, Error, SerializeError},
     properties::{name_property::NameProperty, struct_types::LinearColor},
     scoped_stack_entry::ScopedStackEntry,
-    types::{map::HashableIndexMap, Guid},
+    types::{Guid, map::HashableIndexMap},
 };
 
 use super::{
-    impl_write, impl_write_header_part, make_matcher,
+    Property, PropertyOptions, PropertyTrait, impl_write, impl_write_header_part, make_matcher,
     struct_types::{
         DateTime, IntPoint, QuatD, QuatF, RotatorD, RotatorF, Timespan, Vector2D, Vector2F,
         VectorD, VectorF,
     },
-    Property, PropertyOptions, PropertyTrait,
 };
 
 macro_rules! validate {

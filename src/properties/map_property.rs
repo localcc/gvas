@@ -9,12 +9,12 @@ use crate::{
     cursor_ext::{ReadExt, WriteExt},
     error::{DeserializeError, Error},
     properties::{
+        Property, PropertyOptions, PropertyTrait,
         enum_property::EnumProperty,
         impl_read_header, impl_write, impl_write_header_part,
         int_property::{BoolProperty, IntProperty},
         name_property::NameProperty,
         str_property::StrProperty,
-        Property, PropertyOptions, PropertyTrait,
     },
     scoped_stack_entry::ScopedStackEntry,
     types::map::HashableIndexMap,

@@ -1,8 +1,10 @@
 use std::{collections::HashMap, str::FromStr as _};
 
 use gvas::{
+    GvasFile, GvasHeader,
     engine_version::FEngineVersion,
     properties::{
+        Property,
         field_path_property::{FieldPath, FieldPathProperty},
         int_property::{FloatProperty, IntProperty},
         map_property::MapProperty,
@@ -11,10 +13,8 @@ use gvas::{
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::DateTime,
-        Property,
     },
-    types::{map::HashableIndexMap, Guid},
-    GvasFile, GvasHeader,
+    types::{Guid, map::HashableIndexMap},
 };
 
 pub(crate) fn hints() -> HashMap<String, String> {

@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{cursor_ext::ReadExt, cursor_ext::WriteExt, error::Error};
 
-use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
+use super::{PropertyOptions, PropertyTrait, impl_read, impl_read_header, impl_write};
 
 /// A property that holds a name.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

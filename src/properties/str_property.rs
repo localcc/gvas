@@ -7,7 +7,7 @@ use crate::{
     error::Error,
 };
 
-use super::{impl_read, impl_read_header, impl_write, PropertyOptions, PropertyTrait};
+use super::{PropertyOptions, PropertyTrait, impl_read, impl_read_header, impl_write};
 
 /// A property that holds a GVAS string value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -8,7 +8,7 @@ use crate::{
 };
 
 use super::{
-    impl_read_header, impl_write, impl_write_header_part, Property, PropertyOptions, PropertyTrait,
+    Property, PropertyOptions, PropertyTrait, impl_read_header, impl_write, impl_write_header_part,
 };
 
 /// A property that stores a set of properties.

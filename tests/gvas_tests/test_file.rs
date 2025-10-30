@@ -3,7 +3,7 @@ use std::io::Cursor;
 use byteorder::{LittleEndian, WriteBytesExt};
 
 use gvas::game_version::GameVersion;
-use gvas::{error::Error, GvasFile, GvasHeader, FILE_TYPE_GVAS};
+use gvas::{FILE_TYPE_GVAS, GvasFile, GvasHeader, error::Error};
 
 #[test]
 fn test_file_err() {

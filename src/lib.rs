@@ -90,21 +90,21 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use flate2::Compression;
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
-use flate2::Compression;
 
 use crate::{
     cursor_ext::{ReadExt, WriteExt},
     custom_version::FCustomVersion,
     engine_version::FEngineVersion,
     error::{DeserializeError, Error},
-    game_version::{DeserializedGameVersion, GameVersion, PalworldCompressionType, PLZ_MAGIC},
+    game_version::{DeserializedGameVersion, GameVersion, PLZ_MAGIC, PalworldCompressionType},
     object_version::EUnrealEngineObjectUE5Version,
     ord_ext::OrdExt,
     properties::{Property, PropertyOptions, PropertyTrait},
     savegame_version::SaveGameVersion,
-    types::{map::HashableIndexMap, Guid},
+    types::{Guid, map::HashableIndexMap},
 };
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.

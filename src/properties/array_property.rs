@@ -13,13 +13,13 @@ use crate::{
 };
 
 use super::{
+    Property, PropertyOptions, PropertyTrait,
     enum_property::EnumProperty,
     impl_read_header, impl_write, impl_write_header_part,
     int_property::{BoolProperty, ByteProperty, BytePropertyValue, FloatProperty, IntProperty},
     name_property::NameProperty,
     str_property::StrProperty,
     struct_property::{StructProperty, StructPropertyValue},
-    Property, PropertyOptions, PropertyTrait,
 };
 
 #[cfg(feature = "serde")]

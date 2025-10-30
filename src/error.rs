@@ -1,6 +1,6 @@
 use std::{
     io,
-    string::{FromUtf16Error, FromUtf8Error},
+    string::{FromUtf8Error, FromUtf16Error},
 };
 
 use thiserror::Error;

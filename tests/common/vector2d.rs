@@ -1,16 +1,16 @@
 use gvas::{
+    GvasFile, GvasHeader,
     engine_version::FEngineVersion,
     game_version::DeserializedGameVersion,
     properties::{
+        Property,
         delegate_property::{Delegate, MulticastInlineDelegateProperty, MulticastScriptDelegate},
         int_property::{BoolProperty, FloatProperty, IntProperty},
         str_property::StrProperty,
         struct_property::{StructProperty, StructPropertyValue},
         struct_types::Vector2D,
-        Property,
     },
-    types::{map::HashableIndexMap, Guid},
-    GvasFile, GvasHeader,
+    types::{Guid, map::HashableIndexMap},
 };
 use ordered_float::OrderedFloat;
 use std::str::FromStr;
