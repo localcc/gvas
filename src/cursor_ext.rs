@@ -46,21 +46,20 @@ pub trait WriteExt {
 impl<R: Read + Seek> ReadExt for R {
     #[inline]
     fn read_string(&mut self) -> Result<String, Error> {
+        let start_position = self.stream_position()?;
         match self.read_fstring()? {
             Some(str) => Ok(str),
-            None => Err(DeserializeError::InvalidString(0, self.stream_position()?))?,
+            None => Err(DeserializeError::InvalidString(0, start_position))?,
         }
     }
 
+    #[inline]
     fn read_fstring(&mut self) -> Result<Option<String>, Error> {
         let start_position = self.stream_position()?;
         let len = self.read_i32::<LittleEndian>()?;
 
         if !(-131072..=131072).contains(&len) {
-            Err(DeserializeError::InvalidString(
-                len,
-                self.stream_position()?,
-            ))?
+            Err(DeserializeError::InvalidString(len, start_position))?
         } else if len == 0 {
             Ok(None)
         } else if len < 0 {
