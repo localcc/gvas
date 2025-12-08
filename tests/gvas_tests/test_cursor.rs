@@ -67,7 +67,7 @@ fn test_read_string() -> Result<(), Error> {
     // Null
     let mut cursor = Cursor::new(vec![0u8; 4]);
     let string = cursor.read_string().expect_err("Expected err").to_string();
-    assert_eq!(string, "Invalid string size 0 at position 0x4");
+    assert_eq!(string, "Invalid string size 0 at position 0x0");
 
     // Missing null terminator
     let mut cursor = Cursor::new(vec![1u8, 0u8, 0u8, 0u8, b't']);
