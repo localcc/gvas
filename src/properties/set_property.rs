@@ -64,9 +64,9 @@ impl SetProperty {
         let element_count = cursor.read_u32::<LittleEndian>()?;
         let mut properties: Vec<Property> = Vec::with_capacity(element_count as usize);
 
-        if element_count > 0 {
-            let total_bytes_per_property = (length - 8) / element_count;
-
+        if element_count > 0
+            && let Some(total_bytes_per_property) = (length - 8).checked_div(element_count)
+        {
             for _ in 0..element_count {
                 properties.push(Property::new(
                     cursor,
