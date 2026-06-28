@@ -108,7 +108,7 @@ use crate::{
 };
 
 /// The four bytes 'GVAS' appear at the beginning of every GVAS file.
-pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes([b'G', b'V', b'A', b'S']);
+pub const FILE_TYPE_GVAS: u32 = u32::from_le_bytes(*b"GVAS");
 
 /// Stores information about GVAS file, engine version, etc.
 #[derive(Debug, Clone, PartialEq, Eq)]
