@@ -24,7 +24,7 @@ fn test_unexpected_eof() {
     }
 }
 
-const INVALID_HEADER: [u8; 4] = [b'G', b'V', b'A', b'Z'];
+const INVALID_HEADER: [u8; 4] = *b"GVAZ";
 
 #[test]
 fn test_invalid_header() {

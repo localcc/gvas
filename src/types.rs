@@ -106,7 +106,7 @@ impl From<Guid> for u128 {
 impl Debug for Guid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let guid = self.to_string();
-        write!(f, "Guid({})", &guid)
+        write!(f, "Guid({})", guid)
     }
 }
 
